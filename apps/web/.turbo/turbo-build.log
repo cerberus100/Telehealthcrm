@@ -1,0 +1,29 @@
+
+> web@0.1.0 build /Users/alexsiegel/teleplatform/apps/web
+> next build
+
+  ▲ Next.js 14.2.5
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/4) ...
+   Generating static pages (1/4) 
+   Generating static pages (2/4) 
+   Generating static pages (3/4) 
+ ✓ Generating static pages (4/4)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    138 B          87.1 kB
+└ ○ /_not-found                          872 B          87.9 kB
++ First Load JS shared by all            87 kB
+  ├ chunks/753-fb54a495ce337509.js       31.5 kB
+  ├ chunks/abf17911-b72ece1d4472ef4e.js  53.6 kB
+  └ other shared chunks (total)          1.86 kB
+
+
+○  (Static)  prerendered as static content
+

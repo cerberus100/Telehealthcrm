@@ -1,0 +1,277 @@
+// Datasource & generator
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Multi-tenant schema. Field-level encryption for highly sensitive fields is handled at the application layer (KMS envelope).
+
+model Organization {
+  id        String   @id @default(uuid())
+  type      OrgType
+  name      String
+  npi       String?  @db.VarChar(20)
+  address   Json?
+  users     User[]
+  patients  Patient[]
+  consults  Consult[]
+  rxs       Rx[]
+  labOrders LabOrder[]
+  shipments Shipment[]
+  results   LabResult[]
+  pharmacyFulfillments PharmacyFulfillment[]
+  audits    AuditLog[]
+  notifs    Notification[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum OrgType {
+  PROVIDER
+  LAB
+  PHARMACY
+  MARKETER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id])
+  role         UserRole
+  email        String   @unique
+  status       String   @db.VarChar(20)
+  mfaEnrolled  Boolean  @default(false)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@index([orgId])
+}
+
+enum UserRole {
+  ADMIN
+  DOCTOR
+  LAB_TECH
+  PHARMACIST
+  MARKETER
+  SUPPORT
+}
+
+model Patient {
+  id                String   @id @default(uuid())
+  orgId             String
+  org               Organization @relation(fields: [orgId], references: [id])
+  tenantUid         String   @db.VarChar(64)
+  legalName         String
+  dob               DateTime
+  phones            String[]
+  emails            String[]
+  address           Json?
+  insurancePolicyId String?
+  insurancePolicy   InsurancePolicy? @relation(fields: [insurancePolicyId], references: [id])
+  piiTokenId        String?  @db.VarChar(128)
+  consults          Consult[]
+  duplicateLinks    PatientDuplicateLink[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  @@index([orgId])
+  @@index([tenantUid])
+}
+
+model InsurancePolicy {
+  id                 String   @id @default(uuid())
+  payerCode          String   @db.VarChar(20)
+  memberIdEncrypted  Bytes    // Application-encrypted (KMS data key)
+  groupId            String?  @db.VarChar(64)
+  planName           String?
+  coverageActive     Boolean  @default(true)
+  patients           Patient[]
+}
+
+model Consult {
+  id              String   @id @default(uuid())
+  orgId           String
+  org             Organization @relation(fields: [orgId], references: [id])
+  patientId       String
+  patient         Patient @relation(fields: [patientId], references: [id])
+  marketerOrgId   String?
+  providerOrgId   String
+  status          ConsultStatus
+  reasonCodes     String[]
+  createdFrom     CreatedFrom
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  rxs             Rx[]
+  labOrders       LabOrder[]
+  @@index([orgId])
+  @@index([patientId])
+}
+
+enum ConsultStatus {
+  PENDING
+  PASSED
+  FAILED
+  APPROVED
+  DECLINED
+}
+
+enum CreatedFrom {
+  CALL
+  WEB
+  API
+}
+
+model Rx {
+  id              String   @id @default(uuid())
+  orgId           String
+  org             Organization @relation(fields: [orgId], references: [id])
+  consultId       String
+  consult         Consult @relation(fields: [consultId], references: [id])
+  providerUserId  String
+  pharmacyOrgId   String
+  status          RxStatus
+  scriptBlobEncrypted Bytes // Application-encrypted (KMS data key)
+  refillsAllowed  Int      @default(0)
+  refillsUsed     Int      @default(0)
+  pharmacyFulfillment PharmacyFulfillment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([orgId])
+  @@index([consultId])
+}
+
+enum RxStatus {
+  DRAFT
+  SUBMITTED
+  DISPENSED
+  CANCELLED
+}
+
+model LabOrder {
+  id         String   @id @default(uuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id])
+  consultId  String
+  consult    Consult @relation(fields: [consultId], references: [id])
+  labOrgId   String
+  tests      String[]
+  status     LabOrderStatus
+  shipments  Shipment[]
+  results    LabResult[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@index([orgId])
+  @@index([consultId])
+}
+
+enum LabOrderStatus {
+  DRAFT
+  SUBMITTED
+  IN_TRANSIT
+  RECEIVED
+  RESULTS_READY
+}
+
+model Shipment {
+  id             String   @id @default(uuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id])
+  labOrderId     String
+  labOrder       LabOrder @relation(fields: [labOrderId], references: [id])
+  carrier        String   @default("UPS")
+  labelId        String
+  trackingNumber String   @unique
+  shipTo         Json     // non‑PHI shipping fields only in marketer views
+  status         String
+  lastEventAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@index([orgId])
+  @@index([labOrderId])
+}
+
+model LabResult {
+  id                   String   @id @default(uuid())
+  orgId                String
+  org                  Organization @relation(fields: [orgId], references: [id])
+  labOrderId           String
+  labOrder             LabOrder @relation(fields: [labOrderId], references: [id])
+  resultBlobEncrypted  Bytes // Application-encrypted (KMS data key)
+  flaggedAbnormal      Boolean? @default(false)
+  releasedToProviderAt DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  @@index([orgId])
+  @@index([labOrderId])
+}
+
+model PharmacyFulfillment {
+  id        String   @id @default(uuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id])
+  rxId      String
+  rx        Rx @relation(fields: [rxId], references: [id])
+  status    FulfillmentStatus
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([orgId])
+  @@index([rxId])
+}
+
+enum FulfillmentStatus {
+  QUEUED
+  READY
+  SHIPPED
+  DELIVERED
+}
+
+model DuplicateGroup {
+  id              String   @id @default(uuid())
+  strategy        String
+  confidenceScore Float
+  links           PatientDuplicateLink[]
+}
+
+model PatientDuplicateLink {
+  patientId       String
+  patient         Patient @relation(fields: [patientId], references: [id])
+  dupGroupId      String
+  group           DuplicateGroup @relation(fields: [dupGroupId], references: [id])
+  confidenceScore Float
+  @@id([patientId, dupGroupId])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  actorUserId   String?
+  actorOrgId    String?
+  action        String
+  entity        String
+  entityId      String
+  ts            DateTime @default(now())
+  ip            String?
+  purposeOfUse  String?
+  before        Json?
+  after         Json?
+  org           Organization? @relation(fields: [actorOrgId], references: [id])
+  @@index([actorOrgId])
+  @@index([entity, entityId])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id])
+  type        String
+  targetUserId String?
+  targetOrgId String?
+  payload     Json
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([orgId])
+}

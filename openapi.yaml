@@ -1,0 +1,67 @@
+openapi: 3.1.0
+info:
+  title: Teleplatform API
+  version: 0.1.0
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: http://localhost:3001
+    description: Local
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /auth/login:
+    post:
+      summary: Login
+      responses:
+        '200': { description: OK }
+  /auth/refresh:
+    post:
+      summary: Refresh token
+      responses:
+        '200': { description: OK }
+  /auth/logout:
+    post:
+      summary: Logout
+      responses:
+        '204': { description: No Content }
+  /orgs:
+    get: { summary: List orgs, responses: { '200': { description: OK } } }
+    post: { summary: Create org, responses: { '201': { description: Created } } }
+  /users:
+    get: { summary: List users, responses: { '200': { description: OK } } }
+    post: { summary: Create user, responses: { '201': { description: Created } } }
+  /patients:
+    get: { summary: List patients (PHI-safe), responses: { '200': { description: OK } } }
+    post: { summary: Create patient, responses: { '201': { description: Created } } }
+  /consults:
+    get: { summary: List consults, responses: { '200': { description: OK } } }
+    post: { summary: Create consult, responses: { '201': { description: Created } } }
+  /rx:
+    post: { summary: Create Rx, responses: { '201': { description: Created } } }
+  /rx/{id}/script:
+    get: { summary: Get Rx script (provider/pharmacy only), responses: { '200': { description: OK } } }
+  /lab-orders:
+    post: { summary: Create lab order, responses: { '201': { description: Created } } }
+  /lab-orders/{id}/shipments:
+    get: { summary: List shipments for an order, responses: { '200': { description: OK } } }
+  /lab-results:
+    post: { summary: Upload lab result (provider read only), responses: { '201': { description: Created } } }
+  /shipments:
+    post: { summary: Create UPS label, responses: { '201': { description: Created } } }
+  /shipments/{id}:
+    get: { summary: Get shipment, responses: { '200': { description: OK } } }
+  /webhooks/ups:
+    post: { summary: UPS webhook, responses: { '204': { description: No Content } } }
+  /connect/inbound-call:
+    post: { summary: Idempotent inbound call creation, responses: { '201': { description: Created } } }
+  /connect/call-notes:
+    post: { summary: Redacted call notes, responses: { '204': { description: No Content } } }
+  /notifications:
+    get: { summary: Subscribe and list notifications, responses: { '200': { description: OK } } }
+  /audit-logs:
+    get: { summary: Query audit logs, responses: { '200': { description: OK } } }
