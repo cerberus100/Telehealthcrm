@@ -1,6 +1,7 @@
 version: 1
 applications:
-  - frontend:
+  - appRoot: apps/web
+    frontend:
       runtime-versions:
         nodejs: 20
       phases:
@@ -8,16 +9,15 @@ applications:
           commands:
             - corepack enable
             - corepack prepare pnpm@9.6.0 --activate
-            - pnpm install
+            - pnpm install --frozen-lockfile
         build:
           commands:
-            - pnpm --filter web build
+            - pnpm build
       artifacts:
-        baseDirectory: apps/web/out
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
         paths:
           - node_modules/**/*
-          - .pnpm-store/**/*
-          - apps/web/node_modules/**/*
+          - ../../.pnpm-store/**/*
