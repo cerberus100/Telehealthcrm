@@ -1,6 +1,8 @@
 version: 1
 applications:
   - frontend:
+      runtime-versions:
+        nodejs: 20
       phases:
         preBuild:
           commands:
