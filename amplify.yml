@@ -11,7 +11,7 @@ applications:
           commands:
             - pnpm --filter web build
       artifacts:
-        baseDirectory: apps/web/.next
+        baseDirectory: apps/web/out
         files:
           - '**/*'
       cache:
