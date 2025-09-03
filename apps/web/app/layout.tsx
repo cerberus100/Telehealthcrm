@@ -1,6 +1,7 @@
 import './globals.css'
 import Providers from './providers'
 import Link from 'next/link'
+import NotificationsBell from '../components/NotificationsBell'
 
 export const metadata = {
   title: 'Teleplatform',
@@ -18,7 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/consults" className="underline">Consults</Link>
               <Link href="/shipments" className="underline">Shipments</Link>
             </nav>
-            <div className="ml-auto text-sm">
+            <div className="ml-auto flex items-center gap-4">
+              <NotificationsBell />
               <Link href="/login" className="underline">Login</Link>
             </div>
           </header>
