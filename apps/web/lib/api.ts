@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { request } from './http'
 import { API_BASE_URL, USE_MOCKS } from '../app/providers'
 
 export const MeSchema = z.object({
@@ -34,7 +35,6 @@ export type NotificationList = z.infer<typeof NotificationListSchema>
 
 async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
   if (USE_MOCKS) {
-    // minimal mocks
     if (path === '/me') {
       const mock = {
         user: { id: 'u_1', email: 'dr@example.com', role: 'DOCTOR', org_id: 'org_1', last_login_at: new Date().toISOString() },
@@ -55,17 +55,7 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       return schema.parse(mock)
     }
   }
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
-    cache: 'no-store'
-  })
-  if (!res.ok) {
-    const txt = await res.text().catch(() => '')
-    throw new Error(`HTTP ${res.status}: ${txt}`)
-  }
-  const json = (await res.json()) as unknown
-  return schema.parse(json)
+  return request(path, schema, init)
 }
 
 export const Api = {

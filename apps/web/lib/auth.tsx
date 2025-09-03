@@ -1,5 +1,5 @@
 "use client"
-import { createContext, useContext, useMemo, useState, ReactNode } from 'react'
+import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export type Role = 'ADMIN' | 'DOCTOR' | 'LAB_TECH' | 'PHARMACIST' | 'MARKETER' | 'SUPPORT'
@@ -27,6 +27,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const raw = window.localStorage.getItem('auth')
     return raw ? (JSON.parse(raw) as AuthState) : { token: null, role: null, orgId: null }
   })
+
+  // Simple refresh stub: keep token alive during session (placeholder until backend)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (state.token) {
+        // noop; would call /auth/refresh here
+      }
+    }, 5 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [state.token])
 
   const value = useMemo<AuthContextValue>(() => ({
     ...state,
@@ -56,6 +66,20 @@ export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')
   return ctx
+}
+
+export function getAuthHeader(): string | null {
+  if (typeof window === 'undefined') return null
+  const raw = window.localStorage.getItem('auth')
+  if (!raw) return null
+  const { token } = JSON.parse(raw) as AuthState
+  return token ? `Bearer ${token}` : null
+}
+
+export function Protected({ children }: { children: ReactNode }) {
+  const { token } = useAuth()
+  if (!token) return <p>Not authenticated</p>
+  return <>{children}</>
 }
 
 export function RequireRole({ allow, children }: { allow: Role[]; children: ReactNode }) {
