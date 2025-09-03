@@ -17,6 +17,17 @@ const ConsultSummarySchema = z.object({
 export const ConsultListSchema = z.object({ items: z.array(ConsultSummarySchema), next_cursor: z.string().nullable() })
 export type ConsultList = z.infer<typeof ConsultListSchema>
 
+const RxSchema = z.object({
+  id: z.string(),
+  status: z.string(),
+  consult_id: z.string(),
+  pharmacy_org_id: z.string(),
+  refills_allowed: z.number(),
+  refills_used: z.number(),
+})
+export const RxListSchema = z.object({ items: z.array(RxSchema), next_cursor: z.string().nullable() })
+export type RxList = z.infer<typeof RxListSchema>
+
 const ShipmentSchema = z.object({
   id: z.string(),
   lab_order_id: z.string(),
@@ -46,6 +57,14 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       const mock = { items: [{ id: 'c_1', status: 'PASSED', created_at: new Date().toISOString(), provider_org_id: 'org_1' }], next_cursor: null }
       return schema.parse(mock)
     }
+    if (path.startsWith('/rx')) {
+      if (path === '/rx') {
+        const mock = { items: [{ id: 'rx_1', status: 'SUBMITTED', consult_id: 'c_1', pharmacy_org_id: 'ph_1', refills_allowed: 2, refills_used: 0 }], next_cursor: null }
+        return schema.parse(mock)
+      }
+      const mock = { id: 'rx_1', status: 'SUBMITTED', consult_id: 'c_1', pharmacy_org_id: 'ph_1', refills_allowed: 2, refills_used: 0 }
+      return schema.parse(mock)
+    }
     if (path.startsWith('/shipments')) {
       const mock = { items: [{ id: 'sh_1', lab_order_id: 'lo_1', carrier: 'UPS', tracking_number: '1Z...', status: 'IN_TRANSIT', last_event_at: new Date().toISOString(), ship_to: { name: 'John D', city: 'Austin', state: 'TX', zip: '78701' } }], next_cursor: null }
       return schema.parse(mock)
@@ -61,6 +80,8 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
 export const Api = {
   me: () => http('/me', MeSchema),
   consults: () => http('/consults', ConsultListSchema),
+  rxList: () => http('/rx', RxListSchema),
+  rxDetail: (id: string) => http(`/rx/${id}`, RxSchema),
   shipments: () => http('/shipments', ShipmentListSchema),
   notifications: () => http('/notifications', NotificationListSchema),
 }

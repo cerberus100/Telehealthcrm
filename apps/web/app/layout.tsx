@@ -3,6 +3,7 @@ import Providers from './providers'
 import Link from 'next/link'
 import NotificationsBell from '../components/NotificationsBell'
 import SessionBanner from '../components/SessionBanner'
+import AppNav from '../components/AppNav'
 
 export const metadata = {
   title: 'Teleplatform',
@@ -21,10 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SessionBanner />
           <header className="p-4 border-b flex items-center gap-4">
             <Link href="/" className="font-semibold">Teleplatform</Link>
-            <nav className="flex items-center gap-3 text-sm">
-              <Link href="/consults" className="underline">Consults</Link>
-              <Link href="/shipments" className="underline">Shipments</Link>
-            </nav>
+            <AppNav />
             <div className="ml-auto flex items-center gap-4">
               <NotificationsBell />
               <Link href="/login" className="underline">Login</Link>
