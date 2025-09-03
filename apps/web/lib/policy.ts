@@ -62,21 +62,94 @@ export function canAccess(resource: Resource, action: Action, claims: Claims): b
   }
 }
 
-export function maskPHI<T extends Record<string, any>>(data: T, claims: Claims): T {
-  const r = claims.role
-  const p = !!claims.purpose_of_use
-  const bg = isBreakGlassActive(claims)
-  const allowPHI = p || bg || r === 'DOCTOR'
-  if (allowPHI) return data
-  const clone: Record<string, any> = { ...data }
-  for (const k of Object.keys(clone)) {
-    if (/name|email|phone|address|dob|member|policy|script|result/i.test(k)) {
-      clone[k] = '•••'
-    }
-  }
-  return clone as T
-}
-
 export function breakGlassUntil(minutes: number): number {
   return Date.now() + minutes * 60 * 1000
+}
+
+// Utility to check if a user needs to enter purpose-of-use for PHI
+export function requiresPurposeOfUse(role: string, resource: string): boolean {
+  return ['DOCTOR', 'PHARMACIST', 'LAB_TECH'].includes(role) && 
+         ['patient_details', 'rx_script', 'lab_result_details'].includes(resource)
+}
+
+// PHI masking utilities
+export function maskSSN(ssn: string): string {
+  if (!ssn || ssn.length < 4) return '***-**-****'
+  return `***-**-${ssn.slice(-4)}`
+}
+
+export function maskDOB(dob: string, role: string): string {
+  if (role === 'MARKETER') return 'XX/XX/XXXX'
+  if (!dob) return ''
+  const date = new Date(dob)
+  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+}
+
+export function maskPhone(phone: string, role: string): string {
+  if (role === 'MARKETER') return '(XXX) XXX-XXXX'
+  if (!phone || phone.length < 4) return phone
+  return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) ***-$3')
+}
+
+export function maskEmail(email: string, role: string): string {
+  if (role === 'MARKETER') return 'xxxxx@xxxxx.xxx'
+  if (!email || !email.includes('@')) return email
+  const [local, domain] = email.split('@')
+  if (!local || !domain) return email
+  return `${local[0]}${'*'.repeat(Math.max(0, local.length - 1))}@${domain}`
+}
+
+export function maskAddress(address: any, role: string): any {
+  if (!address) return {}
+  if (role === 'MARKETER') {
+    return {
+      ...address,
+      street: 'XXXXX',
+      city: address.city, // City/State/Zip visible for shipping
+      state: address.state,
+      zip: address.zip
+    }
+  }
+  return address
+}
+
+// Master PHI masking function
+export function maskPHI(data: any, role: string, context?: string): any {
+  if (!data) return data
+
+  // Clone to avoid mutations
+  const masked = JSON.parse(JSON.stringify(data))
+
+  // Apply masking based on role and context
+  if (masked.ssn) masked.ssn = maskSSN(masked.ssn)
+  if (masked.dob) masked.dob = maskDOB(masked.dob, role)
+  if (masked.phone) masked.phone = maskPhone(masked.phone, role)
+  if (masked.email) masked.email = maskEmail(masked.email, role)
+  if (masked.address) masked.address = maskAddress(masked.address, role)
+
+  // Role-specific masking
+  if (role === 'MARKETER') {
+    // Remove all clinical data
+    delete masked.script_blob_encrypted
+    delete masked.result_blob_encrypted
+    delete masked.diagnosis
+    delete masked.medications
+    delete masked.allergies
+    delete masked.medical_history
+  }
+
+  if (role === 'PHARMACIST' && context !== 'rx') {
+    // Pharmacists can't see lab results
+    delete masked.result_blob_encrypted
+    delete masked.lab_values
+  }
+
+  if (role === 'LAB_TECH' && context !== 'lab') {
+    // Lab techs can't see Rx data
+    delete masked.script_blob_encrypted
+    delete masked.medications
+    delete masked.refills
+  }
+
+  return masked
 }
