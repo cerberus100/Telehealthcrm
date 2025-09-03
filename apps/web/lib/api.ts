@@ -28,6 +28,10 @@ const ShipmentSchema = z.object({
 export const ShipmentListSchema = z.object({ items: z.array(ShipmentSchema), next_cursor: z.string().nullable() })
 export type ShipmentList = z.infer<typeof ShipmentListSchema>
 
+const NotificationSchema = z.object({ id: z.string(), type: z.string(), created_at: z.string(), payload: z.record(z.any()).optional() })
+export const NotificationListSchema = z.object({ items: z.array(NotificationSchema), next_cursor: z.string().nullable() })
+export type NotificationList = z.infer<typeof NotificationListSchema>
+
 async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
   if (USE_MOCKS) {
     // minimal mocks
@@ -44,6 +48,10 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
     }
     if (path.startsWith('/shipments')) {
       const mock = { items: [{ id: 'sh_1', lab_order_id: 'lo_1', carrier: 'UPS', tracking_number: '1Z...', status: 'IN_TRANSIT', last_event_at: new Date().toISOString(), ship_to: { name: 'John D', city: 'Austin', state: 'TX', zip: '78701' } }], next_cursor: null }
+      return schema.parse(mock)
+    }
+    if (path.startsWith('/notifications')) {
+      const mock = { items: [{ id: 'n_1', type: 'LAB_RESULT_READY', created_at: new Date().toISOString(), payload: { lab_order_id: 'lo_1' } }], next_cursor: null }
       return schema.parse(mock)
     }
   }
@@ -64,4 +72,5 @@ export const Api = {
   me: () => http('/me', MeSchema),
   consults: () => http('/consults', ConsultListSchema),
   shipments: () => http('/shipments', ShipmentListSchema),
+  notifications: () => http('/notifications', NotificationListSchema),
 }
