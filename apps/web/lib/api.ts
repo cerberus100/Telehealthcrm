@@ -44,6 +44,27 @@ const NotificationSchema = z.object({ id: z.string(), type: z.string(), created_
 export const NotificationListSchema = z.object({ items: z.array(NotificationSchema), next_cursor: z.string().nullable() })
 export type NotificationList = z.infer<typeof NotificationListSchema>
 
+const LabOrderSchema = z.object({
+  id: z.string(),
+  status: z.string(),
+  consult_id: z.string(),
+  lab_org_id: z.string(),
+  tests: z.array(z.string()),
+  created_at: z.string(),
+})
+export const LabOrderListSchema = z.object({ items: z.array(LabOrderSchema), next_cursor: z.string().nullable() })
+export type LabOrderList = z.infer<typeof LabOrderListSchema>
+
+const LabResultSchema = z.object({
+  id: z.string(),
+  lab_order_id: z.string(),
+  flagged_abnormal: z.boolean().nullable(),
+  released_to_provider_at: z.string().nullable(),
+  result_blob_encrypted: z.string().optional(), // Only for authorized roles
+})
+export const LabResultListSchema = z.object({ items: z.array(LabResultSchema), next_cursor: z.string().nullable() })
+export type LabResultList = z.infer<typeof LabResultListSchema>
+
 async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
   if (USE_MOCKS) {
     if (path === '/me') {
@@ -73,6 +94,18 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       const mock = { items: [{ id: 'n_1', type: 'LAB_RESULT_READY', created_at: new Date().toISOString(), payload: { lab_order_id: 'lo_1' } }], next_cursor: null }
       return schema.parse(mock)
     }
+    if (path.startsWith('/lab-orders')) {
+      if (path === '/lab-orders') {
+        const mock = { items: [{ id: 'lo_1', status: 'SUBMITTED', consult_id: 'c_1', lab_org_id: 'lab_1', tests: ['COVID-19', 'Flu A/B'], created_at: new Date().toISOString() }], next_cursor: null }
+        return schema.parse(mock)
+      }
+      const mock = { id: 'lo_1', status: 'SUBMITTED', consult_id: 'c_1', lab_org_id: 'lab_1', tests: ['COVID-19', 'Flu A/B'], created_at: new Date().toISOString() }
+      return schema.parse(mock)
+    }
+    if (path.startsWith('/lab-results')) {
+      const mock = { items: [{ id: 'lr_1', lab_order_id: 'lo_1', flagged_abnormal: false, released_to_provider_at: new Date().toISOString() }], next_cursor: null }
+      return schema.parse(mock)
+    }
   }
   return request(path, schema, init)
 }
@@ -84,4 +117,8 @@ export const Api = {
   rxDetail: (id: string) => http(`/rx/${id}`, RxSchema),
   shipments: () => http('/shipments', ShipmentListSchema),
   notifications: () => http('/notifications', NotificationListSchema),
+  labOrders: () => http('/lab-orders', LabOrderListSchema),
+  labOrderDetail: (id: string) => http(`/lab-orders/${id}`, LabOrderSchema),
+  labResults: () => http('/lab-results', LabResultListSchema),
+  labResultDetail: (id: string) => http(`/lab-results/${id}`, LabResultSchema),
 }
