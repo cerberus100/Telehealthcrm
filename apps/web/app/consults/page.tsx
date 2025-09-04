@@ -1,8 +1,11 @@
 "use client"
 import { useQuery } from '@tanstack/react-query'
 import { Api } from '../../lib/api'
+import { useAuth } from '../../lib/auth'
 
 export default function ConsultsPage() {
+  const { role } = useAuth()
+  if (role !== 'SUPER_ADMIN') return <p>Access denied</p>
   const { data, isLoading, error } = useQuery({ queryKey: ['consults'], queryFn: Api.consults })
   if (isLoading) return <p>Loading…</p>
   if (error || !data) return <p>Failed to load.</p>

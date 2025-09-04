@@ -21,9 +21,9 @@ export function KpiTile({
   const deltaPrefix = delta === undefined ? '' : delta >= 0 ? '+' : ''
 
   return (
-    <div className="rounded-lg border bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-brand-100 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600">{title}</p>
+        <p className="text-sm font-medium text-brand-700">{title}</p>
         {delta !== undefined && (
           <span className={`text-xs font-medium ${deltaColor}`}>
             {deltaPrefix}{delta}% {trend === 'up' ? '▲' : '▼'}

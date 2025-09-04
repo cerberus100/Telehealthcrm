@@ -23,7 +23,7 @@ export default function ConsultDetail({ params }: { params: { id: string } }) {
   if (isLoading) return <p>Loading…</p>
   if (error || !data) return <p>Failed to load.</p>
 
-  const canAct = role === 'DOCTOR' || role === 'ORG_ADMIN' || role === 'MASTER_ADMIN'
+  const canAct = role === 'DOCTOR' || role === 'MARKETER_ADMIN' || role === 'SUPER_ADMIN'
 
   return (
     <div className="space-y-3">

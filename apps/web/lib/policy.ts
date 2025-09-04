@@ -1,5 +1,5 @@
 export type OrgType = 'PROVIDER' | 'LAB' | 'PHARMACY' | 'MARKETER'
-export type Role = 'MASTER_ADMIN' | 'ORG_ADMIN' | 'DOCTOR' | 'PHARMACIST' | 'LAB_TECH' | 'MARKETER' | 'SUPPORT' | 'AUDITOR'
+export type Role = 'SUPER_ADMIN' | 'MARKETER_ADMIN' | 'MARKETER' | 'DOCTOR' | 'PHARMACIST' | 'LAB_TECH' | 'SUPPORT' | 'AUDITOR'
 
 export interface Claims {
   org_id: string
@@ -42,12 +42,12 @@ export function canAccess(resource: Resource, action: Action, claims: Claims): b
       if (['Patient', 'Consult', 'Rx', 'LabOrder', 'LabResult', 'Shipment'].includes(resource)) return p || isBreakGlassActive(claims)
       return true
     }
-    case 'ORG_ADMIN': {
+    case 'MARKETER_ADMIN': {
       // Admin ≠ PHI unless also clinical purpose-of-use
       if (['Patient', 'Consult', 'Rx', 'LabOrder', 'LabResult'].includes(resource)) return p || isBreakGlassActive(claims)
       return true
     }
-    case 'MASTER_ADMIN': {
+    case 'SUPER_ADMIN': {
       // No PHI unless break-glass
       if (['Patient', 'Consult', 'Rx', 'LabOrder', 'LabResult'].includes(resource)) return isBreakGlassActive(claims)
       return true

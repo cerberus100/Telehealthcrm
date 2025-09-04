@@ -4,6 +4,7 @@ import Link from 'next/link'
 import NotificationsBell from '../components/NotificationsBell'
 import SessionBanner from '../components/SessionBanner'
 import AppNav from '../components/AppNav'
+import { useAuth } from '../lib/auth'
 
 export const metadata = {
   title: 'Teleplatform',
@@ -15,17 +16,17 @@ const buildInfo = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Client-only bits are inside components; keep header minimal
   return (
     <html lang="en">
       <body className="bg-white text-slate-900">
         <Providers>
           <SessionBanner />
           <header className="p-4 border-b flex items-center gap-4">
-            <Link href="/" className="font-semibold">Teleplatform</Link>
+            <Link href="/" className="font-semibold text-brand-600">Teleplatform</Link>
             <AppNav />
             <div className="ml-auto flex items-center gap-4">
               <NotificationsBell />
-              <Link href="/login" className="underline">Login</Link>
             </div>
           </header>
           <main className="p-4 min-h-[70vh]">{children}</main>

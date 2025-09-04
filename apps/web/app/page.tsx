@@ -27,9 +27,11 @@ export default function HomePage() {
           <KpiTile title="Avg TAT" value={2.4} suffix="h" delta={-8} trend="down">
             <Sparkline points={[3.2,3.0,2.9,2.8,2.7,2.6,2.5,2.4]} color="#007DB8" />
           </KpiTile>
-          <KpiTile title="Kits In Transit" value={42} delta={2} trend="up">
-            <Sparkline points={[20,22,25,28,30,33,38,42]} color="#4DAFE0" />
-          </KpiTile>
+          {role !== 'DOCTOR' && (
+            <KpiTile title="Kits In Transit" value={42} delta={2} trend="up">
+              <Sparkline points={[20,22,25,28,30,33,38,42]} color="#4DAFE0" />
+            </KpiTile>
+          )}
           <KpiTile title="Results Aging >24h" value={3} delta={-1} trend="down">
             <Sparkline points={[6,5,5,4,4,4,3,3]} color="#DC2626" />
           </KpiTile>

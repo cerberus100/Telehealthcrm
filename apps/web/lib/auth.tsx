@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo, useState, ReactNode, useEffect } fr
 import { Api } from './api'
 import { useRouter } from 'next/navigation'
 
-export type Role = 'MASTER_ADMIN' | 'ORG_ADMIN' | 'DOCTOR' | 'LAB_TECH' | 'PHARMACIST' | 'MARKETER' | 'SUPPORT' | 'AUDITOR'
+export type Role = 'SUPER_ADMIN' | 'MARKETER_ADMIN' | 'MARKETER' | 'DOCTOR' | 'LAB_TECH' | 'PHARMACIST' | 'SUPPORT' | 'AUDITOR'
 
 export interface AuthState {
   token: string | null
@@ -17,6 +17,7 @@ interface AuthContextValue extends AuthState {
   login: (params: { email: string; password: string }) => Promise<void>
   logout: () => void
   setPurposeOfUse: (reason: string) => void
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -41,12 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(() => ({
     ...state,
+    isAuthenticated: !!state.token,
     login: async ({ email, password }) => {
       const tokens = await Api.authLogin(email, password)
-      const next: AuthState = { token: tokens.access_token, role: null, orgId: null, purposeOfUse: null, email }
+      // Hydrate role/org from /me immediately
+      const me = await Api.me()
+      const next: AuthState = { token: tokens.access_token, role: me.user.role as Role, orgId: me.user.org_id, purposeOfUse: null, email: me.user.email }
       setState(next)
       if (typeof window !== 'undefined') window.localStorage.setItem('auth', JSON.stringify(next))
-      router.replace('/')
+      // Don't redirect here, let the login page handle it based on role
     },
     logout: () => {
       const next: AuthState = { token: null, role: null, orgId: null, purposeOfUse: null, email: null }

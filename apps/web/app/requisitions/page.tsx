@@ -15,7 +15,7 @@ export default function RequisitionsPage() {
   })
 
   // Role guard: Labs can create, Marketers/Providers can view/use
-  const canCreate = role === 'LAB_TECH' || role === 'ORG_ADMIN'
+  const canCreate = role === 'LAB_TECH' || role === 'MARKETER_ADMIN' || role === 'SUPER_ADMIN'
   const canView = canCreate || role === 'MARKETER' || role === 'DOCTOR'
   
   if (!canView) {
