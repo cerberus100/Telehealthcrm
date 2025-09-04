@@ -34,7 +34,7 @@ export class NotificationsService {
 
     return {
       items: itemsResponse,
-      next_cursor: hasNext ? items[items.length - 1].id : null,
+      next_cursor: hasNext && items[items.length - 1] ? items[items.length - 1]?.id : null,
     }
   }
 }

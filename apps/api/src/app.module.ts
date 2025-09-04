@@ -1,7 +1,10 @@
 import { Module, MiddlewareConsumer } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { AbacGuard } from './abac/abac.guard'
 import { ClaimsMiddleware } from './middleware/claims.middleware'
+import { JwtMiddleware } from './middleware/jwt.middleware'
+import { RbacMiddleware } from './middleware/rbac.middleware'
 import { HealthController } from './controllers/health.controller'
 import { AuthController } from './controllers/auth.controller'
 import { ConsultsController } from './controllers/consults.controller'
@@ -10,12 +13,20 @@ import { RxController } from './controllers/rx.controller'
 import { NotificationsController } from './controllers/notifications.controller'
 import { PrismaService } from './prisma.service'
 import { AuthService } from './services/auth.service'
+import { CognitoService } from './auth/cognito.service'
 import { ConsultsService } from './services/consults.service'
 import { ShipmentsService } from './services/shipments.service'
 import { RxService } from './services/rx.service'
 import { NotificationsService } from './services/notifications.service'
+import { AuditService } from './audit/audit.service'
 
 @Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env.local', '.env'],
+    }),
+  ],
   controllers: [
     HealthController, 
     AuthController, 
@@ -26,11 +37,13 @@ import { NotificationsService } from './services/notifications.service'
   ],
   providers: [
     PrismaService,
+    CognitoService,
     AuthService,
     ConsultsService,
     ShipmentsService,
     RxService,
     NotificationsService,
+    AuditService,
     {
       provide: APP_GUARD,
       useClass: AbacGuard,
@@ -39,6 +52,10 @@ import { NotificationsService } from './services/notifications.service'
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ClaimsMiddleware).forRoutes('*')
+    consumer
+      .apply(JwtMiddleware, RbacMiddleware)
+      .forRoutes('*')
+      .apply(ClaimsMiddleware)
+      .forRoutes('health') // Keep claims middleware for health endpoint only
   }
 }
