@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useAuth, type Role } from '../../lib/auth'
 
-const roles: Role[] = ['DOCTOR', 'LAB_TECH', 'PHARMACIST', 'MARKETER', 'ADMIN', 'SUPPORT']
+const roles: Role[] = ['MASTER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'LAB_TECH', 'PHARMACIST', 'MARKETER', 'SUPPORT', 'AUDITOR']
 
 export default function LoginPage() {
   const { login } = useAuth()

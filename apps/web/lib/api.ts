@@ -65,6 +65,32 @@ const LabResultSchema = z.object({
 export const LabResultListSchema = z.object({ items: z.array(LabResultSchema), next_cursor: z.string().nullable() })
 export type LabResultList = z.infer<typeof LabResultListSchema>
 
+const ClientSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  org_id: z.string(),
+  contact_email: z.string(),
+  status: z.string(),
+  created_at: z.string(),
+})
+export const ClientListSchema = z.object({ items: z.array(ClientSchema), next_cursor: z.string().nullable() })
+export type ClientList = z.infer<typeof ClientListSchema>
+
+const RequisitionTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  version: z.string(),
+  fields: z.array(z.object({
+    name: z.string(),
+    type: z.string(),
+    required: z.boolean(),
+  })),
+  created_by_org_id: z.string(),
+  published_at: z.string().nullable(),
+})
+export const RequisitionTemplateListSchema = z.object({ items: z.array(RequisitionTemplateSchema), next_cursor: z.string().nullable() })
+export type RequisitionTemplateList = z.infer<typeof RequisitionTemplateListSchema>
+
 async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
   if (USE_MOCKS) {
     if (path === '/me') {
@@ -106,6 +132,29 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       const mock = { items: [{ id: 'lr_1', lab_order_id: 'lo_1', flagged_abnormal: false, released_to_provider_at: new Date().toISOString() }], next_cursor: null }
       return schema.parse(mock)
     }
+    if (path.startsWith('/clients')) {
+      if (path === '/clients') {
+        const mock = { items: [{ id: 'cl_1', name: 'Acme Provider', org_id: 'org_provider', contact_email: 'contact@acme.com', status: 'ACTIVE', created_at: new Date().toISOString() }], next_cursor: null }
+        return schema.parse(mock)
+      }
+      const mock = { id: 'cl_1', name: 'Acme Provider', org_id: 'org_provider', contact_email: 'contact@acme.com', status: 'ACTIVE', created_at: new Date().toISOString() }
+      return schema.parse(mock)
+    }
+    if (path.startsWith('/requisition-templates')) {
+      const mock = { items: [{ 
+        id: 'rt_1', 
+        name: 'COVID-19 Test Kit', 
+        version: '1.0', 
+        fields: [
+          { name: 'patient_name', type: 'text', required: true },
+          { name: 'dob', type: 'date', required: true },
+          { name: 'symptoms', type: 'textarea', required: false }
+        ],
+        created_by_org_id: 'org_lab',
+        published_at: new Date().toISOString()
+      }], next_cursor: null }
+      return schema.parse(mock)
+    }
   }
   return request(path, schema, init)
 }
@@ -121,4 +170,8 @@ export const Api = {
   labOrderDetail: (id: string) => http(`/lab-orders/${id}`, LabOrderSchema),
   labResults: () => http('/lab-results', LabResultListSchema),
   labResultDetail: (id: string) => http(`/lab-results/${id}`, LabResultSchema),
+  clients: () => http('/clients', ClientListSchema),
+  clientDetail: (id: string) => http(`/clients/${id}`, ClientSchema),
+  requisitionTemplates: () => http('/requisition-templates', RequisitionTemplateListSchema),
+  requisitionTemplateDetail: (id: string) => http(`/requisition-templates/${id}`, RequisitionTemplateSchema),
 }
