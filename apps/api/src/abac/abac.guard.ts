@@ -3,8 +3,8 @@ import { Reflector } from '@nestjs/core'
 import { evaluatePolicy, type AccessRequest } from './policy'
 
 export interface AbacRequirement {
-  resource: 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient'
-  action: 'read' | 'write' | 'list'
+  resource: 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification'
+  action: 'read' | 'write' | 'list' | 'update' | 'logout'
 }
 
 export const ABAC_KEY = 'abac'

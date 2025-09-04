@@ -1,8 +1,8 @@
 import type { RequestClaims } from '../types/claims'
 
-type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient'
+type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification'
 
-type Action = 'read' | 'write' | 'list'
+type Action = 'read' | 'write' | 'list' | 'update' | 'logout'
 
 export interface AccessRequest {
   subject: RequestClaims
@@ -31,6 +31,9 @@ export function evaluatePolicy(req: AccessRequest): AccessDecision {
         return { allow: true, maskFields: ['reasonCodes', 'patient'] }
       }
       if (resource === 'Shipment' && (action === 'read' || action === 'list')) {
+        return { allow: true }
+      }
+      if (resource === 'Health' && action === 'read') {
         return { allow: true }
       }
       return { allow: false, reason: 'marketer not permitted' }

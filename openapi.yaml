@@ -1,67 +1,514 @@
 openapi: 3.1.0
 info:
-  title: Teleplatform API
-  version: 0.1.0
+  title: Telehealth CRM API
+  version: 1.0.0
+  description: Multi-tenant, HIPAA-eligible telehealth SaaS API
+
 servers:
-  - url: https://api.example.com
-    description: Production
+  - url: https://api.yourdomain.com
+    description: Production server
   - url: http://localhost:3001
-    description: Local
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  correlation_id:
+                    type: string
+                    example: "req-123"
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refresh successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+
+  /auth/logout:
+    post:
+      summary: Logout user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /auth/me:
+    get:
+      summary: Get current user and organization
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+
+  /consults:
+    get:
+      summary: List consults
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PASSED, FAILED, APPROVED]
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: List of consults
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConsultSummary'
+                  next_cursor:
+                    type: string
+                    nullable: true
+
+  /consults/{id}:
+    get:
+      summary: Get consult details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Consult details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultDetail'
+
+  /consults/{id}/status:
+    patch:
+      summary: Update consult status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [PASSED, FAILED, APPROVED]
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+
+  /shipments:
+    get:
+      summary: List shipments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: consult_id
+          in: query
+          schema:
+            type: string
+        - name: lab_order_id
+          in: query
+          schema:
+            type: string
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: List of shipments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shipment'
+                  next_cursor:
+                    type: string
+                    nullable: true
+
+  /rx:
+    get:
+      summary: List prescriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [SUBMITTED, DISPENSED]
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: List of prescriptions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RxSummary'
+                  next_cursor:
+                    type: string
+                    nullable: true
+
+  /rx/{id}:
+    get:
+      summary: Get prescription details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Prescription details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RxDetail'
+
+  /notifications:
+    get:
+      summary: List notifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  next_cursor:
+                    type: string
+                    nullable: true
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-paths:
-  /auth/login:
-    post:
-      summary: Login
-      responses:
-        '200': { description: OK }
-  /auth/refresh:
-    post:
-      summary: Refresh token
-      responses:
-        '200': { description: OK }
-  /auth/logout:
-    post:
-      summary: Logout
-      responses:
-        '204': { description: No Content }
-  /orgs:
-    get: { summary: List orgs, responses: { '200': { description: OK } } }
-    post: { summary: Create org, responses: { '201': { description: Created } } }
-  /users:
-    get: { summary: List users, responses: { '200': { description: OK } } }
-    post: { summary: Create user, responses: { '201': { description: Created } } }
-  /patients:
-    get: { summary: List patients (PHI-safe), responses: { '200': { description: OK } } }
-    post: { summary: Create patient, responses: { '201': { description: Created } } }
-  /consults:
-    get: { summary: List consults, responses: { '200': { description: OK } } }
-    post: { summary: Create consult, responses: { '201': { description: Created } } }
-  /rx:
-    post: { summary: Create Rx, responses: { '201': { description: Created } } }
-  /rx/{id}/script:
-    get: { summary: Get Rx script (provider/pharmacy only), responses: { '200': { description: OK } } }
-  /lab-orders:
-    post: { summary: Create lab order, responses: { '201': { description: Created } } }
-  /lab-orders/{id}/shipments:
-    get: { summary: List shipments for an order, responses: { '200': { description: OK } } }
-  /lab-results:
-    post: { summary: Upload lab result (provider read only), responses: { '201': { description: Created } } }
-  /shipments:
-    post: { summary: Create UPS label, responses: { '201': { description: Created } } }
-  /shipments/{id}:
-    get: { summary: Get shipment, responses: { '200': { description: OK } } }
-  /webhooks/ups:
-    post: { summary: UPS webhook, responses: { '204': { description: No Content } } }
-  /connect/inbound-call:
-    post: { summary: Idempotent inbound call creation, responses: { '201': { description: Created } } }
-  /connect/call-notes:
-    post: { summary: Redacted call notes, responses: { '204': { description: No Content } } }
-  /notifications:
-    get: { summary: Subscribe and list notifications, responses: { '200': { description: OK } } }
-  /audit-logs:
-    get: { summary: Query audit logs, responses: { '200': { description: OK } } }
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [ADMIN, DOCTOR, LAB_TECH, PHARMACIST, MARKETER, SUPPORT]
+        org_id:
+          type: string
+        last_login_at:
+          type: string
+          format: date-time
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [PROVIDER, LAB, PHARMACY, MARKETER]
+        name:
+          type: string
+
+    MeResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        org:
+          $ref: '#/components/schemas/Organization'
+
+    ConsultSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, PASSED, FAILED, APPROVED, DECLINED]
+        created_at:
+          type: string
+          format: date-time
+        provider_org_id:
+          type: string
+
+    ConsultDetail:
+      allOf:
+        - $ref: '#/components/schemas/ConsultSummary'
+        - type: object
+          properties:
+            patient:
+              type: object
+              properties:
+                id:
+                  type: string
+                legal_name:
+                  type: string
+                dob:
+                  type: string
+                  format: date-time
+                address:
+                  type: object
+            reason_codes:
+              type: array
+              items:
+                type: string
+            created_from:
+              type: string
+              enum: [CALL, WEB, API]
+
+    Shipment:
+      type: object
+      properties:
+        id:
+          type: string
+        lab_order_id:
+          type: string
+        carrier:
+          type: string
+        tracking_number:
+          type: string
+        status:
+          type: string
+        last_event_at:
+          type: string
+          format: date-time
+          nullable: true
+        ship_to:
+          type: object
+          properties:
+            name:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            zip:
+              type: string
+
+    RxSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, SUBMITTED, DISPENSED, CANCELLED]
+        created_at:
+          type: string
+          format: date-time
+        consult_id:
+          type: string
+        pharmacy_org_id:
+          type: string
+
+    RxDetail:
+      allOf:
+        - $ref: '#/components/schemas/RxSummary'
+        - type: object
+          properties:
+            provider_user_id:
+              type: string
+            refills_allowed:
+              type: integer
+            refills_used:
+              type: integer
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              nullable: true

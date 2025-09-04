@@ -6,6 +6,8 @@ import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
 import pino from 'pino'
 import { AppModule } from './app.module'
+import { GlobalExceptionFilter } from './filters/global-exception.filter'
+import { ResponseInterceptor } from './interceptors/response.interceptor'
 
 const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',
@@ -22,8 +24,23 @@ async function bootstrap() {
   )
 
   await app.register(helmet as any, { contentSecurityPolicy: false } as any)
-  await app.register(cors as any, { origin: true, credentials: true } as any)
+  await app.register(cors as any, { 
+    origin: [
+      'https://main.*.amplifyapp.com',
+      'http://localhost:3000'
+    ], 
+    credentials: false,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'Correlation-Id'],
+    exposedHeaders: ['Correlation-Id', 'X-RateLimit-Remaining', 'Retry-After']
+  } as any)
   await app.register(rateLimit as any, { max: 300, timeWindow: '1 minute' } as any)
+
+  // Global exception filter
+  app.useGlobalFilters(new GlobalExceptionFilter())
+  
+  // Global response interceptor
+  app.useGlobalInterceptors(new ResponseInterceptor())
 
   app.enableShutdownHooks()
 
