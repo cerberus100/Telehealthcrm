@@ -2,7 +2,7 @@
 import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-export type Role = 'ADMIN' | 'DOCTOR' | 'LAB_TECH' | 'PHARMACIST' | 'MARKETER' | 'SUPPORT'
+export type Role = 'MASTER_ADMIN' | 'ORG_ADMIN' | 'DOCTOR' | 'LAB_TECH' | 'PHARMACIST' | 'MARKETER' | 'SUPPORT' | 'AUDITOR'
 
 export interface AuthState {
   token: string | null

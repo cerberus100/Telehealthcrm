@@ -11,6 +11,22 @@ export default function AppNav() {
       {(role === 'DOCTOR' || role === 'PHARMACIST') && (
         <Link href="/rx" className="underline">Rx</Link>
       )}
+      {(role === 'DOCTOR' || role === 'LAB_TECH') && (
+        <>
+          <Link href="/lab-orders" className="underline">Lab Orders</Link>
+          <Link href="/lab-results" className="underline">Lab Results</Link>
+        </>
+      )}
+      {(role === 'MARKETER' || role === 'ORG_ADMIN' || role === 'MASTER_ADMIN') && (
+        <>
+          <Link href="/clients" className="underline">Clients</Link>
+          <Link href="/requisitions" className="underline">Requisitions</Link>
+        </>
+      )}
+      {(role === 'ORG_ADMIN' || role === 'MASTER_ADMIN') && (
+        <Link href="/admin/users" className="underline">Admin</Link>
+      )}
+      <Link href="/notifications" className="underline">Notifications</Link>
     </nav>
   )
 }
