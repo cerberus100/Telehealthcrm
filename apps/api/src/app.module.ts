@@ -19,6 +19,8 @@ import { ShipmentsService } from './services/shipments.service'
 import { RxService } from './services/rx.service'
 import { NotificationsService } from './services/notifications.service'
 import { AuditService } from './audit/audit.service'
+import { ShipmentsModule } from './modules/shipments/shipments.module'
+import { UpsModule } from './integrations/ups/ups.module'
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { AuditService } from './audit/audit.service'
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+    ShipmentsModule,
+    UpsModule,
   ],
   controllers: [
     HealthController, 

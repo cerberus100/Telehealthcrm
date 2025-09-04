@@ -22,6 +22,7 @@ model Organization {
   rxs       Rx[]
   labOrders LabOrder[]
   shipments Shipment[]
+  marketerShipments Shipment[] @relation("MarketerShipments")
   results   LabResult[]
   pharmacyFulfillments PharmacyFulfillment[]
   audits    AuditLog[]
@@ -177,21 +178,49 @@ enum LabOrderStatus {
 }
 
 model Shipment {
-  id             String   @id @default(uuid())
-  orgId          String
-  org            Organization @relation(fields: [orgId], references: [id])
-  labOrderId     String
-  labOrder       LabOrder @relation(fields: [labOrderId], references: [id])
-  carrier        String   @default("UPS")
-  labelId        String
-  trackingNumber String   @unique
-  shipTo         Json     // non‑PHI shipping fields only in marketer views
-  status         String
-  lastEventAt    DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  @@index([orgId])
-  @@index([labOrderId])
+  id                String         @id @default(uuid())
+  marketerOrgId     String         // Org scoping for marketers
+  marketerOrg       Organization   @relation("MarketerShipments", fields: [marketerOrgId], references: [id])
+  createdByUserId   String         // User who created the shipment
+  assignedToUserId  String?        // Optional assignment
+  carrier           Carrier        @default(UPS)
+  trackingNumber    String         @unique
+  reference         String?        // Non-PHI reference
+  status            ShipmentStatus @default(CREATED)
+  eta               DateTime?      // Estimated delivery date
+  lastEvent         String?        // Last tracking event description
+  lastCarrierPollAt DateTime?      // Last time we polled carrier API
+  shipTo            Json           // Non-PHI shipping fields only
+  audit             Json           // Change history
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  // Optional relationships (for backward compatibility)
+  orgId             String?
+  org               Organization?  @relation(fields: [orgId], references: [id])
+  labOrderId        String?
+  labOrder          LabOrder?      @relation(fields: [labOrderId], references: [id])
+  
+  @@index([marketerOrgId, status])
+  @@index([trackingNumber])
+  @@index([status, updatedAt]) // For polling queries
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+}
+
+enum Carrier {
+  UPS
+  FEDEX
+  USPS
+  OTHER
+}
+
+enum ShipmentStatus {
+  CREATED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  EXCEPTION
 }
 
 model LabResult {

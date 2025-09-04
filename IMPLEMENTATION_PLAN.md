@@ -54,27 +54,29 @@ Complete backend implementation for HIPAA/SOC 2-compliant multi-tenant telehealt
   - WebSocket support for real-time notifications
   - Bull queue for background jobs
 
+## ✅ COMPLETED ITEMS (Week 2 - Shipments Module & UPS Integration)
+
+### ✅ 2.1 Shipments Data Model & API
+- ✅ **DELIVERABLE**: `apps/api/src/modules/shipments/`
+- ✅ **SCOPE**: Complete CRUD API with UPS integration
+- ✅ **IMPLEMENTED**:
+  - Updated Prisma schema for enhanced Shipments model
+  - Created shipments controller, service, module with DTOs
+  - Implemented CRUD endpoints with validation and org scoping
+  - Added tracking number validation per carrier
+  - Implemented comprehensive audit trail
+
+### ✅ 2.2 UPS OAuth 2.0 Integration
+- ✅ **DELIVERABLE**: `apps/api/src/integrations/ups/`
+- ✅ **SCOPE**: Complete UPS API integration with polling
+- ✅ **IMPLEMENTED**:
+  - UPS OAuth 2.0 service with token caching
+  - UPS tracking data service with retries
+  - Scheduled polling system (every 30 minutes)
+  - Error handling and retries with exponential backoff
+  - Rate limiting and jitter for API calls
+
 ## 🎯 REMAINING PRIORITY ITEMS (P0 - Must Complete)
-
-### Week 2: Shipments Module (MARKETER WORKFLOW)
-2.1 Shipments Data Model & API
-- [ ] **DELIVERABLE**: `apps/api/src/modules/shipments/`
-- [ ] **SCOPE**: Complete CRUD API with UPS integration
-- [ ] **TODO**:
-  - Update Prisma schema for Shipments
-  - Create shipments controller, service, module
-  - Implement CRUD endpoints
-  - Add validation and org scoping
-  - Implement audit trail
-
-2.2 UPS OAuth 2.0 Integration
-- [ ] **DELIVERABLE**: `apps/api/src/integrations/ups/`
-- [ ] **SCOPE**: Complete UPS API integration with polling
-- [ ] **TODO**:
-  - Implement OAuth 2.0 service
-  - Add tracking data service
-  - Create scheduled polling system
-  - Add error handling and retries
 
 ### Week 3: Notifications & Real-time System
 3.1 WebSocket Server Implementation
