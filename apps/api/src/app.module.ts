@@ -10,6 +10,7 @@ import { ShipmentsController } from './controllers/shipments.controller'
 import { RxController } from './controllers/rx.controller'
 import { NotificationsController } from './controllers/notifications.controller'
 import { PrismaService } from './prisma.service'
+import { MockPrismaService } from './mock-prisma.service'
 import { AuthService } from './services/auth.service'
 import { ConsultsService } from './services/consults.service'
 import { ShipmentsService } from './services/shipments.service'
@@ -27,7 +28,10 @@ import { NotificationsService } from './services/notifications.service'
     NotificationsController
   ],
   providers: [
-    PrismaService,
+    {
+      provide: PrismaService,
+      useClass: process.env.API_DEMO_MODE === 'true' ? (MockPrismaService as any) : PrismaService,
+    },
     AuthService,
     ConsultsService,
     ShipmentsService,

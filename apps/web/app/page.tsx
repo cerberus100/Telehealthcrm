@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Api } from '../lib/api'
 import { Protected, useAuth } from '../lib/auth'
 import WorkQueue from '../components/WorkQueue'
+import { KpiTile } from '../components/KpiTile'
+import { Sparkline } from '../components/Sparkline'
 
 export default function HomePage() {
   const { role } = useAuth()
@@ -17,6 +19,22 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
         
+        {/* KPI Tiles */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <KpiTile title="Consults Approved" value={128} delta={5} trend="up">
+            <Sparkline points={[5,7,8,9,10,9,12,14]} color="#16A34A" />
+          </KpiTile>
+          <KpiTile title="Avg TAT" value={2.4} suffix="h" delta={-8} trend="down">
+            <Sparkline points={[3.2,3.0,2.9,2.8,2.7,2.6,2.5,2.4]} color="#007DB8" />
+          </KpiTile>
+          <KpiTile title="Kits In Transit" value={42} delta={2} trend="up">
+            <Sparkline points={[20,22,25,28,30,33,38,42]} color="#4DAFE0" />
+          </KpiTile>
+          <KpiTile title="Results Aging >24h" value={3} delta={-1} trend="down">
+            <Sparkline points={[6,5,5,4,4,4,3,3]} color="#DC2626" />
+          </KpiTile>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Work Queue Widget */}
           <WorkQueue />
