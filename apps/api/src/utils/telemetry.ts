@@ -1,6 +1,5 @@
 import { NodeSDK } from '@opentelemetry/sdk-node'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { Resource } from '@opentelemetry/resources'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import { logger, redactPHI } from './logger'
@@ -29,45 +28,11 @@ if (OTEL_ENABLED) {
           },
           '@opentelemetry/instrumentation-http': {
             enabled: true,
-            requestHook: (span, request) => {
-              // Redact sensitive headers and query parameters
-              const redactedHeaders = redactPHI(request.getHeaders?.() || {})
-              span.setAttributes({
-                'http.request.headers': JSON.stringify(redactedHeaders),
-              })
-            },
-            responseHook: (span, response) => {
-              // Redact sensitive response headers
-              const redactedHeaders = redactPHI(response.getHeaders?.() || {})
-              span.setAttributes({
-                'http.response.headers': JSON.stringify(redactedHeaders),
-              })
-            },
           },
           '@opentelemetry/instrumentation-express': {
             enabled: false, // We're using Fastify
           },
-          '@opentelemetry/instrumentation-fastify': {
-            enabled: true,
-            requestHook: (span, info) => {
-              // Add correlation ID if available
-              const correlationId = info.request.headers['x-correlation-id']
-              if (correlationId) {
-                span.setAttributes({
-                  'telehealth.correlation_id': correlationId,
-                })
-              }
-              
-              // Add user context if available (without PHI)
-              const userId = info.request.headers['x-user-id']
-              const orgId = info.request.headers['x-org-id']
-              const role = info.request.headers['x-user-role']
-              
-              if (userId) span.setAttributes({ 'telehealth.user.id': userId })
-              if (orgId) span.setAttributes({ 'telehealth.org.id': orgId })
-              if (role) span.setAttributes({ 'telehealth.user.role': role })
-            },
-          },
+          '@opentelemetry/instrumentation-fastify': { enabled: true },
           '@opentelemetry/instrumentation-pg': {
             enabled: true,
             enhancedDatabaseReporting: false, // Prevent logging of query parameters that might contain PHI
@@ -84,9 +49,7 @@ if (OTEL_ENABLED) {
           },
         }),
       ],
-      metricReader: new PeriodicExportingMetricReader({
-        exportIntervalMillis: 30000, // Export metrics every 30 seconds
-      }),
+      // Metrics export can be configured here with a reader and exporter if needed
     })
 
     sdk.start()

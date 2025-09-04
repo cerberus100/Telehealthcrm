@@ -53,9 +53,10 @@ export class ConsultsService {
       provider_org_id: consult.providerOrgId,
     }))
 
+    const last = items.length > 0 ? items[items.length - 1] : null
     return {
       items: itemsResponse,
-      next_cursor: hasNext ? items[items.length - 1].id : null,
+      next_cursor: hasNext && last ? last.id : null,
     }
   }
 
@@ -77,7 +78,7 @@ export class ConsultsService {
       throw new ForbiddenException('Access denied')
     }
 
-    // For marketers, only return summary data
+    // For marketers, restrict to minimum necessary: status + org linkage only
     if (claims.role === 'MARKETER') {
       return {
         id: consult.id,
@@ -85,13 +86,13 @@ export class ConsultsService {
         created_at: consult.createdAt.toISOString(),
         provider_org_id: consult.providerOrgId,
         patient: {
-          id: consult.patient.id,
-          legal_name: consult.patient.legalName,
-          dob: consult.patient.dob.toISOString(),
-          address: consult.patient.address as any,
+          id: 'masked',
+          legal_name: 'REDACTED',
+          dob: new Date(0).toISOString(),
+          address: undefined as any,
         },
-        reason_codes: consult.reasonCodes,
-        created_from: consult.createdFrom,
+        reason_codes: [],
+        created_from: 'WEB',
       }
     }
 

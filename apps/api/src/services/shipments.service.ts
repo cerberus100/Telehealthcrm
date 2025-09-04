@@ -38,19 +38,33 @@ export class ShipmentsService {
     const hasNext = shipments.length > take
     const items = shipments.slice(0, take)
 
-    const itemsResponse = items.map((shipment: any) => ({
-      id: shipment.id,
-      lab_order_id: shipment.labOrderId,
-      carrier: shipment.carrier,
-      tracking_number: shipment.trackingNumber,
-      status: shipment.status,
-      last_event_at: shipment.lastEventAt?.toISOString(),
-      ship_to: shipment.shipTo as any,
-    }))
+    const isMarketer = claims.role === 'MARKETER'
+    const itemsResponse = items.map((shipment: any) => {
+      const shipTo = shipment.shipTo as any
+      const maskedShipTo = isMarketer
+        ? {
+            name: 'REDACTED',
+            city: shipTo?.city,
+            state: shipTo?.state,
+            zip: shipTo?.zip,
+          }
+        : shipTo
 
+      return {
+        id: shipment.id,
+        lab_order_id: shipment.labOrderId,
+        carrier: shipment.carrier,
+        tracking_number: shipment.trackingNumber,
+        status: shipment.status,
+        last_event_at: shipment.lastEventAt?.toISOString(),
+        ship_to: maskedShipTo,
+      }
+    })
+
+    const last = items.length > 0 ? items[items.length - 1] : null
     return {
       items: itemsResponse,
-      next_cursor: hasNext ? items[items.length - 1].id : null,
+      next_cursor: hasNext && last ? last.id : null,
     }
   }
 }

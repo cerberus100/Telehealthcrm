@@ -4,6 +4,7 @@ import { AbacGuard } from './abac/abac.guard'
 import { ClaimsMiddleware } from './middleware/claims.middleware'
 import { HealthController } from './controllers/health.controller'
 import { AuthController } from './controllers/auth.controller'
+import { MeController } from './controllers/me.controller'
 import { ConsultsController } from './controllers/consults.controller'
 import { ShipmentsController } from './controllers/shipments.controller'
 import { RxController } from './controllers/rx.controller'
@@ -19,6 +20,7 @@ import { NotificationsService } from './services/notifications.service'
   controllers: [
     HealthController, 
     AuthController, 
+    MeController,
     ConsultsController, 
     ShipmentsController, 
     RxController, 

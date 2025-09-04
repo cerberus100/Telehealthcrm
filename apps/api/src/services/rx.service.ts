@@ -45,9 +45,10 @@ export class RxService {
       pharmacy_org_id: rx.pharmacyOrgId,
     }))
 
+    const last = items.length > 0 ? items[items.length - 1] : null
     return {
       items: itemsResponse,
-      next_cursor: hasNext ? items[items.length - 1].id : null,
+      next_cursor: hasNext && last ? last.id : null,
     }
   }
 
