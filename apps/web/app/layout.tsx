@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <NotificationsBell />
             </div>
           </header>
-          <main className="p-4 min-h-[70vh]">{children}</main>
+          <main id="main-content" className="p-4 min-h-[70vh]" role="main">{children}</main>
           <footer className="p-4 border-t text-xs text-slate-600">Env: {buildInfo.env}</footer>
         </Providers>
       </body>
