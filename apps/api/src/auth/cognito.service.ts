@@ -293,4 +293,239 @@ export class CognitoService {
       throw new Error('Failed to retrieve secret')
     }
   }
+
+  // Admin User Management Methods
+
+  /**
+   * Create a new user in Cognito
+   */
+  async createUser(userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    orgId: string;
+  }): Promise<string> {
+    try {
+      // TODO: Implement actual Cognito user creation
+      // This would use CognitoIdentityServiceProvider.adminCreateUser()
+      
+      // For development, return mock user ID
+      const mockUserId = `cognito_${Date.now()}`;
+      
+      logger.info({
+        action: 'USER_CREATED',
+        user_id: mockUserId,
+        email: userData.email,
+        role: userData.role,
+        org_id: userData.orgId,
+      });
+
+      return mockUserId;
+    } catch (error) {
+      logger.error({
+        action: 'CREATE_USER_FAILED',
+        email: userData.email,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to create user');
+    }
+  }
+
+  /**
+   * Update user attributes in Cognito
+   */
+  async updateUser(userId: string, userData: {
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    purposeOfUse?: string;
+    phoneNumber?: string;
+    department?: string;
+    isActive?: boolean;
+  }): Promise<void> {
+    try {
+      // TODO: Implement actual Cognito user update
+      // This would use CognitoIdentityServiceProvider.adminUpdateUserAttributes()
+      
+      logger.info({
+        action: 'USER_UPDATED',
+        user_id: userId,
+        updated_fields: Object.keys(userData),
+      });
+    } catch (error) {
+      logger.error({
+        action: 'UPDATE_USER_FAILED',
+        user_id: userId,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to update user');
+    }
+  }
+
+  /**
+   * Deactivate user in Cognito
+   */
+  async deactivateUser(userId: string): Promise<void> {
+    try {
+      // TODO: Implement actual Cognito user deactivation
+      // This would use CognitoIdentityServiceProvider.adminDisableUser()
+      
+      logger.info({
+        action: 'USER_DEACTIVATED',
+        user_id: userId,
+      });
+    } catch (error) {
+      logger.error({
+        action: 'DEACTIVATE_USER_FAILED',
+        user_id: userId,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to deactivate user');
+    }
+  }
+
+  /**
+   * Activate user in Cognito
+   */
+  async activateUser(userId: string): Promise<void> {
+    try {
+      // TODO: Implement actual Cognito user activation
+      // This would use CognitoIdentityServiceProvider.adminEnableUser()
+      
+      logger.info({
+        action: 'USER_ACTIVATED',
+        user_id: userId,
+      });
+    } catch (error) {
+      logger.error({
+        action: 'ACTIVATE_USER_FAILED',
+        user_id: userId,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to activate user');
+    }
+  }
+
+  /**
+   * Change user password in Cognito
+   */
+  async changeUserPassword(userId: string, newPassword: string, temporaryPassword: boolean = false): Promise<void> {
+    try {
+      // TODO: Implement actual Cognito password change
+      // This would use CognitoIdentityServiceProvider.adminSetUserPassword()
+      
+      logger.info({
+        action: 'USER_PASSWORD_CHANGED',
+        user_id: userId,
+        temporary_password: temporaryPassword,
+      });
+    } catch (error) {
+      logger.error({
+        action: 'CHANGE_PASSWORD_FAILED',
+        user_id: userId,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to change user password');
+    }
+  }
+
+  /**
+   * Resend invitation to user
+   */
+  async resendInvitation(userId: string): Promise<void> {
+    try {
+      // TODO: Implement actual Cognito invitation resend
+      // This would use CognitoIdentityServiceProvider.adminCreateUser() with MessageAction: 'RESEND'
+      
+      logger.info({
+        action: 'INVITATION_RESENT',
+        user_id: userId,
+      });
+    } catch (error) {
+      logger.error({
+        action: 'RESEND_INVITATION_FAILED',
+        user_id: userId,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to resend invitation');
+    }
+  }
+
+  /**
+   * Delete user from Cognito
+   */
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      // TODO: Implement actual Cognito user deletion
+      // This would use CognitoIdentityServiceProvider.adminDeleteUser()
+      
+      logger.info({
+        action: 'USER_DELETED',
+        user_id: userId,
+      });
+    } catch (error) {
+      logger.error({
+        action: 'DELETE_USER_FAILED',
+        user_id: userId,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to delete user');
+    }
+  }
+
+  /**
+   * List users in organization
+   */
+  async listUsers(orgId: string, limit: number = 50, paginationToken?: string): Promise<{
+    users: CognitoUser[];
+    paginationToken?: string;
+  }> {
+    try {
+      // TODO: Implement actual Cognito user listing
+      // This would use CognitoIdentityServiceProvider.listUsers() with filters
+      
+      // For development, return mock users
+      const mockUsers: CognitoUser[] = [
+        {
+          sub: 'user_1',
+          email: 'admin@example.com',
+          email_verified: true,
+          org_id: orgId,
+          role: 'ADMIN',
+          groups: ['ADMIN'],
+          mfa_enabled: false,
+          last_login_at: new Date().toISOString(),
+        },
+        {
+          sub: 'user_2',
+          email: 'doctor@example.com',
+          email_verified: true,
+          org_id: orgId,
+          role: 'DOCTOR',
+          groups: ['DOCTOR'],
+          mfa_enabled: false,
+          last_login_at: new Date().toISOString(),
+        },
+      ];
+
+      logger.info({
+        action: 'USERS_LISTED',
+        org_id: orgId,
+        count: mockUsers.length,
+      });
+
+      return {
+        users: mockUsers,
+        paginationToken: undefined,
+      };
+    } catch (error) {
+      logger.error({
+        action: 'LIST_USERS_FAILED',
+        org_id: orgId,
+        error: (error as Error).message,
+      });
+      throw new Error('Failed to list users');
+    }
+  }
 }

@@ -1,8 +1,8 @@
 import type { RequestClaims } from '../types/claims'
 
-type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification'
+type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification' | 'Organization'
 
-type Action = 'read' | 'write' | 'list' | 'update' | 'logout'
+type Action = 'read' | 'write' | 'list' | 'update' | 'logout' | 'create'
 
 export interface AccessRequest {
   subject: RequestClaims
