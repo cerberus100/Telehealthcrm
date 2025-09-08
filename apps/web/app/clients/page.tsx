@@ -15,7 +15,7 @@ export default function ClientsPage() {
   })
 
   // Role guard: Only Marketers and Admins can manage clients
-  const canManage = role === 'MARKETER' || role === 'ORG_ADMIN' || role === 'MASTER_ADMIN'
+  const canManage = role === 'MARKETER' || role === 'MARKETER_ADMIN' || role === 'SUPER_ADMIN'
   
   if (!canManage) {
     return (

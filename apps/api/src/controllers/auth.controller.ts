@@ -34,4 +34,13 @@ export class AuthController {
     const claims: RequestClaims = req.claims
     return this.authService.getMe(claims)
   }
+
+  // Alias to support frontend calling /me directly
+  @Get('/')
+  @UseGuards(AbacGuard)
+  @Abac({ resource: 'User', action: 'read' })
+  async meAlias(@Req() req: any) {
+    const claims: RequestClaims = req.claims
+    return this.authService.getMe(claims)
+  }
 }

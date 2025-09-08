@@ -65,6 +65,10 @@ const LabResultSchema = z.object({
 export const LabResultListSchema = z.object({ items: z.array(LabResultSchema), next_cursor: z.string().nullable() })
 export type LabResultList = z.infer<typeof LabResultListSchema>
 
+// Auth
+const AuthLoginResponseSchema = z.object({ access_token: z.string(), refresh_token: z.string() })
+export type AuthLoginResponse = z.infer<typeof AuthLoginResponseSchema>
+
 const ClientSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -155,6 +159,10 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       }], next_cursor: null }
       return schema.parse(mock)
     }
+    if (path === '/auth/login') {
+      const mock = { access_token: 'mock_access_user123', refresh_token: 'mock_refresh_user123' }
+      return schema.parse(mock)
+    }
   }
   return request(path, schema, init)
 }
@@ -174,4 +182,9 @@ export const Api = {
   clientDetail: (id: string) => http(`/clients/${id}`, ClientSchema),
   requisitionTemplates: () => http('/requisition-templates', RequisitionTemplateListSchema),
   requisitionTemplateDetail: (id: string) => http(`/requisition-templates/${id}`, RequisitionTemplateSchema),
+  authLogin: (email: string, password: string) => http('/auth/login', AuthLoginResponseSchema, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  }),
 }

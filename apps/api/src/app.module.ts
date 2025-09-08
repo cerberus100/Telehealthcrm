@@ -9,11 +9,13 @@ import { RateLimitMiddleware } from './middleware/rate-limit.middleware'
 import { TenantMiddleware } from './middleware/tenant.middleware'
 import { HealthController } from './controllers/health.controller'
 import { AuthController } from './controllers/auth.controller'
+import { MeController } from './controllers/me.controller'
 import { ConsultsController } from './controllers/consults.controller'
 import { ShipmentsController } from './controllers/shipments.controller'
 import { RxController } from './controllers/rx.controller'
 import { NotificationsController } from './controllers/notifications.controller'
 import { PrismaService } from './prisma.service'
+import { MockPrismaService } from './mock-prisma.service'
 import { AuthService } from './services/auth.service'
 import { CognitoService } from './auth/cognito.service'
 import { ConsultsService } from './services/consults.service'
@@ -42,13 +44,17 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
   controllers: [
     HealthController, 
     AuthController, 
+    MeController,
     ConsultsController, 
     ShipmentsController, 
     RxController, 
     NotificationsController
   ],
   providers: [
-    PrismaService,
+    {
+      provide: PrismaService,
+      useClass: process.env.API_DEMO_MODE === 'true' ? (MockPrismaService as any) : PrismaService,
+    },
     CognitoService,
     AuthService,
     ConsultsService,

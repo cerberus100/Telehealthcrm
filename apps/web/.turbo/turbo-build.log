@@ -1,29 +1,40 @@
 
+
 > web@0.1.0 build /Users/alexsiegel/teleplatform/apps/web
 > next build
 
-  ▲ Next.js 14.2.5
+  [1m[38;2;173;127;168m▲ Next.js 14.2.5[39m[22m
 
-   Creating an optimized production build ...
- ✓ Compiled successfully
-   Linting and checking validity of types ...
-   Collecting page data ...
-   Generating static pages (0/4) ...
-   Generating static pages (1/4) 
-   Generating static pages (2/4) 
-   Generating static pages (3/4) 
- ✓ Generating static pages (4/4)
-   Finalizing page optimization ...
-   Collecting build traces ...
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [32m[1m✓[22m[39m Compiled successfully
+[?25l [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G[?25h [37m[1m [22m[39m Linting and checking validity of types     [32m[1m✓[22m[39m Linting and checking validity of types 
+[?25l [37m[1m [22m[39m Collecting page data  [36m.[39m[2K[1G[?25h [37m[1m [22m[39m Collecting page data     [32m[1m✓[22m[39m Collecting page data 
+[?25l [37m[1m [22m[39m Generating static pages (0/15)  [36m[    ][39m[2K[1G[?25h [32m[1m✓[22m[39m Generating static pages (15/15)
+[?25l [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[?25l [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G[?25h [37m[1m [22m[39m Collecting build traces     [32m[1m✓[22m[39m Collecting build traces 
+[2K[1G[?25h [37m[1m [22m[39m Finalizing page optimization     [32m[1m✓[22m[39m Finalizing page optimization 
 
-Route (app)                              Size     First Load JS
-┌ ○ /                                    138 B          87.1 kB
-└ ○ /_not-found                          872 B          87.9 kB
-+ First Load JS shared by all            87 kB
-  ├ chunks/753-fb54a495ce337509.js       31.5 kB
-  ├ chunks/abf17911-b72ece1d4472ef4e.js  53.6 kB
-  └ other shared chunks (total)          1.86 kB
+[4mRoute (app)[24m                              [4mSize[24m     [4mFirst Load JS[24m
+┌ ○ /                                    4.65 kB         [37m[1m123 kB[22m[39m
+├ ○ /_not-found                          868 B            [37m[1m88 kB[22m[39m
+├ ○ /admin/users                         2.24 kB        [37m[1m89.4 kB[22m[39m
+├ ○ /clients                             3.77 kB         [37m[1m122 kB[22m[39m
+├ ○ /consults                            3.06 kB         [37m[1m114 kB[22m[39m
+├ ƒ /consults/[id]                       2.05 kB        [37m[1m97.2 kB[22m[39m
+├ ○ /lab-orders                          3.4 kB          [37m[1m121 kB[22m[39m
+├ ○ /lab-results                         3.41 kB         [37m[1m121 kB[22m[39m
+├ ○ /login                               1.13 kB        [37m[1m88.2 kB[22m[39m
+├ ○ /notifications                       3.44 kB         [37m[1m121 kB[22m[39m
+├ ○ /purpose                             1.05 kB        [37m[1m88.2 kB[22m[39m
+├ ○ /requisitions                        3.95 kB         [37m[1m122 kB[22m[39m
+├ ○ /rx                                  3.11 kB         [37m[1m114 kB[22m[39m
+└ ○ /shipments                           3.08 kB         [37m[1m114 kB[22m[39m
++ First Load JS shared by all            [37m[1m87.1 kB[22m[39m
+  ├ chunks/91-dd882d5e2efd9cb2.js        31.5 kB
+  ├ chunks/b17e0889-81cec082ec83f538.js  53.6 kB
+  └ other shared chunks (total)          1.96 kB
 
 
-○  (Static)  prerendered as static content
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
 
+[?25h
