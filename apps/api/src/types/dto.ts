@@ -18,7 +18,7 @@ export const LogoutDto = z.object({
 export const UserDto = z.object({
   id: z.string(),
   email: z.string().email(),
-  role: z.enum(['ADMIN', 'DOCTOR', 'LAB_TECH', 'PHARMACIST', 'MARKETER', 'SUPPORT']),
+  role: z.enum(['ADMIN', 'DOCTOR', 'LAB_TECH', 'PHARMACIST', 'MARKETER', 'SUPPORT', 'ORG_ADMIN', 'ORG_MANAGER']),
   org_id: z.string(),
   last_login_at: z.string().datetime(),
 })

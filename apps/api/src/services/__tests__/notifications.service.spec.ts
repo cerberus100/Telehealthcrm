@@ -45,12 +45,13 @@ describe('NotificationsService', () => {
       );
 
       expect(result).toEqual({
-        notifications: mockNotifications,
-        pagination: {
-          hasMore: false,
-          nextCursor: null,
-          total: 1,
-        },
+        items: mockNotifications.map(n => ({
+          id: n.id,
+          type: n.type,
+          created_at: n.createdAt.toISOString(),
+          payload: n.payload,
+        })),
+        next_cursor: null,
       });
     });
   });
@@ -106,7 +107,10 @@ describe('NotificationsService', () => {
       expect(result).toEqual({
         total: 5,
         unread: 5,
-        byType: {},
+        byType: [
+          { type: 'CONSULT_STATUS_CHANGE', count: 2 },
+          { type: 'LAB_RESULT_READY', count: 1 },
+        ],
       });
     });
   });

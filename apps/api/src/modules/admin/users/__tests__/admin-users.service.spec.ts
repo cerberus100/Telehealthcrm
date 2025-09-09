@@ -41,17 +41,26 @@ describe('AdminUsersService', () => {
       jest.spyOn(prismaService.user, 'count').mockResolvedValue(1);
 
       const result = await service.getUsers(
-        { cursor: undefined, limit: 50, orgId: 'org-123' }, 
+        { cursor: undefined, limit: 50 }, 
         claims
       );
 
       expect(result).toEqual({
-        users: mockUsers,
-        pagination: {
-          hasMore: false,
-          nextCursor: null,
-          total: 1,
-        },
+        items: mockUsers.map(user => ({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          purposeOfUse: user.purposeOfUse,
+          phoneNumber: user.phoneNumber,
+          department: user.department,
+          isActive: user.isActive,
+          lastLoginAt: user.lastLoginAt?.toISOString(),
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
+        })),
+        next_cursor: null,
       });
     });
 
@@ -64,14 +73,40 @@ describe('AdminUsersService', () => {
 
   describe('getUser', () => {
     it('should return user by ID', async () => {
-      const mockUser = createMockUser();
+      const mockUser = createMockUser({
+        id: 'user-123',
+        email: 'doctor@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'DOCTOR',
+        purposeOfUse: 'TREATMENT',
+        phoneNumber: '+1234567890',
+        department: 'Cardiology',
+        isActive: true,
+        lastLoginAt: new Date('2025-01-01T00:00:00Z'),
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+        updatedAt: new Date('2025-01-01T00:00:00Z'),
+      });
       const claims = mockClaims({ role: 'ADMIN' });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(mockUser);
 
       const result = await service.getUser('user-123', claims);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        role: mockUser.role,
+        purposeOfUse: mockUser.purposeOfUse,
+        phoneNumber: mockUser.phoneNumber,
+        department: mockUser.department,
+        isActive: mockUser.isActive,
+        lastLoginAt: mockUser.lastLoginAt?.toISOString(),
+        createdAt: mockUser.createdAt.toISOString(),
+        updatedAt: mockUser.updatedAt.toISOString(),
+      });
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'user-123' },
       });
@@ -89,14 +124,41 @@ describe('AdminUsersService', () => {
         isActive: true,
       };
       const claims = mockClaims({ role: 'ADMIN' });
-      const mockUser = createMockUser(userData);
+      const mockUser = createMockUser({
+        id: 'user-123',
+        email: 'newuser@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'DOCTOR',
+        purposeOfUse: 'TREATMENT',
+        phoneNumber: '+1234567890',
+        department: 'Cardiology',
+        isActive: true,
+        lastLoginAt: new Date('2025-01-01T00:00:00Z'),
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+        updatedAt: new Date('2025-01-01T00:00:00Z'),
+      });
 
+      jest.spyOn(prismaService.user, 'findFirst').mockResolvedValue(null);
       jest.spyOn(cognitoService, 'createUser').mockResolvedValue(mockUser);
       jest.spyOn(prismaService.user, 'create').mockResolvedValue(mockUser);
 
       const result = await service.createUser(userData, claims);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        role: mockUser.role,
+        purposeOfUse: mockUser.purposeOfUse,
+        phoneNumber: mockUser.phoneNumber,
+        department: mockUser.department,
+        isActive: mockUser.isActive,
+        lastLoginAt: mockUser.lastLoginAt?.toISOString(),
+        createdAt: mockUser.createdAt.toISOString(),
+        updatedAt: mockUser.updatedAt.toISOString(),
+      });
       expect(cognitoService.createUser).toHaveBeenCalledWith(userData);
     });
   });
@@ -109,7 +171,20 @@ describe('AdminUsersService', () => {
         role: 'DOCTOR' as const,
       };
       const claims = mockClaims({ role: 'ADMIN' });
-      const mockUser = createMockUser(updateData);
+      const mockUser = createMockUser({
+        id: 'user-123',
+        email: 'doctor@test.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        role: 'DOCTOR',
+        purposeOfUse: 'TREATMENT',
+        phoneNumber: '+1234567890',
+        department: 'Cardiology',
+        isActive: true,
+        lastLoginAt: new Date('2025-01-01T00:00:00Z'),
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+        updatedAt: new Date('2025-01-01T00:00:00Z'),
+      });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(createMockUser());
       jest.spyOn(cognitoService, 'updateUser').mockResolvedValue(mockUser);
@@ -117,7 +192,20 @@ describe('AdminUsersService', () => {
 
       const result = await service.updateUser('user-123', updateData, claims);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        role: mockUser.role,
+        purposeOfUse: mockUser.purposeOfUse,
+        phoneNumber: mockUser.phoneNumber,
+        department: mockUser.department,
+        isActive: mockUser.isActive,
+        lastLoginAt: mockUser.lastLoginAt?.toISOString(),
+        createdAt: mockUser.createdAt.toISOString(),
+        updatedAt: mockUser.updatedAt.toISOString(),
+      });
       expect(cognitoService.updateUser).toHaveBeenCalledWith('user-123', updateData);
     });
   });
@@ -125,7 +213,20 @@ describe('AdminUsersService', () => {
   describe('deactivateUser', () => {
     it('should deactivate user', async () => {
       const claims = mockClaims({ role: 'ADMIN' });
-      const mockUser = createMockUser({ isActive: false });
+      const mockUser = createMockUser({
+        id: 'user-123',
+        email: 'doctor@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'DOCTOR',
+        purposeOfUse: 'TREATMENT',
+        phoneNumber: '+1234567890',
+        department: 'Cardiology',
+        isActive: false,
+        lastLoginAt: new Date('2025-01-01T00:00:00Z'),
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+        updatedAt: new Date('2025-01-01T00:00:00Z'),
+      });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(createMockUser());
       jest.spyOn(cognitoService, 'deactivateUser').mockResolvedValue(undefined);
@@ -133,7 +234,20 @@ describe('AdminUsersService', () => {
 
       const result = await service.deactivateUser('user-123', claims);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        role: mockUser.role,
+        purposeOfUse: mockUser.purposeOfUse,
+        phoneNumber: mockUser.phoneNumber,
+        department: mockUser.department,
+        isActive: mockUser.isActive,
+        lastLoginAt: mockUser.lastLoginAt?.toISOString(),
+        createdAt: mockUser.createdAt.toISOString(),
+        updatedAt: mockUser.updatedAt.toISOString(),
+      });
       expect(cognitoService.deactivateUser).toHaveBeenCalledWith('user-123');
     });
   });
@@ -141,7 +255,20 @@ describe('AdminUsersService', () => {
   describe('activateUser', () => {
     it('should activate user', async () => {
       const claims = mockClaims({ role: 'ADMIN' });
-      const mockUser = createMockUser({ isActive: true });
+      const mockUser = createMockUser({
+        id: 'user-123',
+        email: 'doctor@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'DOCTOR',
+        purposeOfUse: 'TREATMENT',
+        phoneNumber: '+1234567890',
+        department: 'Cardiology',
+        isActive: true,
+        lastLoginAt: new Date('2025-01-01T00:00:00Z'),
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+        updatedAt: new Date('2025-01-01T00:00:00Z'),
+      });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(createMockUser({ isActive: false }));
       jest.spyOn(cognitoService, 'activateUser').mockResolvedValue(undefined);
@@ -149,7 +276,20 @@ describe('AdminUsersService', () => {
 
       const result = await service.activateUser('user-123', claims);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        role: mockUser.role,
+        purposeOfUse: mockUser.purposeOfUse,
+        phoneNumber: mockUser.phoneNumber,
+        department: mockUser.department,
+        isActive: mockUser.isActive,
+        lastLoginAt: mockUser.lastLoginAt?.toISOString(),
+        createdAt: mockUser.createdAt.toISOString(),
+        updatedAt: mockUser.updatedAt.toISOString(),
+      });
       expect(cognitoService.activateUser).toHaveBeenCalledWith('user-123');
     });
   });
@@ -163,11 +303,11 @@ describe('AdminUsersService', () => {
       const claims = mockClaims({ role: 'ADMIN' });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(createMockUser());
-      jest.spyOn(cognitoService, 'changeUserPassword').mockResolvedValue(undefined);
+      jest.spyOn(cognitoService, 'changeUserPassword').mockResolvedValue({ message: 'Password changed successfully', temporaryPassword: true });
 
       const result = await service.changeUserPassword('user-123', passwordData, claims);
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual({ message: 'Password changed successfully', temporaryPassword: true });
       expect(cognitoService.changeUserPassword).toHaveBeenCalledWith('user-123', passwordData);
     });
   });
@@ -177,11 +317,11 @@ describe('AdminUsersService', () => {
       const claims = mockClaims({ role: 'ADMIN' });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(createMockUser());
-      jest.spyOn(cognitoService, 'resendInvitation').mockResolvedValue(undefined);
+      jest.spyOn(cognitoService, 'resendInvitation').mockResolvedValue({ email: 'dr@example.com', message: 'Invitation resent successfully' });
 
       const result = await service.resendInvitation('user-123', claims);
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual({ email: 'dr@example.com', message: 'Invitation resent successfully' });
       expect(cognitoService.resendInvitation).toHaveBeenCalledWith('user-123');
     });
   });

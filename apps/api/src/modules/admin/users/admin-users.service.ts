@@ -48,6 +48,50 @@ export class AdminUsersService {
     private readonly cognitoService: CognitoService,
   ) {}
 
+  async getUser(userId: string, claims: RequestClaims) {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          id: userId,
+          orgId: claims.orgId,
+        },
+        include: {
+          org: true,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        purposeOfUse: user.purposeOfUse,
+        phoneNumber: user.phoneNumber,
+        department: user.department,
+        isActive: user.isActive,
+        orgId: user.orgId,
+        org: {
+          id: user.org.id,
+          name: user.org.name,
+          type: user.org.type,
+        },
+        status: user.status,
+        mfaEnrolled: user.mfaEnrolled,
+        lastLoginAt: user.lastLoginAt,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get user: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
   async getUsers(query: z.infer<typeof UsersQuerySchema>, claims: RequestClaims) {
     try {
       const where: any = {

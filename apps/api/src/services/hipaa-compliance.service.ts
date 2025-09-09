@@ -89,10 +89,12 @@ export class HIPAAComplianceService {
 
     // Log compliance review completion
     await this.auditService.logEvent({
+      correlationId: `hipaa-compliance-${Date.now()}`,
       actorUserId: 'system',
       action: 'HIPAA_COMPLIANCE_REVIEW_COMPLETED',
       resource: 'ComplianceReport',
       resourceId: reportId,
+      success: true,
       details: {
         overallCompliance,
         totalRequirements,

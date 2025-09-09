@@ -22,6 +22,7 @@ export interface LoginResponse {
   expires_in: number
   token_type: string
   user: CognitoUser
+  accessToken?: string  // Alias for compatibility
 }
 
 export interface RefreshResponse {
@@ -29,18 +30,29 @@ export interface RefreshResponse {
   refresh_token: string
   expires_in: number
   token_type: string
+  accessToken?: string  // Alias for compatibility
 }
 
 @Injectable()
 export class CognitoService {
   private readonly cognitoJwtVerifier: any
-  private readonly secretsClient: SecretsManagerClient
+  private readonly secretsClient: SecretsManagerClient | null
   private readonly userPoolId: string
   private readonly clientId: string
 
   constructor(private configService: ConfigService) {
     const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID')
     const clientId = this.configService.get<string>('COGNITO_CLIENT_ID')
+    const demoMode = this.configService.get<string>('API_DEMO_MODE') === 'true'
+    
+    // In demo mode, skip AWS configuration
+    if (demoMode) {
+      this.userPoolId = 'demo-pool-id'
+      this.clientId = 'demo-client-id'
+      this.cognitoJwtVerifier = null
+      this.secretsClient = null
+      return
+    }
     
     if (!userPoolId || !clientId) {
       throw new Error('COGNITO_USER_POOL_ID and COGNITO_CLIENT_ID must be configured')
@@ -64,6 +76,23 @@ export class CognitoService {
    * Validate JWT token and extract user claims
    */
   async validateToken(token: string): Promise<CognitoUser> {
+    const demoMode = this.configService.get<string>('API_DEMO_MODE') === 'true'
+    
+    if (demoMode) {
+      // Return mock user for demo mode
+      return {
+        sub: 'demo-user-123',
+        email: 'demo@example.com',
+        email_verified: true,
+        org_id: 'demo-org-123',
+        role: 'ADMIN',
+        purpose_of_use: 'TREATMENT',
+        groups: ['ADMIN'],
+        mfa_enabled: false,
+        last_login_at: new Date().toISOString(),
+      }
+    }
+
     try {
       const payload = await this.cognitoJwtVerifier.verify(token)
       
@@ -72,20 +101,14 @@ export class CognitoService {
         sub: payload.sub,
         email: payload.email,
         email_verified: payload.email_verified,
-        org_id: payload['custom:org_id'] || payload.org_id,
-        role: payload['custom:role'] || payload.role,
-        purpose_of_use: payload['custom:purpose_of_use'] || payload.purpose_of_use,
+        org_id: payload['custom:org_id'],
+        role: payload['custom:role'],
+        purpose_of_use: payload['custom:purpose_of_use'],
         groups: payload['cognito:groups'] || [],
-        mfa_enabled: payload['cognito:username'] ? true : false, // Simplified MFA check
-        last_login_at: new Date(payload.iat * 1000).toISOString(),
+        mfa_enabled: payload['custom:mfa_enabled'] === 'true',
+        last_login_at: payload['custom:last_login_at'] || new Date().toISOString(),
       }
 
-      // Validate required fields
-      if (!user.sub || !user.email || !user.org_id || !user.role) {
-        throw new UnauthorizedException('Invalid token claims')
-      }
-
-      // Log successful token validation (without PHI)
       logger.info({
         action: 'TOKEN_VALIDATED',
         user_id: user.sub,
@@ -108,6 +131,30 @@ export class CognitoService {
    * Authenticate user with email/password
    */
   async authenticate(email: string, password: string): Promise<LoginResponse> {
+    const demoMode = this.configService.get<string>('API_DEMO_MODE') === 'true'
+    
+    if (demoMode) {
+      // Return mock login response for demo mode
+      return {
+        access_token: 'demo_access_token',
+        refresh_token: 'demo_refresh_token',
+        expires_in: 3600,
+        token_type: 'Bearer',
+        accessToken: 'demo_access_token',  // Alias for compatibility
+        user: {
+          sub: 'demo-user-123',
+          email: email,
+          email_verified: true,
+          org_id: 'demo-org-123',
+          role: 'ADMIN',
+          purpose_of_use: 'TREATMENT',
+          groups: ['ADMIN'],
+          mfa_enabled: false,
+          last_login_at: new Date().toISOString(),
+        }
+      }
+    }
+
     try {
       // TODO: Implement actual Cognito authentication
       // For now, return mock response for development
@@ -118,34 +165,34 @@ export class CognitoService {
         email: email,
         email_verified: true,
         org_id: 'org_123',
-        role: 'MARKETER',
-        groups: ['MARKETER'],
+        role: 'DOCTOR',
+        purpose_of_use: 'TREATMENT',
+        groups: ['DOCTOR'],
         mfa_enabled: false,
         last_login_at: new Date().toISOString(),
       }
 
       const mockResponse: LoginResponse = {
-        access_token: `mock_access_${mockUser.sub}_${Date.now()}`,
-        refresh_token: `mock_refresh_${mockUser.sub}_${Date.now()}`,
-        expires_in: 900, // 15 minutes
+        access_token: `mock_access_${Date.now()}`,
+        refresh_token: `mock_refresh_${Date.now()}`,
+        expires_in: 3600,
         token_type: 'Bearer',
+        accessToken: `mock_access_${Date.now()}`,  // Alias for compatibility
         user: mockUser,
       }
 
-      // Log successful authentication (without PHI)
       logger.info({
         action: 'USER_AUTHENTICATED',
         user_id: mockUser.sub,
         org_id: mockUser.org_id,
         role: mockUser.role,
-        email_verified: mockUser.email_verified,
       })
 
       return mockResponse
     } catch (error) {
-      logger.warn({
+      logger.error({
         action: 'AUTHENTICATION_FAILED',
-        email: email, // Log email for security monitoring
+        email: email,
         error: (error as Error).message,
       })
       throw new UnauthorizedException('Invalid credentials')
@@ -165,6 +212,7 @@ export class CognitoService {
         refresh_token: `mock_refresh_new_${Date.now()}`,
         expires_in: 900, // 15 minutes
         token_type: 'Bearer',
+        accessToken: `mock_access_refreshed_${Date.now()}`,  // Alias for compatibility
       }
 
       logger.info({
@@ -173,7 +221,7 @@ export class CognitoService {
 
       return mockResponse
     } catch (error) {
-      logger.warn({
+      logger.error({
         action: 'TOKEN_REFRESH_FAILED',
         error: (error as Error).message,
       })
@@ -182,43 +230,49 @@ export class CognitoService {
   }
 
   /**
-   * Logout user and invalidate tokens
+   * Logout user by invalidating refresh token
    */
   async logout(refreshToken: string): Promise<void> {
     try {
       // TODO: Implement actual Cognito logout
-      // This would call CognitoIdentityServiceProvider.revokeToken()
+      // For now, just log the action
       
       logger.info({
-        action: 'USER_LOGOUT',
+        action: 'USER_LOGGED_OUT',
       })
     } catch (error) {
-      logger.warn({
+      logger.error({
         action: 'LOGOUT_FAILED',
         error: (error as Error).message,
       })
-      // Don't throw error on logout failure
+      throw new UnauthorizedException('Logout failed')
     }
   }
 
   /**
-   * Get user profile from Cognito
+   * Get user profile by user ID
    */
   async getUserProfile(userId: string): Promise<CognitoUser> {
     try {
       // TODO: Implement actual Cognito user profile retrieval
-      // This would use CognitoIdentityServiceProvider.adminGetUser()
+      // For now, return mock user
       
       const mockUser: CognitoUser = {
         sub: userId,
         email: 'user@example.com',
         email_verified: true,
         org_id: 'org_123',
-        role: 'MARKETER',
-        groups: ['MARKETER'],
+        role: 'DOCTOR',
+        purpose_of_use: 'TREATMENT',
+        groups: ['DOCTOR'],
         mfa_enabled: false,
         last_login_at: new Date().toISOString(),
       }
+
+      logger.info({
+        action: 'USER_PROFILE_RETRIEVED',
+        user_id: userId,
+      })
 
       return mockUser
     } catch (error) {
@@ -232,7 +286,7 @@ export class CognitoService {
   }
 
   /**
-   * Check if user has required role
+   * Check if user has specific role
    */
   hasRole(user: CognitoUser, requiredRole: string): boolean {
     return user.role === requiredRole || user.groups.includes(requiredRole)
@@ -246,26 +300,25 @@ export class CognitoService {
   }
 
   /**
-   * Check if user is SUPER_ADMIN
+   * Check if user is super admin
    */
   isSuperAdmin(user: CognitoUser): boolean {
-    return this.hasRole(user, 'SUPER_ADMIN')
+    return user.role === 'ADMIN' || user.groups.includes('ADMIN')
   }
 
   /**
-   * Check if user is MARKETER_ADMIN
+   * Check if user is marketer admin
    */
   isMarketerAdmin(user: CognitoUser): boolean {
-    return this.hasRole(user, 'MARKETER_ADMIN')
+    return user.role === 'MARKETER' && user.groups.includes('MARKETER_ADMIN')
   }
 
   /**
-   * Validate purpose of use for PHI access
+   * Validate purpose of use
    */
   validatePurposeOfUse(user: CognitoUser, purpose: string): boolean {
-    // For now, accept any purpose if user has one
-    // In production, this would validate against allowed purposes
-    return !!user.purpose_of_use
+    const allowedPurposes = ['TREATMENT', 'PAYMENT', 'HEALTHCARE_OPERATIONS']
+    return allowedPurposes.includes(purpose) && user.purpose_of_use === purpose
   }
 
   /**
@@ -276,29 +329,25 @@ export class CognitoService {
       const command = new GetSecretValueCommand({
         SecretId: secretArn,
       })
-      
-      const response = await this.secretsClient.send(command)
-      
+
+      const response = await this.secretsClient!.send(command)
+
       if (response.SecretString) {
         return response.SecretString
       }
-      
-      throw new Error('Secret not found or empty')
+
+      throw new Error('Secret not found')
     } catch (error) {
       logger.error({
         action: 'GET_SECRET_FAILED',
         secret_arn: secretArn,
         error: (error as Error).message,
       })
-      throw new Error('Failed to retrieve secret')
+      throw error
     }
   }
 
-  // Admin User Management Methods
-
-  /**
-   * Create a new user in Cognito
-   */
+  // Mock admin methods for development
   async createUser(userData: {
     email: string;
     firstName: string;
@@ -307,10 +356,7 @@ export class CognitoService {
     orgId: string;
   }): Promise<string> {
     try {
-      // TODO: Implement actual Cognito user creation
-      // This would use CognitoIdentityServiceProvider.adminCreateUser()
-      
-      // For development, return mock user ID
+      // Mock implementation for development
       const mockUserId = `cognito_${Date.now()}`;
       
       logger.info({
@@ -328,13 +374,10 @@ export class CognitoService {
         email: userData.email,
         error: (error as Error).message,
       });
-      throw new Error('Failed to create user');
+      throw error;
     }
   }
 
-  /**
-   * Update user attributes in Cognito
-   */
   async updateUser(userId: string, userData: {
     firstName?: string;
     lastName?: string;
@@ -345,13 +388,10 @@ export class CognitoService {
     isActive?: boolean;
   }): Promise<void> {
     try {
-      // TODO: Implement actual Cognito user update
-      // This would use CognitoIdentityServiceProvider.adminUpdateUserAttributes()
-      
       logger.info({
         action: 'USER_UPDATED',
         user_id: userId,
-        updated_fields: Object.keys(userData),
+        updates: userData,
       });
     } catch (error) {
       logger.error({
@@ -359,18 +399,12 @@ export class CognitoService {
         user_id: userId,
         error: (error as Error).message,
       });
-      throw new Error('Failed to update user');
+      throw error;
     }
   }
 
-  /**
-   * Deactivate user in Cognito
-   */
   async deactivateUser(userId: string): Promise<void> {
     try {
-      // TODO: Implement actual Cognito user deactivation
-      // This would use CognitoIdentityServiceProvider.adminDisableUser()
-      
       logger.info({
         action: 'USER_DEACTIVATED',
         user_id: userId,
@@ -381,18 +415,12 @@ export class CognitoService {
         user_id: userId,
         error: (error as Error).message,
       });
-      throw new Error('Failed to deactivate user');
+      throw error;
     }
   }
 
-  /**
-   * Activate user in Cognito
-   */
   async activateUser(userId: string): Promise<void> {
     try {
-      // TODO: Implement actual Cognito user activation
-      // This would use CognitoIdentityServiceProvider.adminEnableUser()
-      
       logger.info({
         action: 'USER_ACTIVATED',
         user_id: userId,
@@ -403,18 +431,12 @@ export class CognitoService {
         user_id: userId,
         error: (error as Error).message,
       });
-      throw new Error('Failed to activate user');
+      throw error;
     }
   }
 
-  /**
-   * Change user password in Cognito
-   */
   async changeUserPassword(userId: string, newPassword: string, temporaryPassword: boolean = false): Promise<void> {
     try {
-      // TODO: Implement actual Cognito password change
-      // This would use CognitoIdentityServiceProvider.adminSetUserPassword()
-      
       logger.info({
         action: 'USER_PASSWORD_CHANGED',
         user_id: userId,
@@ -426,18 +448,12 @@ export class CognitoService {
         user_id: userId,
         error: (error as Error).message,
       });
-      throw new Error('Failed to change user password');
+      throw error;
     }
   }
 
-  /**
-   * Resend invitation to user
-   */
   async resendInvitation(userId: string): Promise<void> {
     try {
-      // TODO: Implement actual Cognito invitation resend
-      // This would use CognitoIdentityServiceProvider.adminCreateUser() with MessageAction: 'RESEND'
-      
       logger.info({
         action: 'INVITATION_RESENT',
         user_id: userId,
@@ -448,18 +464,12 @@ export class CognitoService {
         user_id: userId,
         error: (error as Error).message,
       });
-      throw new Error('Failed to resend invitation');
+      throw error;
     }
   }
 
-  /**
-   * Delete user from Cognito
-   */
   async deleteUser(userId: string): Promise<void> {
     try {
-      // TODO: Implement actual Cognito user deletion
-      // This would use CognitoIdentityServiceProvider.adminDeleteUser()
-      
       logger.info({
         action: 'USER_DELETED',
         user_id: userId,
@@ -470,40 +480,36 @@ export class CognitoService {
         user_id: userId,
         error: (error as Error).message,
       });
-      throw new Error('Failed to delete user');
+      throw error;
     }
   }
 
-  /**
-   * List users in organization
-   */
   async listUsers(orgId: string, limit: number = 50, paginationToken?: string): Promise<{
     users: CognitoUser[];
     paginationToken?: string;
   }> {
     try {
-      // TODO: Implement actual Cognito user listing
-      // This would use CognitoIdentityServiceProvider.listUsers() with filters
-      
-      // For development, return mock users
+      // Mock implementation for development
       const mockUsers: CognitoUser[] = [
         {
           sub: 'user_1',
-          email: 'admin@example.com',
+          email: 'user1@example.com',
           email_verified: true,
           org_id: orgId,
-          role: 'ADMIN',
-          groups: ['ADMIN'],
+          role: 'DOCTOR',
+          purpose_of_use: 'TREATMENT',
+          groups: ['DOCTOR'],
           mfa_enabled: false,
           last_login_at: new Date().toISOString(),
         },
         {
           sub: 'user_2',
-          email: 'doctor@example.com',
+          email: 'user2@example.com',
           email_verified: true,
           org_id: orgId,
-          role: 'DOCTOR',
-          groups: ['DOCTOR'],
+          role: 'LAB_TECH',
+          purpose_of_use: 'TREATMENT',
+          groups: ['LAB_TECH'],
           mfa_enabled: false,
           last_login_at: new Date().toISOString(),
         },
@@ -517,7 +523,7 @@ export class CognitoService {
 
       return {
         users: mockUsers,
-        paginationToken: undefined,
+        paginationToken: paginationToken ? `next_${Date.now()}` : undefined,
       };
     } catch (error) {
       logger.error({
@@ -525,7 +531,7 @@ export class CognitoService {
         org_id: orgId,
         error: (error as Error).message,
       });
-      throw new Error('Failed to list users');
+      throw error;
     }
   }
 }

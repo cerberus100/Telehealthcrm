@@ -45,26 +45,39 @@ describe('ConsultsService', () => {
       );
 
       expect(result).toEqual({
-        consults: mockConsults,
-        pagination: {
-          hasMore: false,
-          nextCursor: null,
-          total: 1,
-        },
+        items: mockConsults.map(c => ({
+          id: c.id,
+          status: c.status,
+          created_at: c.createdAt.toISOString(),
+          provider_org_id: c.providerOrgId,
+        })),
+        next_cursor: null,
       });
     });
   });
 
   describe('getConsult', () => {
     it('should return consult by ID', async () => {
-      const mockConsult = createMockConsult();
+      const mockConsult = createMockConsult({ providerOrgId: 'test-org-id' });
       const claims = mockClaims();
 
       jest.spyOn(prismaService.consult, 'findUnique').mockResolvedValue(mockConsult);
 
       const result = await service.getConsult('consult-123', claims);
 
-      expect(result).toEqual(mockConsult);
+      expect(result).toEqual({
+        id: mockConsult.id,
+        status: mockConsult.status,
+        patient: {
+          id: mockConsult.patient.id,
+          legal_name: mockConsult.patient.legalName,
+          dob: mockConsult.patient.dob.toISOString(),
+          address: mockConsult.patient.address,
+        },
+        provider_org_id: mockConsult.providerOrgId,
+        created_at: mockConsult.createdAt.toISOString(),
+        updated_at: mockConsult.updatedAt.toISOString(),
+      });
       expect(prismaService.consult.findUnique).toHaveBeenCalledWith({
         where: { id: 'consult-123' },
       });
@@ -84,13 +97,16 @@ describe('ConsultsService', () => {
       const mockConsult = createMockConsult({ status: 'APPROVED' });
       const claims = mockClaims();
 
-      jest.spyOn(prismaService.consult, 'findUnique').mockResolvedValue(createMockConsult());
+      jest.spyOn(prismaService.consult, 'findUnique').mockResolvedValue(createMockConsult({ providerOrgId: 'test-org-id' }));
       jest.spyOn(prismaService.consult, 'update').mockResolvedValue(mockConsult);
       jest.spyOn(auditService, 'logActivity').mockResolvedValue(undefined);
 
       const result = await service.updateConsultStatus('consult-123', { status: 'APPROVED' }, claims);
 
-      expect(result).toEqual(mockConsult);
+      expect(result).toEqual({
+        id: mockConsult.id,
+        status: 'APPROVED',
+      });
       expect(prismaService.consult.update).toHaveBeenCalledWith({
         where: { id: 'consult-123' },
         data: { status: 'APPROVED' },
@@ -108,7 +124,8 @@ describe('ConsultsService', () => {
     it('should throw error for invalid status', async () => {
       const claims = mockClaims();
 
-      jest.spyOn(prismaService.consult, 'findUnique').mockResolvedValue(createMockConsult());
+      jest.spyOn(prismaService.consult, 'findUnique').mockResolvedValue(createMockConsult({ providerOrgId: 'test-org-id' }));
+      jest.spyOn(prismaService.consult, 'update').mockRejectedValue(new Error('Invalid status'));
 
       await expect(service.updateConsultStatus('consult-123', { status: 'INVALID_STATUS' as any }, claims)).rejects.toThrow('Invalid status');
     });

@@ -140,6 +140,44 @@ export class AuthService {
     }
   }
 
+  async getCurrentUser(userId: string): Promise<MeResponseDto> {
+    try {
+      // Get user from database
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          org: true,
+        },
+      })
+
+      if (!user) {
+        throw new UnauthorizedException('User not found')
+      }
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          org_id: user.orgId,
+          last_login_at: user.lastLoginAt?.toISOString() || new Date().toISOString(),
+        },
+        org: {
+          id: user.org.id,
+          name: user.org.name,
+          type: user.org.type,
+        },
+      }
+    } catch (error) {
+      logger.error({
+        action: 'GET_CURRENT_USER_FAILED',
+        user_id: userId,
+        error: (error as Error).message,
+      })
+      throw error
+    }
+  }
+
   /**
    * Update user's last login timestamp in database
    */
