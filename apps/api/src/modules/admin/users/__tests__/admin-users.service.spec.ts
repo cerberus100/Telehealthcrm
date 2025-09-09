@@ -303,7 +303,7 @@ describe('AdminUsersService', () => {
       const claims = mockClaims({ role: 'ADMIN' });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(createMockUser());
-      jest.spyOn(cognitoService, 'changeUserPassword').mockResolvedValue({ message: 'Password changed successfully', temporaryPassword: true });
+      jest.spyOn(cognitoService, 'changeUserPassword').mockResolvedValue(undefined);
 
       const result = await service.changeUserPassword('user-123', passwordData, claims);
 
@@ -317,7 +317,7 @@ describe('AdminUsersService', () => {
       const claims = mockClaims({ role: 'ADMIN' });
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(createMockUser());
-      jest.spyOn(cognitoService, 'resendInvitation').mockResolvedValue({ email: 'dr@example.com', message: 'Invitation resent successfully' });
+      jest.spyOn(cognitoService, 'resendInvitation').mockResolvedValue(undefined);
 
       const result = await service.resendInvitation('user-123', claims);
 
