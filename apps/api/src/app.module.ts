@@ -16,6 +16,7 @@ import { RxController } from './controllers/rx.controller'
 import { NotificationsController } from './controllers/notifications.controller'
 import { BusinessMetricsController } from './controllers/business-metrics.controller'
 import { ComplianceController } from './controllers/compliance.controller'
+import { AnalyticsController } from './controllers/analytics.controller'
 import { PrismaService } from './prisma.service'
 import { MockPrismaService } from './mock-prisma.service'
 import { AuthService } from './services/auth.service'
@@ -37,6 +38,7 @@ import { UpsModule } from './integrations/ups/ups.module'
 import { WebSocketModule } from './websocket/websocket.module'
 import { AdminUsersModule } from './modules/admin/users/admin-users.module'
 import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizations.module'
+import { AnalyticsService } from './services/analytics.service'
 
 @Module({
   imports: [
@@ -59,7 +61,8 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
     RxController, 
     NotificationsController,
     BusinessMetricsController,
-    ComplianceController
+    ComplianceController,
+    AnalyticsController
   ],
   providers: [
     {
@@ -81,6 +84,7 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
     SOC2ComplianceService,
     AuditService,
     TelemetryService,
+    AnalyticsService,
     {
       provide: APP_GUARD,
       useClass: AbacGuard,

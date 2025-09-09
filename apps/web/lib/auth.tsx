@@ -94,3 +94,21 @@ export function RequireRole({ allow, children }: { allow: Role[]; children: Reac
   if (!allow.includes(role)) return <p>Access denied</p>
   return <>{children}</>
 }
+
+/**
+ * Check if user has admin-level permissions
+ * Super admins have full access, other admins need explicit permission grants
+ */
+export function hasAdminAccess(role: Role | null): boolean {
+  if (!role) return false
+  return role === 'SUPER_ADMIN' || role === 'MARKETER_ADMIN'
+}
+
+/**
+ * Check if user can view sensitive operational metrics (like TAT)
+ * Currently restricted to super admin and admin roles only
+ */
+export function canViewOperationalMetrics(role: Role | null): boolean {
+  if (!role) return false
+  return role === 'SUPER_ADMIN' || role === 'MARKETER_ADMIN'
+}

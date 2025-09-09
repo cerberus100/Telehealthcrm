@@ -1,6 +1,6 @@
 import type { RequestClaims } from '../types/claims'
 
-type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification' | 'Organization'
+type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification' | 'Organization' | 'Analytics' | 'OperationalMetrics'
 
 type Action = 'read' | 'write' | 'list' | 'update' | 'logout' | 'create'
 
@@ -40,16 +40,25 @@ export function evaluatePolicy(req: AccessRequest): AccessDecision {
       }
       if (resource === 'Health' && action === 'read') return { allow: true }
       if (resource === 'Notification' && action === 'read') return { allow: true }
+      if (resource === 'Analytics' && action === 'read') return { allow: true }
+      // Block access to operational metrics for marketers
+      if (resource === 'OperationalMetrics') return { allow: false, reason: 'marketer cannot view operational metrics' }
       return { allow: false, reason: 'marketer not permitted' }
     }
     case 'PHARMACIST': {
       if (resource === 'Rx') return { allow: true }
       if (resource === 'LabResult') return { allow: false, reason: 'pharmacy cannot view lab results' }
+      if (resource === 'Analytics' && action === 'read') return { allow: true }
+      // Block operational metrics for pharmacists
+      if (resource === 'OperationalMetrics') return { allow: false, reason: 'pharmacist cannot view operational metrics' }
       return { allow: true }
     }
     case 'LAB_TECH': {
       if (resource === 'LabOrder' || resource === 'LabResult' || resource === 'Shipment') return { allow: true }
       if (resource === 'Rx') return { allow: false, reason: 'lab cannot view Rx' }
+      if (resource === 'Analytics' && action === 'read') return { allow: true }
+      // Block operational metrics for lab technicians
+      if (resource === 'OperationalMetrics') return { allow: false, reason: 'lab tech cannot view operational metrics' }
       return { allow: true }
     }
     case 'DOCTOR':
@@ -57,6 +66,15 @@ export function evaluatePolicy(req: AccessRequest): AccessDecision {
     case 'SUPPORT':
     case 'AUDITOR': {
       if (role === 'AUDITOR' && action !== 'read' && action !== 'list') return { allow: false, reason: 'auditor read-only' }
+      
+      // Only ADMIN and MASTER_ADMIN can access operational metrics
+      if (resource === 'OperationalMetrics') {
+        if (role === 'ADMIN' || subject.role === 'MASTER_ADMIN') {
+          return { allow: true }
+        }
+        return { allow: false, reason: 'only admins can view operational metrics' }
+      }
+      
       return { allow: true }
     }
     default:
