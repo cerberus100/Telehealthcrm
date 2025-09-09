@@ -333,7 +333,7 @@ export class AdminOrganizationsService {
         where: { id: orgId },
         data: {
           compliance: {
-            ...existingOrg.compliance,
+            ...(existingOrg.compliance as any || {}),
             baaSigned: true,
             baaSignedAt: baaData.signedAt,
             baaExpiresAt: baaData.expiresAt,

@@ -214,6 +214,7 @@ export class AdminUsersService {
           department: data.department,
           isActive: data.isActive,
           orgId: claims.orgId,
+          status: 'ACTIVE', // Default status
         },
       });
 

@@ -64,7 +64,7 @@ export class UpsTrackingService {
       // Parse and map response
       const trackingInfo = this.mapUpsResponse(response, trackingNumber)
 
-      this.logger.info({
+      this.logger.log({
         action: 'UPS_TRACKING_SUCCESS',
         tracking_number: trackingNumber,
         status: trackingInfo.status,

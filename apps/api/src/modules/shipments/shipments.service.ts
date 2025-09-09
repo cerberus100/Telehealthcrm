@@ -225,7 +225,7 @@ export class ShipmentsService {
 
       return {
         items: itemsResponse,
-        next_cursor: nextCursor,
+        next_cursor: nextCursor || null,
         total,
       }
     } catch (error) {

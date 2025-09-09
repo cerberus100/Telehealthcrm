@@ -32,7 +32,7 @@ export class UpsPollingService {
     const startTime = Date.now()
 
     try {
-      this.logger.info({
+      this.logger.log({
         action: 'UPS_POLLING_STARTED',
         timestamp: new Date().toISOString(),
       })
@@ -41,14 +41,14 @@ export class UpsPollingService {
       const shipments = await this.getShipmentsForPolling()
       
       if (shipments.length === 0) {
-        this.logger.info({
+        this.logger.log({
           action: 'UPS_POLLING_NO_SHIPMENTS',
           timestamp: new Date().toISOString(),
         })
         return
       }
 
-      this.logger.info({
+      this.logger.log({
         action: 'UPS_POLLING_BATCH_START',
         shipment_count: shipments.length,
         timestamp: new Date().toISOString(),
@@ -58,7 +58,7 @@ export class UpsPollingService {
       await this.processShipmentsBatch(shipments)
 
       const duration = Date.now() - startTime
-      this.logger.info({
+      this.logger.log({
         action: 'UPS_POLLING_COMPLETED',
         duration_ms: duration,
         shipment_count: shipments.length,
@@ -143,7 +143,7 @@ export class UpsPollingService {
       }
     }
 
-    this.logger.info({
+    this.logger.log({
       action: 'UPS_POLLING_BATCH_RESULTS',
       updated: results.updated,
       failed: results.failed,

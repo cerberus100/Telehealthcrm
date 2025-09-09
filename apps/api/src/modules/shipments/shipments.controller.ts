@@ -20,15 +20,10 @@ import { Abac } from '../../abac/abac.decorator'
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe'
 import {
   CreateShipmentDto,
-  CreateShipmentDtoSchema,
   UpdateShipmentDto,
-  UpdateShipmentDtoSchema,
   BulkCreateShipmentsDto,
-  BulkCreateShipmentsDtoSchema,
   ShipmentsQueryDto,
-  ShipmentsQueryDtoSchema,
   RefreshShipmentDto,
-  RefreshShipmentDtoSchema,
 } from './dto/shipments.dto'
 import { RequestClaims } from '../../types/claims'
 import { logger } from '../../utils/logger'
@@ -49,7 +44,7 @@ export class ShipmentsController {
   @Abac('Shipment', 'create')
   @HttpCode(HttpStatus.CREATED)
   async createShipment(
-    @Body(new ZodValidationPipe(CreateShipmentDtoSchema)) createShipmentDto: CreateShipmentDto,
+    @Body(new ZodValidationPipe(CreateShipmentDto)) createShipmentDto: CreateShipmentDto,
     @Headers('correlation-id') correlationId: string,
     @Headers('x-user-id') userId: string,
     @Headers('x-org-id') orgId: string,
@@ -79,7 +74,7 @@ export class ShipmentsController {
   @Abac('Shipment', 'create')
   @HttpCode(HttpStatus.CREATED)
   async createBulkShipments(
-    @Body(new ZodValidationPipe(BulkCreateShipmentsDtoSchema)) bulkCreateDto: BulkCreateShipmentsDto,
+    @Body(new ZodValidationPipe(BulkCreateShipmentsDto)) bulkCreateDto: BulkCreateShipmentsDto,
     @Headers('correlation-id') correlationId: string,
     @Headers('x-user-id') userId: string,
     @Headers('x-org-id') orgId: string,
@@ -109,7 +104,7 @@ export class ShipmentsController {
   @Get()
   @Abac('Shipment', 'read')
   async getShipments(
-    @Query(new ZodValidationPipe(ShipmentsQueryDtoSchema)) query: ShipmentsQueryDto,
+    @Query(new ZodValidationPipe(ShipmentsQueryDto)) query: ShipmentsQueryDto,
     @Headers('correlation-id') correlationId: string,
     @Headers('x-user-id') userId: string,
     @Headers('x-org-id') orgId: string,
@@ -177,7 +172,7 @@ export class ShipmentsController {
   @Abac('Shipment', 'update')
   async updateShipment(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(UpdateShipmentDtoSchema)) updateShipmentDto: UpdateShipmentDto,
+    @Body(new ZodValidationPipe(UpdateShipmentDto)) updateShipmentDto: UpdateShipmentDto,
     @Headers('correlation-id') correlationId: string,
     @Headers('x-user-id') userId: string,
     @Headers('x-org-id') orgId: string,
@@ -210,7 +205,7 @@ export class ShipmentsController {
   @HttpCode(HttpStatus.OK)
   async refreshShipmentTracking(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(RefreshShipmentDtoSchema)) refreshDto: RefreshShipmentDto,
+    @Body(new ZodValidationPipe(RefreshShipmentDto)) refreshDto: RefreshShipmentDto,
     @Headers('correlation-id') correlationId: string,
     @Headers('x-user-id') userId: string,
     @Headers('x-org-id') orgId: string,

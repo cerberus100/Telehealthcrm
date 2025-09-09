@@ -11,24 +11,27 @@ datasource db {
 // Multi-tenant schema. Field-level encryption for highly sensitive fields is handled at the application layer (KMS envelope).
 
 model Organization {
-  id        String   @id @default(uuid())
-  type      OrgType
-  name      String
-  npi       String?  @db.VarChar(20)
-  address   Json?
-  users     User[]
-  patients  Patient[]
-  consults  Consult[]
-  rxs       Rx[]
-  labOrders LabOrder[]
-  shipments Shipment[]
+  id          String   @id @default(uuid())
+  type        OrgType
+  name        String
+  npi         String?  @db.VarChar(20)
+  address     Json?
+  contactInfo Json?    // Contact information
+  settings    Json?    // Organization settings
+  compliance  Json?    // Compliance information
+  users       User[]
+  patients    Patient[]
+  consults    Consult[]
+  rxs         Rx[]
+  labOrders   LabOrder[]
+  shipments   Shipment[]
   marketerShipments Shipment[] @relation("MarketerShipments")
-  results   LabResult[]
+  results     LabResult[]
   pharmacyFulfillments PharmacyFulfillment[]
-  audits    AuditLog[]
-  notifs    Notification[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  audits      AuditLog[]
+  notifs      Notification[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum OrgType {
@@ -39,16 +42,22 @@ enum OrgType {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  orgId        String
-  org          Organization @relation(fields: [orgId], references: [id])
-  role         UserRole
-  email        String   @unique
-  status       String   @db.VarChar(20)
-  mfaEnrolled  Boolean  @default(false)
-  lastLoginAt  DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(uuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id])
+  role          UserRole
+  email         String   @unique
+  firstName     String?
+  lastName      String?
+  phoneNumber   String?
+  department    String?
+  purposeOfUse  String?
+  isActive      Boolean  @default(true)
+  status        String   @db.VarChar(20)
+  mfaEnrolled   Boolean  @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   @@index([orgId])
 }
 
@@ -59,6 +68,8 @@ enum UserRole {
   PHARMACIST
   MARKETER
   SUPPORT
+  ORG_ADMIN
+  ORG_MANAGER
 }
 
 model Patient {
@@ -189,6 +200,7 @@ model Shipment {
   status            ShipmentStatus @default(CREATED)
   eta               DateTime?      // Estimated delivery date
   lastEvent         String?        // Last tracking event description
+  lastEventAt       DateTime?      // Last tracking event timestamp
   lastCarrierPollAt DateTime?      // Last time we polled carrier API
   shipTo            Json           // Non-PHI shipping fields only
   audit             Json           // Change history
@@ -276,6 +288,7 @@ model PatientDuplicateLink {
 
 model AuditLog {
   id            String   @id @default(uuid())
+  userId        String?  // System user ID for automated actions
   actorUserId   String?
   actorOrgId    String?
   action        String

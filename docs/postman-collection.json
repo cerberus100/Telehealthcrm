@@ -1,0 +1,567 @@
+{
+  "info": {
+    "name": "Telehealth CRM API",
+    "description": "Complete API collection for Telehealth CRM with authentication, consults, shipments, prescriptions, notifications, admin, and compliance endpoints",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "correlation_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@test.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', response.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consults",
+      "item": [
+        {
+          "name": "Get Consults",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/consults?status=PASSED&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["consults"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PASSED"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Consult by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/consults/consult-123",
+              "host": ["{{base_url}}"],
+              "path": ["consults", "consult-123"]
+            }
+          }
+        },
+        {
+          "name": "Update Consult Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/consults/consult-123/status",
+              "host": ["{{base_url}}"],
+              "path": ["consults", "consult-123", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "Get Shipments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shipments?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["shipments"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultId\": \"consult-123\",\n  \"labOrderId\": \"lab-order-123\",\n  \"carrier\": \"UPS\",\n  \"trackingNumber\": \"1Z999AA1234567890\",\n  \"shipTo\": {\n    \"name\": \"John Doe\",\n    \"address\": \"123 Main St\",\n    \"city\": \"Austin\",\n    \"state\": \"TX\",\n    \"zip\": \"78701\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/shipments",
+              "host": ["{{base_url}}"],
+              "path": ["shipments"]
+            }
+          }
+        },
+        {
+          "name": "Update Shipment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DELIVERED\",\n  \"deliveredAt\": \"2025-01-03T20:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/shipments/shipment-123",
+              "host": ["{{base_url}}"],
+              "path": ["shipments", "shipment-123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prescriptions (Rx)",
+      "item": [
+        {
+          "name": "Get Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rx?status=SUBMITTED&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["rx"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "SUBMITTED"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Prescription by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rx/rx-123",
+              "host": ["{{base_url}}"],
+              "path": ["rx", "rx-123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Notification Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications/stats",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CONSULT_STATUS_CHANGE\",\n  \"targetUserId\": \"user-123\",\n  \"payload\": {\n    \"consultId\": \"consult-123\",\n    \"status\": \"PASSED\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications/notification-123/read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "notification-123", "read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Users",
+      "item": [
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@test.com\",\n  \"role\": \"DOCTOR\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"orgId\": \"org-123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"role\": \"PHARMACIST\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/user-123",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "user-123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Organizations",
+      "item": [
+        {
+          "name": "Get Organizations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/organizations?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "organizations"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Organization",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Clinic\",\n  \"type\": \"PROVIDER\",\n  \"contactEmail\": \"contact@newclinic.com\",\n  \"contactPhone\": \"+1-555-0123\",\n  \"address\": {\n    \"street\": \"456 Health St\",\n    \"city\": \"Austin\",\n    \"state\": \"TX\",\n    \"zip\": \"78702\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/organizations",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "organizations"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Business Metrics",
+      "item": [
+        {
+          "name": "Get Business Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/metrics/business",
+              "host": ["{{base_url}}"],
+              "path": ["metrics", "business"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Business Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/metrics/business/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["metrics", "business", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Compliance",
+      "item": [
+        {
+          "name": "Security Audit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/compliance/security-audit",
+              "host": ["{{base_url}}"],
+              "path": ["compliance", "security-audit"]
+            }
+          }
+        },
+        {
+          "name": "HIPAA Compliance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/compliance/hipaa",
+              "host": ["{{base_url}}"],
+              "path": ["compliance", "hipaa"]
+            }
+          }
+        },
+        {
+          "name": "SOC 2 Compliance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/compliance/soc2",
+              "host": ["{{base_url}}"],
+              "path": ["compliance", "soc2"]
+            }
+          }
+        },
+        {
+          "name": "Compliance Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/compliance/overview",
+              "host": ["{{base_url}}"],
+              "path": ["compliance", "overview"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

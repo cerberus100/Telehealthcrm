@@ -53,7 +53,7 @@ export class UpsOAuthService {
       const token = await this.authenticate()
       this.cacheToken(token)
       
-      this.logger.info({
+      this.logger.log({
         action: 'UPS_TOKEN_OBTAINED',
         expires_in: token.expires_in,
         token_type: token.token_type,
