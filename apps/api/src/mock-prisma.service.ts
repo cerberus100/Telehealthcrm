@@ -19,6 +19,43 @@ export class MockPrismaService {
         },
       }
     },
+    findFirst: async (params: any) => {
+      return {
+        id: 'user_123',
+        email: 'dr@example.com',
+        role: 'DOCTOR',
+        orgId: 'org_123',
+        lastLoginAt: new Date(),
+        org: {
+          id: 'org_123',
+          type: 'PROVIDER',
+          name: 'Acme Clinic',
+        },
+      }
+    },
+    findMany: async (params: any) => {
+      return [
+        {
+          id: 'user_123',
+          email: 'dr@example.com',
+          role: 'DOCTOR',
+          orgId: 'org_123',
+          lastLoginAt: new Date(),
+        },
+      ]
+    },
+    count: async (params: any) => {
+      return 1
+    },
+    create: async (params: any) => {
+      return {
+        id: 'user_new',
+        email: params.data.email,
+        role: params.data.role,
+        orgId: params.data.orgId,
+        lastLoginAt: new Date(),
+      }
+    },
     update: async (params: any) => {
       return {
         id: 'user_123',
@@ -48,6 +85,9 @@ export class MockPrismaService {
           createdFrom: 'WEB',
         },
       ]
+    },
+    count: async (params: any) => {
+      return 1
     },
     findUnique: async (params: any) => {
       return {
@@ -125,6 +165,7 @@ export class MockPrismaService {
     },
   }
 
+
   notification = {
     findMany: async (params: any) => {
       return [
@@ -134,6 +175,45 @@ export class MockPrismaService {
           createdAt: new Date(),
           payload: { lab_order_id: 'lo_1' },
         },
+      ]
+    },
+    count: async (params: any) => {
+      return 1
+    },
+    create: async (params: any) => {
+      return {
+        id: 'n_new',
+        type: params.data.type,
+        createdAt: new Date(),
+        payload: params.data.payload,
+        status: 'UNREAD',
+        orgId: params.data.orgId,
+      }
+    },
+    update: async (params: any) => {
+      return {
+        id: params.where.id,
+        type: 'LAB_RESULT_READY',
+        createdAt: new Date(),
+        payload: { lab_order_id: 'lo_1' },
+        status: 'READ',
+        orgId: 'org_123',
+      }
+    },
+    findFirst: async (params: any) => {
+      return {
+        id: 'n_1',
+        type: 'LAB_RESULT_READY',
+        createdAt: new Date(),
+        payload: { lab_order_id: 'lo_1' },
+        status: 'UNREAD',
+        orgId: 'org_123',
+      }
+    },
+    groupBy: async (params: any) => {
+      return [
+        { type: 'CONSULT_STATUS_CHANGE', _count: { type: 2 } },
+        { type: 'LAB_RESULT_READY', _count: { type: 1 } },
       ]
     },
   }

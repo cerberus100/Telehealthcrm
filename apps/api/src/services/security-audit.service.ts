@@ -94,10 +94,12 @@ export class SecurityAuditService {
 
     // Log audit completion
     await this.auditService.logEvent({
+      correlationId: `security-audit-${Date.now()}`,
       actorUserId: 'system',
       action: 'SECURITY_AUDIT_COMPLETED',
       resource: 'SecurityAudit',
       resourceId: auditId,
+      success: true,
       details: {
         overallScore,
         totalChecks: results.length,

@@ -102,7 +102,19 @@ export const createMockConsult = (overrides: any = {}) => ({
   id: 'consult-123',
   status: 'PASSED',
   patientId: 'patient-123',
-  providerOrgId: 'org-123',
+  providerOrgId: 'test-org-id',
+  orgId: 'test-org-id',
+  patient: {
+    id: 'patient-123',
+    legalName: 'John Doe',
+    dob: new Date('1990-01-01T00:00:00Z'),
+    address: {
+      street: '123 Main St',
+      city: 'Anytown',
+      state: 'CA',
+      zipCode: '12345',
+    },
+  },
   createdAt: new Date('2025-01-01T00:00:00Z'),
   updatedAt: new Date('2025-01-01T00:00:00Z'),
   ...overrides,
@@ -151,6 +163,11 @@ export const createMockUser = (overrides: any = {}) => ({
   isActive: true,
   createdAt: new Date('2025-01-01T00:00:00Z'),
   updatedAt: new Date('2025-01-01T00:00:00Z'),
+  org: {
+    id: 'org-123',
+    name: 'Test Clinic',
+    type: 'PROVIDER',
+  },
   ...overrides,
 });
 

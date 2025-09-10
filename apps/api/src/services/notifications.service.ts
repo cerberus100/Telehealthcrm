@@ -163,12 +163,14 @@ export class NotificationsService {
         throw new Error('Notification not found or access denied');
       }
 
-      await this.prisma.notification.update({
+      const updatedNotification = await this.prisma.notification.update({
         where: { id: notificationId },
         data: { status: 'READ' },
       });
 
       this.logger.log(`Notification marked as read: ${notificationId} by user ${claims.sub}`);
+
+      return updatedNotification;
 
     } catch (error) {
       this.logger.error('Error marking notification as read:', error);

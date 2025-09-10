@@ -20,6 +20,7 @@ export interface AuditEvent {
   sessionId?: string
   success: boolean
   error?: string
+  details?: any
 }
 
 export interface AuditQuery {
@@ -37,6 +38,18 @@ export interface AuditQuery {
 @Injectable()
 export class AuditService {
   constructor(private prisma: PrismaService) {}
+
+  async logActivity(event: AuditEvent): Promise<void> {
+    try {
+      await this.logEvent(event);
+    } catch (error) {
+      logger.error({
+        action: 'LOG_ACTIVITY_FAILED',
+        error: (error as Error).message,
+      });
+      // Don't throw error to prevent breaking the main flow
+    }
+  }
 
   /**
    * Log an audit event

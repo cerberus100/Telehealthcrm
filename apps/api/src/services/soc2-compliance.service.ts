@@ -93,10 +93,12 @@ export class SOC2ComplianceService {
 
     // Log compliance assessment completion
     await this.auditService.logEvent({
+      correlationId: `soc2-compliance-${Date.now()}`,
       actorUserId: 'system',
       action: 'SOC2_COMPLIANCE_ASSESSMENT_COMPLETED',
       resource: 'ComplianceReport',
       resourceId: reportId,
+      success: true,
       details: {
         overallCompliance,
         totalControls,
