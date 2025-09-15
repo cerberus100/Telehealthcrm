@@ -15,7 +15,6 @@ import { PrismaService } from '../../prisma.service'
     UpsOAuthService,
     UpsTrackingService,
     UpsPollingService,
-    PrismaService,
   ],
   exports: [
     UpsOAuthService,

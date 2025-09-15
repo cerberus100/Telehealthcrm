@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, ForbiddenException, Inject } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { CognitoJwtVerifier } from 'aws-jwt-verify'
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager'
@@ -40,7 +40,7 @@ export class CognitoService {
   private readonly userPoolId: string
   private readonly clientId: string
 
-  constructor(private configService: ConfigService) {
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
     const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID')
     const clientId = this.configService.get<string>('COGNITO_CLIENT_ID')
     const demoMode = this.configService.get<string>('API_DEMO_MODE') === 'true'

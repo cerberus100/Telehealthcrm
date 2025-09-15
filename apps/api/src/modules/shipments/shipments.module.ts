@@ -6,7 +6,7 @@ import { AuditService } from '../../audit/audit.service'
 
 @Module({
   controllers: [ShipmentsController],
-  providers: [ShipmentsService, PrismaService, AuditService],
+  providers: [ShipmentsService],
   exports: [ShipmentsService],
 })
 export class ShipmentsModule {}

@@ -122,22 +122,7 @@ const logger = pino({
       headers: redactPHI(res.getHeaders()),
     }),
     err: pino.stdSerializers.err,
-  },
-  ...(process.env.NODE_ENV === 'production' && {
-    // In production, use JSON format for structured logging
-    transport: undefined,
-  }),
-  ...(process.env.NODE_ENV === 'development' && {
-    // In development, use pretty printing
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'SYS:standard',
-        ignore: 'hostname,pid',
-      }
-    }
-  })
+  }
 })
 
 // Audit logger - separate logger for HIPAA audit trail
@@ -151,14 +136,7 @@ const auditLogger = pino({
       timestamp: new Date().toISOString(),
     })
   },
-  // Audit logs should be structured and immutable
-  transport: process.env.NODE_ENV === 'production' ? undefined : {
-    target: 'pino-pretty',
-    options: {
-      colorize: false,
-      translateTime: 'SYS:iso',
-    }
-  }
+  // Audit logs should be structured and immutable; emit as JSON without transport
 })
 
 // Utility functions for common logging patterns

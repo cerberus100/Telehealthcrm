@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, Inject } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager'
 import { logger } from '../../utils/logger'
@@ -25,8 +25,9 @@ export class UpsOAuthService {
   private tokenCache: UpsToken | null = null
   private tokenCacheExpiry = 0
 
-  constructor(private configService: ConfigService) {
-    this.secretsClient = new SecretsManagerClient({
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
+    const demo = process.env.API_DEMO_MODE === 'true'
+    this.secretsClient = demo ? (null as any) : new SecretsManagerClient({
       region: this.configService.get<string>('AWS_REGION', 'us-east-1'),
     })
 
@@ -75,7 +76,9 @@ export class UpsOAuthService {
   private async authenticate(): Promise<UpsToken> {
     try {
       // Get credentials from AWS Secrets Manager
-      const credentials = await this.getCredentials()
+      const credentials = process.env.API_DEMO_MODE === 'true'
+        ? { clientId: 'demo', clientSecret: 'demo' }
+        : await this.getCredentials()
       
       const tokenUrl = `${this.config.baseUrl}${this.config.tokenEndpoint}`
       
@@ -132,8 +135,8 @@ export class UpsOAuthService {
       ])
 
       const [clientIdResponse, clientSecretResponse] = await Promise.all([
-        this.secretsClient.send(clientIdCommand),
-        this.secretsClient.send(clientSecretCommand),
+        this.secretsClient!.send(clientIdCommand),
+        this.secretsClient!.send(clientSecretCommand),
       ])
 
       const clientId = clientIdResponse.SecretString

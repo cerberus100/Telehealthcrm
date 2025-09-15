@@ -206,7 +206,7 @@ export class NotificationsService {
       return {
         total,
         unread,
-        byType: byType.map(item => ({
+        byType: byType.map((item: { type: string; _count: { type: number } }) => ({
           type: item.type,
           count: item._count.type,
         })),

@@ -18,16 +18,17 @@ export class MockCognitoService {
     };
   }
 
-  async authenticate(credentials: { email: string; password: string }): Promise<LoginResponse> {
-    // Mock implementation for demo mode
+  async authenticate(email: string, _password: string): Promise<LoginResponse> {
+    // Mock implementation for demo mode (aligns with CognitoService signature)
     return {
       access_token: 'mock_access_token',
       refresh_token: 'mock_refresh_token',
       expires_in: 3600,
       token_type: 'Bearer',
+      accessToken: 'mock_access_token',
       user: {
         sub: 'mock-user-123',
-        email: credentials.email,
+        email,
         email_verified: true,
         org_id: 'mock-org-123',
         role: 'ADMIN',

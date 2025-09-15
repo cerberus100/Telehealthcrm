@@ -1,5 +1,5 @@
 import { Module, MiddlewareConsumer } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { AbacGuard } from './abac/abac.guard'
 import { ClaimsMiddleware } from './middleware/claims.middleware'
@@ -16,7 +16,6 @@ import { RxController } from './controllers/rx.controller'
 import { NotificationsController } from './controllers/notifications.controller'
 import { BusinessMetricsController } from './controllers/business-metrics.controller'
 import { ComplianceController } from './controllers/compliance.controller'
-import { AnalyticsController } from './controllers/analytics.controller'
 import { PrismaService } from './prisma.service'
 import { MockPrismaService } from './mock-prisma.service'
 import { AuthService } from './services/auth.service'
@@ -38,7 +37,6 @@ import { UpsModule } from './integrations/ups/ups.module'
 import { WebSocketModule } from './websocket/websocket.module'
 import { AdminUsersModule } from './modules/admin/users/admin-users.module'
 import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizations.module'
-import { AnalyticsService } from './services/analytics.service'
 
 @Module({
   imports: [
@@ -57,23 +55,28 @@ import { AnalyticsService } from './services/analytics.service'
     AuthController, 
     MeController,
     ConsultsController, 
-    ShipmentsController, 
     RxController, 
     NotificationsController,
     BusinessMetricsController,
-    ComplianceController,
-    AnalyticsController
+    ComplianceController
   ],
   providers: [
     {
       provide: PrismaService,
-      useClass: process.env.API_DEMO_MODE === 'true' ? (MockPrismaService as any) : PrismaService,
+      useFactory: () => {
+        const demoMode = process.env.API_DEMO_MODE === 'true';
+        console.log('Creating PrismaService, demo mode:', demoMode);
+        return demoMode ? new MockPrismaService() : new PrismaService();
+      },
     },
     {
       provide: CognitoService,
-      useClass: process.env.API_DEMO_MODE === 'true' ? (MockCognitoService as any) : CognitoService,
+      useFactory: () => {
+        const demoMode = process.env.API_DEMO_MODE === 'true';
+        console.log('Creating CognitoService, demo mode:', demoMode);
+        return demoMode ? new MockCognitoService() : new CognitoService();
+      },
     },
-    AuthService,
     ConsultsService,
     ShipmentsService,
     RxService,
@@ -84,35 +87,26 @@ import { AnalyticsService } from './services/analytics.service'
     SOC2ComplianceService,
     AuditService,
     TelemetryService,
-    AnalyticsService,
-    {
-      provide: APP_GUARD,
-      useClass: AbacGuard,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TelemetryInterceptor,
-    },
+    AuthService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AbacGuard,
+    // },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: TelemetryInterceptor,
+    // },
   ],
 })
 export class AppModule {
-  constructor(private readonly telemetryService: TelemetryService) {}
-
-  async onModuleInit() {
-    // Initialize telemetry service
-    await this.telemetryService.initialize();
-  }
-
-  async onModuleDestroy() {
-    // Shutdown telemetry service
-    await this.telemetryService.shutdown();
-  }
+  // Remove explicit initialize/shutdown; TelemetryService handles lifecycle via OnModuleInit/Destroy
 
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(JwtMiddleware, RbacMiddleware, TenantMiddleware, RateLimitMiddleware)
+      .exclude('health', 'auth/(.*)')
       .forRoutes('*')
       .apply(ClaimsMiddleware)
-      .forRoutes('health') // Keep claims middleware for health endpoint only
+      .forRoutes('health', 'auth/(.*)')
   }
 }

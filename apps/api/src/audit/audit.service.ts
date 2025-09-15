@@ -212,7 +212,7 @@ export class AuditService {
       const nextCursor = items.length === limit && items[items.length - 1] ? items[items.length - 1]?.id : undefined
 
       return {
-        items: items.map(item => ({
+        items: items.map((item: any) => ({
           id: item.id,
           timestamp: item.ts,
           actor: {
