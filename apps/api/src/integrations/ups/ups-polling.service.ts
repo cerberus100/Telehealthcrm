@@ -13,8 +13,8 @@ export class UpsPollingService {
   private readonly retryDelay = 5000 // 5 seconds
 
   constructor(
-    private prisma: PrismaService,
-    private upsTrackingService: UpsTrackingService,
+    private readonly prisma: PrismaService,
+    private readonly upsTrackingService: UpsTrackingService,
   ) {}
 
   /**

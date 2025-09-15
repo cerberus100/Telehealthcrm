@@ -4,6 +4,13 @@ import { FastifyReply } from 'fastify'
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
+    console.error('GlobalExceptionFilter caught exception:', exception);
+    console.error('Exception details:', {
+      name: (exception as any)?.name,
+      message: (exception as any)?.message,
+      stack: (exception as any)?.stack,
+    });
+    
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<FastifyReply>()
     const request = ctx.getRequest()
@@ -62,7 +69,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Add correlation ID to response headers
     const correlationId = request.headers['correlation-id'] || request.id
-    response.header('Correlation-Id', correlationId)
+    if (response.header) {
+      response.header('Correlation-Id', correlationId)
+    }
 
     response.status(status).send(errorResponse)
   }

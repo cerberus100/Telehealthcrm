@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, Req, Inject, forwardRef } from '@nestjs/common'
 import { AuthService } from '../services/auth.service'
 import { LoginDto, RefreshDto, LogoutDto } from '../types/dto'
 import { RequestClaims } from '../types/claims'
@@ -8,10 +8,17 @@ import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    @Inject(forwardRef(() => AuthService))
+    private authService: AuthService
+  ) {
+    console.log('AuthController constructor called');
+    console.log('AuthService:', authService);
+  }
 
   @Post('login')
   async login(@Body(new ZodValidationPipe(LoginDto)) loginDto: LoginDto) {
+    console.log('AuthController.login called with:', loginDto);
     return this.authService.login(loginDto)
   }
 

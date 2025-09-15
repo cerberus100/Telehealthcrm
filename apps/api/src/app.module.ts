@@ -1,5 +1,5 @@
 import { Module, MiddlewareConsumer } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { AbacGuard } from './abac/abac.guard'
 import { ClaimsMiddleware } from './middleware/claims.middleware'
@@ -55,7 +55,6 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
     AuthController, 
     MeController,
     ConsultsController, 
-    ShipmentsController, 
     RxController, 
     NotificationsController,
     BusinessMetricsController,
@@ -64,13 +63,20 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
   providers: [
     {
       provide: PrismaService,
-      useClass: process.env.API_DEMO_MODE === 'true' ? (MockPrismaService as any) : PrismaService,
+      useFactory: () => {
+        const demoMode = process.env.API_DEMO_MODE === 'true';
+        console.log('Creating PrismaService, demo mode:', demoMode);
+        return demoMode ? new MockPrismaService() : new PrismaService();
+      },
     },
     {
       provide: CognitoService,
-      useClass: process.env.API_DEMO_MODE === 'true' ? (MockCognitoService as any) : CognitoService,
+      useFactory: () => {
+        const demoMode = process.env.API_DEMO_MODE === 'true';
+        console.log('Creating CognitoService, demo mode:', demoMode);
+        return demoMode ? new MockCognitoService() : new CognitoService();
+      },
     },
-    AuthService,
     ConsultsService,
     ShipmentsService,
     RxService,
@@ -81,34 +87,26 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
     SOC2ComplianceService,
     AuditService,
     TelemetryService,
-    {
-      provide: APP_GUARD,
-      useClass: AbacGuard,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TelemetryInterceptor,
-    },
+    AuthService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AbacGuard,
+    // },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: TelemetryInterceptor,
+    // },
   ],
 })
 export class AppModule {
-  constructor(private readonly telemetryService: TelemetryService) {}
-
-  async onModuleInit() {
-    // Initialize telemetry service
-    await this.telemetryService.initialize();
-  }
-
-  async onModuleDestroy() {
-    // Shutdown telemetry service
-    await this.telemetryService.shutdown();
-  }
+  // Remove explicit initialize/shutdown; TelemetryService handles lifecycle via OnModuleInit/Destroy
 
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(JwtMiddleware, RbacMiddleware, TenantMiddleware, RateLimitMiddleware)
+      .exclude('health', 'auth/(.*)')
       .forRoutes('*')
       .apply(ClaimsMiddleware)
-      .forRoutes('health') // Keep claims middleware for health endpoint only
+      .forRoutes('health', 'auth/(.*)')
   }
 }

@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 // Initialize telemetry before any other imports
 import './utils/telemetry'
+import { randomUUID } from 'node:crypto'
 
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
@@ -13,19 +14,20 @@ import { ResponseInterceptor } from './interceptors/response.interceptor'
 import { logger, logAuditEvent } from './utils/logger'
 import { shutdownTelemetry } from './utils/telemetry'
 
+console.log('Starting bootstrap...');
+
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({ 
-      logger,
-      requestIdLogLabel: 'correlation_id',
-      genReqId: () => crypto.randomUUID(),
-    }),
-    { 
-      logger: false, // Use our custom pino logger
-      bufferLogs: false,
-    }
-  )
+  try {
+    console.log('Creating NestJS application...');
+    const app = await NestFactory.create<NestFastifyApplication>(
+      AppModule,
+      new FastifyAdapter(),
+      {
+        logger: ['error', 'warn', 'log', 'debug'],
+        bufferLogs: false,
+      }
+    )
+    console.log('NestJS application created successfully');
 
   await app.register(helmet as any, {
     contentSecurityPolicy: {
@@ -94,23 +96,37 @@ async function bootstrap() {
   const port = Number(process.env.PORT ?? 3001)
   const host = '0.0.0.0'
 
-  await app.listen({ port, host })
-  
-  logger.info({
-    port,
-    host,
-    environment: process.env.NODE_ENV || 'development',
-    service: 'telehealth-api',
-  }, 'Server started successfully')
+    console.log(`Starting server on ${host}:${port}...`);
+    await app.listen({ port, host })
+    
+    console.log('Server started successfully!');
+    logger.info({
+      port,
+      host,
+      environment: process.env.NODE_ENV || 'development',
+      service: 'telehealth-api',
+    }, 'Server started successfully')
 
-  logAuditEvent({
-    action: 'SERVER_START',
-    entity: 'system',
-    entity_id: 'api-server',
-  })
+    logAuditEvent({
+      action: 'SERVER_START',
+      entity: 'system',
+      entity_id: 'api-server',
+    })
+  } catch (error) {
+    console.error('Bootstrap failed:', error);
+    throw error;
+  }
 }
 
 bootstrap().catch((err) => {
   logger.error({ err }, 'bootstrap failed')
   process.exit(1)
+})
+
+// Surface any silent failures
+process.on('uncaughtException', (error) => {
+  console.error('uncaughtException:', error)
+})
+process.on('unhandledRejection', (reason) => {
+  console.error('unhandledRejection:', reason)
 })

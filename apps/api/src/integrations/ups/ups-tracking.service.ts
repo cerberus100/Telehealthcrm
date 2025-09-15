@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, Inject } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { UpsOAuthService } from './ups-oauth.service'
 import { logger } from '../../utils/logger'
@@ -40,8 +40,8 @@ export class UpsTrackingService {
   private readonly trackingEndpoint: string
 
   constructor(
-    private configService: ConfigService,
-    private upsOAuthService: UpsOAuthService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+    private readonly upsOAuthService: UpsOAuthService,
   ) {
     this.baseUrl = this.configService.get<string>('UPS_BASE_URL', 'https://onlinetools.ups.com')
     this.trackingEndpoint = '/api/track/v1/details'

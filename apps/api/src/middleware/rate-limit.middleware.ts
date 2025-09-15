@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, NestMiddleware, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
@@ -21,17 +21,22 @@ interface RateLimitInfo {
 @Injectable()
 export class RateLimitMiddleware implements NestMiddleware {
   private readonly logger = new Logger(RateLimitMiddleware.name);
-  private readonly redis: Redis;
+  private readonly redis?: Redis;
   private readonly config: RateLimitConfig;
+  private readonly disabled: boolean;
 
-  constructor(private configService: ConfigService) {
-    // Initialize Redis connection
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-      password: this.configService.get('REDIS_PASSWORD'),
-      maxRetriesPerRequest: 3,
-    });
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
+    // Disable in demo mode to avoid Redis dependency
+    this.disabled = process.env.API_DEMO_MODE === 'true';
+    if (!this.disabled) {
+      // Initialize Redis connection
+      this.redis = new Redis({
+        host: this.configService.get('REDIS_HOST', 'localhost') as string,
+        port: Number(this.configService.get('REDIS_PORT', 6379)),
+        password: this.configService.get('REDIS_PASSWORD') as string | undefined,
+        maxRetriesPerRequest: 3,
+      });
+    }
 
     // Configure rate limiting
     this.config = {
@@ -43,12 +48,18 @@ export class RateLimitMiddleware implements NestMiddleware {
     };
 
     // Handle Redis connection errors
-    this.redis.on('error', (error) => {
-      this.logger.error('Redis connection error:', error);
-    });
+    if (this.redis) {
+      this.redis.on('error', (error) => {
+        this.logger.error('Redis connection error:', error);
+      });
+    }
   }
 
   async use(req: Request, res: Response, next: NextFunction) {
+    if (this.disabled) {
+      next();
+      return;
+    }
     try {
       // Generate rate limit key
       const key = this.config.keyGenerator!(req);
@@ -125,7 +136,7 @@ export class RateLimitMiddleware implements NestMiddleware {
 
   private async getRateLimitInfo(key: string): Promise<RateLimitInfo> {
     try {
-      const data = await this.redis.get(key);
+      const data = await this.redis!.get(key);
       
       if (!data) {
         return {
@@ -164,12 +175,12 @@ export class RateLimitMiddleware implements NestMiddleware {
 
   private async incrementCounter(key: string): Promise<void> {
     try {
-      const data = await this.redis.get(key);
+      const data = await this.redis!.get(key);
       const now = Date.now();
       
       if (!data) {
         // First request in window
-        await this.redis.setex(
+        await this.redis!.setex(
           key,
           Math.ceil(this.config.windowMs / 1000),
           JSON.stringify({
@@ -182,7 +193,7 @@ export class RateLimitMiddleware implements NestMiddleware {
         
         if (now > parsed.resetTime) {
           // Window expired, reset counter
-          await this.redis.setex(
+          await this.redis!.setex(
             key,
             Math.ceil(this.config.windowMs / 1000),
             JSON.stringify({
@@ -192,7 +203,7 @@ export class RateLimitMiddleware implements NestMiddleware {
           );
         } else {
           // Increment existing counter
-          await this.redis.setex(
+          await this.redis!.setex(
             key,
             Math.ceil((parsed.resetTime - now) / 1000),
             JSON.stringify({
@@ -226,7 +237,7 @@ export class RateLimitMiddleware implements NestMiddleware {
   // Method to reset rate limit for a key (admin function)
   async resetRateLimit(key: string): Promise<void> {
     try {
-      await this.redis.del(key);
+      await this.redis!.del(key);
       this.logger.log(`Rate limit reset for key: ${key}`);
     } catch (error) {
       this.logger.error('Error resetting rate limit:', error);
@@ -237,7 +248,7 @@ export class RateLimitMiddleware implements NestMiddleware {
   // Method to get all rate limit keys (admin function)
   async getAllRateLimitKeys(): Promise<string[]> {
     try {
-      const keys = await this.redis.keys('rate_limit:*');
+      const keys = await this.redis!.keys('rate_limit:*');
       return keys;
     } catch (error) {
       this.logger.error('Error getting rate limit keys:', error);
@@ -246,6 +257,6 @@ export class RateLimitMiddleware implements NestMiddleware {
   }
 
   onModuleDestroy() {
-    this.redis.disconnect();
+    this.redis?.disconnect();
   }
 }

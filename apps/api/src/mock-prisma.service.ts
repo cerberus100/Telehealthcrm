@@ -57,12 +57,39 @@ export class MockPrismaService {
       }
     },
     update: async (params: any) => {
+      // Handle user updates for demo mode
+      if (params.where.id === 'mock-user-123' || params.where.id === 'demo-user-123' || params.where.id === 'user_123') {
+        return {
+          id: params.where.id,
+          email: 'demo@example.com',
+          role: 'ADMIN',
+          orgId: 'mock-org-123',
+          lastLoginAt: new Date(),
+        }
+      }
       return {
         id: 'user_123',
         email: 'dr@example.com',
         role: 'DOCTOR',
         orgId: 'org_123',
         lastLoginAt: new Date(),
+      }
+    },
+  }
+
+  organization = {
+    findUnique: async (params: any) => {
+      if (params.where.id === 'mock-org-123' || params.where.id === 'demo-org-123') {
+        return {
+          id: 'mock-org-123',
+          type: 'PROVIDER',
+          name: 'Demo Clinic',
+        }
+      }
+      return {
+        id: 'org_123',
+        type: 'PROVIDER',
+        name: 'Acme Clinic',
       }
     },
   }
