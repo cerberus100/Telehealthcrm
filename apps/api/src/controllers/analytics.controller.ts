@@ -10,14 +10,14 @@ export class AnalyticsController {
   constructor(private analyticsService: AnalyticsService) {}
 
   @Get('metrics')
-  @Abac({ resource: 'Analytics', action: 'read' })
+  @Abac({ resource: 'User', action: 'read' })
   async getMetrics(@Req() req: any) {
     const claims: RequestClaims = req.claims
     return this.analyticsService.getMetrics(claims)
   }
 
   @Get('operational-metrics')
-  @Abac({ resource: 'OperationalMetrics', action: 'read' })
+  @Abac({ resource: 'User', action: 'read' })
   async getOperationalMetrics(@Req() req: any) {
     const claims: RequestClaims = req.claims
     return this.analyticsService.getOperationalMetrics(claims)

@@ -5,8 +5,17 @@ import { CognitoUser, LoginResponse, RefreshResponse } from '../auth/cognito.ser
 export class MockCognitoService {
   async validateToken(token: string): Promise<CognitoUser> {
     // Mock implementation for demo mode
+    // Extract user ID from token if it's in the format mock_access_token_userId
+    let userId = 'mock-user-123';
+    if (token.startsWith('mock_access_token_')) {
+      const parts = token.split('_');
+      if (parts.length >= 4) {
+        userId = parts.slice(3).join('_');
+      }
+    }
+    
     return {
-      sub: 'mock-user-123',
+      sub: userId,
       email: 'demo@example.com',
       email_verified: true,
       org_id: 'mock-org-123',
@@ -20,20 +29,40 @@ export class MockCognitoService {
 
   async authenticate(email: string, _password: string): Promise<LoginResponse> {
     // Mock implementation for demo mode (aligns with CognitoService signature)
+    const userId = 'mock-user-123';
+    
+    // Support different demo roles based on email
+    let role = 'DOCTOR';
+    let groups = ['DOCTOR'];
+    
+    if (email.includes('admin')) {
+      role = 'SUPER_ADMIN';
+      groups = ['SUPER_ADMIN'];
+    } else if (email.includes('marketer')) {
+      role = 'MARKETER';
+      groups = ['MARKETER'];
+    } else if (email.includes('pharmacy')) {
+      role = 'PHARMACIST';
+      groups = ['PHARMACIST'];
+    } else if (email.includes('lab')) {
+      role = 'LAB_TECH';
+      groups = ['LAB_TECH'];
+    }
+    
     return {
-      access_token: 'mock_access_token',
+      access_token: `mock_access_token_${userId}`,
       refresh_token: 'mock_refresh_token',
       expires_in: 3600,
       token_type: 'Bearer',
-      accessToken: 'mock_access_token',
+      accessToken: `mock_access_token_${userId}`,
       user: {
         sub: 'mock-user-123',
         email,
         email_verified: true,
         org_id: 'mock-org-123',
-        role: 'ADMIN',
+        role,
         purpose_of_use: 'TREATMENT',
-        groups: ['ADMIN'],
+        groups,
         mfa_enabled: false,
         last_login_at: new Date().toISOString(),
       },

@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware, UnauthorizedException, ForbiddenException } from '@nestjs/common'
+import { Injectable, NestMiddleware, UnauthorizedException, ForbiddenException, Inject, forwardRef } from '@nestjs/common'
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { CognitoService, CognitoUser } from '../auth/cognito.service'
 import { logger } from '../utils/logger'
@@ -15,7 +15,10 @@ export interface AuthenticatedRequest extends FastifyRequest {
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware<FastifyRequest, FastifyReply> {
-  constructor(private cognitoService: CognitoService) {}
+  constructor(
+    @Inject(forwardRef(() => CognitoService))
+    private readonly cognitoService: CognitoService
+  ) {}
 
   async use(req: FastifyRequest, _res: FastifyReply, next: (err?: unknown) => void) {
     try {

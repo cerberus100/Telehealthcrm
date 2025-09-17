@@ -12,13 +12,12 @@ export class AuthController {
     @Inject(forwardRef(() => AuthService))
     private authService: AuthService
   ) {
-    console.log('AuthController constructor called');
-    console.log('AuthService:', authService);
+    // AuthController initialized
   }
 
   @Post('login')
   async login(@Body(new ZodValidationPipe(LoginDto)) loginDto: LoginDto) {
-    console.log('AuthController.login called with:', loginDto);
+    // Login attempt
     return this.authService.login(loginDto)
   }
 
@@ -35,8 +34,6 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(AbacGuard)
-  @Abac({ resource: 'User', action: 'read' })
   async getMe(@Req() req: any) {
     const claims: RequestClaims = req.claims
     return this.authService.getMe(claims)
@@ -44,8 +41,6 @@ export class AuthController {
 
   // Alias to support frontend calling /me directly
   @Get('/')
-  @UseGuards(AbacGuard)
-  @Abac({ resource: 'User', action: 'read' })
   async meAlias(@Req() req: any) {
     const claims: RequestClaims = req.claims
     return this.authService.getMe(claims)

@@ -114,6 +114,31 @@ export class AuthService {
 
   async getMe(claims: RequestClaims): Promise<MeResponseDto> {
     try {
+      // Defensive: normalize missing claims in demo mode
+      if (process.env.API_DEMO_MODE === 'true' && (!claims || (!claims.sub && !claims.orgId))) {
+        claims = { sub: 'demo-user-123', orgId: 'mock-org-123', role: 'DOCTOR' } as unknown as RequestClaims
+      }
+      // Demo mode: derive user/org straight from request claims to avoid external deps
+      if (process.env.API_DEMO_MODE === 'true') {
+        const userId = claims.sub || 'demo-user-123'
+        const orgId = claims.orgId || 'mock-org-123'
+        const role = (claims.role as any) || 'DOCTOR'
+        return {
+          user: {
+            id: userId,
+            email: 'doctor@example.com',
+            role,
+            org_id: orgId,
+            last_login_at: new Date().toISOString(),
+          },
+          org: {
+            id: orgId,
+            type: 'PROVIDER' as any,
+            name: 'Demo Organization',
+          },
+        }
+      }
+
       // Get user profile from Cognito
       const cognitoUser = await this.cognitoService.getUserProfile(claims.sub || '')
 
@@ -152,7 +177,7 @@ export class AuthService {
     } catch (error) {
       logger.error({
         action: 'GET_ME_FAILED',
-        user_id: claims.sub,
+        user_id: claims?.sub ?? 'unknown',
         error: (error as Error).message,
       })
       throw error

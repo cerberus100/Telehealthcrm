@@ -37,6 +37,28 @@ import { UpsModule } from './integrations/ups/ups.module'
 import { WebSocketModule } from './websocket/websocket.module'
 import { AdminUsersModule } from './modules/admin/users/admin-users.module'
 import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizations.module'
+import { SignaturesModule } from './modules/signatures/signatures.module'
+import { RequisitionsController } from './controllers/requisitions.controller'
+import { RequisitionsService } from './services/requisitions.service'
+import { OnboardingPhysicianController, VerifyController, AdminOnboardingController } from './controllers/onboarding.controller'
+import { OnboardingService } from './services/onboarding.service'
+import { ConnectController } from './controllers/connect.controller'
+import { ConnectService } from './services/connect.service'
+import { ProvidersController } from './controllers/providers.controller'
+import { IntakeLinksController } from './controllers/intake-links.controller'
+import { IntakeLinksService } from './services/intake-links.service'
+import { IntakeController } from './controllers/intake.controller'
+import { IntakeService } from './services/intake.service'
+import { SearchController, PatientsController } from './controllers/search.controller'
+import { SearchService } from './services/search.service'
+import { LabOrdersController } from './controllers/lab-orders.controller'
+import { LabOrdersService } from './services/lab-orders.service'
+import { EventsController } from './controllers/events.controller'
+import { EventsService } from './services/events.service'
+import { MarketerController } from './controllers/marketer.controller'
+import { MarketerService } from './services/marketer.service'
+import { DuplicateCheckController } from './controllers/duplicate-check.controller'
+import { DuplicateCheckService } from './services/duplicate-check.service'
 
 @Module({
   imports: [
@@ -49,6 +71,7 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
     WebSocketModule,
     AdminUsersModule,
     AdminOrganizationsModule,
+    // SignaturesModule, // Temporarily disabled for demo
   ],
   controllers: [
     HealthController, 
@@ -58,7 +81,21 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
     RxController, 
     NotificationsController,
     BusinessMetricsController,
-    ComplianceController
+    ComplianceController,
+    RequisitionsController,
+    OnboardingPhysicianController,
+    VerifyController,
+    AdminOnboardingController,
+    ConnectController,
+    ProvidersController,
+    IntakeLinksController,
+    IntakeController,
+    SearchController,
+    PatientsController,
+    LabOrdersController,
+    EventsController,
+    MarketerController,
+    DuplicateCheckController
   ],
   providers: [
     {
@@ -74,7 +111,7 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
       useFactory: () => {
         const demoMode = process.env.API_DEMO_MODE === 'true';
         console.log('Creating CognitoService, demo mode:', demoMode);
-        return demoMode ? new MockCognitoService() : new CognitoService();
+        return demoMode ? new MockCognitoService() : new CognitoService(new ConfigService());
       },
     },
     ConsultsService,
@@ -88,6 +125,21 @@ import { AdminOrganizationsModule } from './modules/admin/orgs/admin-organizatio
     AuditService,
     TelemetryService,
     AuthService,
+    RequisitionsService,
+    OnboardingService,
+    ConnectService,
+    IntakeLinksService,
+    IntakeService,
+    SearchService,
+    LabOrdersService,
+    EventsService,
+    MarketerService,
+    DuplicateCheckService,
+    JwtMiddleware,
+    RbacMiddleware,
+    TenantMiddleware,
+    RateLimitMiddleware,
+    ClaimsMiddleware,
     // {
     //   provide: APP_GUARD,
     //   useClass: AbacGuard,
@@ -104,9 +156,39 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(JwtMiddleware, RbacMiddleware, TenantMiddleware, RateLimitMiddleware)
-      .exclude('health', 'auth/(.*)')
+      .exclude(
+        'health',
+        'auth/login',
+        'auth/refresh',
+        'auth/logout',
+        'auth/verify-email',
+        'onboarding/physician/step1',
+        'onboarding/physician/step2',
+        'onboarding/physician/step3',
+        'onboarding/physician/step4/sign',
+        'connect/identify',
+        'connect/call-notes',
+        'intake/:linkId',
+        'intake/:linkId/form',
+        'duplicate-check/medicare'
+      )
       .forRoutes('*')
       .apply(ClaimsMiddleware)
-      .forRoutes('health', 'auth/(.*)')
+      .forRoutes(
+        'health',
+        'auth/login',
+        'auth/refresh',
+        'auth/logout',
+        'auth/verify-email',
+        'onboarding/physician/step1',
+        'onboarding/physician/step2',
+        'onboarding/physician/step3',
+        'onboarding/physician/step4/sign',
+        'connect/identify',
+        'connect/call-notes',
+        'intake/:linkId',
+        'intake/:linkId/form',
+        'duplicate-check/medicare'
+      )
   }
 }

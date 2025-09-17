@@ -9,6 +9,9 @@ import { useAuth } from '../lib/auth'
 export const metadata = {
   title: 'Teleplatform',
   description: 'HIPAA-eligible telehealth platform',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 const buildInfo = {

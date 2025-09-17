@@ -56,9 +56,18 @@ model User {
   status        String   @db.VarChar(20)
   mfaEnrolled   Boolean  @default(false)
   lastLoginAt   DateTime?
+  
+  // Provider availability and licensing
+  isAvailable   Boolean  @default(true) @map("is_available")
+  npi           String?  @map("npi")
+  dea           String?  @map("dea")
+  statesLicensed Json?   @map("states_licensed") // Array of state codes
+  availability  Json?    @map("availability_schedule") // Days/hours schedule
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([orgId])
+  @@index([isAvailable, role])
 }
 
 enum UserRole {
@@ -270,6 +279,19 @@ enum FulfillmentStatus {
   DELIVERED
 }
 
+// E-Signature enums for non-repudiation
+enum SignatureEntity {
+  RX
+  LAB_ORDER
+  DOCUMENT
+}
+
+enum SignatureType {
+  WEBAUTHN_KMS
+  TOTP_KMS
+  PASSWORD_KMS
+}
+
 model DuplicateGroup {
   id              String   @id @default(uuid())
   strategy        String
@@ -316,4 +338,234 @@ model Notification {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   @@index([orgId])
+}
+
+// Immutable e-signature ledger for non-repudiation
+model SignatureEvent {
+  id                    String          @id @default(uuid())
+  actorUserId           String          @map("actor_user_id")
+  actorOrgId            String          @map("actor_org_id")
+  role                  String
+
+  entity                SignatureEntity
+  entityId              String          @map("entity_id")
+
+  docSha256             String          @map("doc_sha256")
+  docS3Key              String          @map("doc_s3_key")
+  docVersion            Int             @map("doc_version")
+
+  signatureType         SignatureType   @map("signature_type")
+  webauthnCredentialId  String?         @map("webauthn_credential_id")
+  webauthnAaguid        String?         @map("webauthn_aaguid")
+
+  stepUpUsed            Boolean         @map("step_up_used")
+  mfaUsed               Boolean         @map("mfa_used")
+
+  ipAddress             String          @map("ip_address")
+  userAgent             String          @map("user_agent")
+  deviceFingerprintId   String?         @map("device_fingerprint_id")
+  geoCity               String?         @map("geo_city")
+  geoRegion             String?         @map("geo_region")
+  geoCountry            String?         @map("geo_country")
+
+  tsaToken              Bytes?          @map("tsa_token")
+  kmsKeyId              String          @map("kms_key_id")
+  kmsSignature          Bytes           @map("kms_signature")
+
+  chainPrevHash         String?         @map("chain_prev_hash")
+  chainHash             String          @map("chain_hash")
+
+  createdAtUtc          DateTime        @default(now()) @map("created_at_utc")
+
+  @@index([actorOrgId, createdAtUtc])
+  @@index([entity, entityId])
+  @@index([actorUserId, createdAtUtc])
+  @@index([chainHash])
+  @@map("signature_events")
+}
+
+// Document index for Patient Folder
+model Document {
+  id         String   @id @default(uuid())
+  patientId  String   @map("patient_id")
+  category   DocumentCategory
+  title      String
+  createdBy  String   @map("created_by")
+  s3Key      String   @map("s3_key")
+  sha256     String
+  sizeBytes  Int      @map("size_bytes")
+  mimeType   String   @map("mime_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([patientId, category])
+  @@index([createdBy])
+  @@index([sha256])
+  @@map("documents")
+}
+
+enum DocumentCategory {
+  RX
+  LAB_ORDER
+  LAB_RESULT
+  CONSENT
+  NOTE
+  OTHER
+}
+
+// Requisition templates uploaded by marketer orgs (lab requisition PDFs/images)
+model RequisitionTemplate {
+  id                String   @id @default(uuid())
+  orgId             String   @map("org_id")
+  labName           String   @map("lab_name")
+  title             String
+  filename          String
+  s3Key             String   @map("s3_key")
+  sha256            String
+  sizeBytes         Int      @map("size_bytes")
+  mimeType          String   @map("mime_type")
+  createdByUserId   String   @map("created_by_user_id")
+  insurancesAccepted Json?   @map("insurances_accepted") // {commercial: boolean, medicare: boolean}
+  createdAt         DateTime @default(now()) @map("created_at")
+  publishedAt       DateTime? @map("published_at")
+
+  @@index([orgId, createdAt])
+  @@index([labName])
+  @@index([sha256])
+  @@map("requisition_templates")
+}
+
+// Amazon Connect and phone indexing
+model PatientPhone {
+  id          String   @id @default(uuid())
+  patientId   String   @map("patient_id")
+  e164        String   @map("e164")
+  digits10    String   @map("digits10")
+  digits7     String   @map("digits7")
+  verified    Boolean  @default(false)
+  type        PhoneType @default(MOBILE)
+  primary     Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([patientId, e164])
+  @@index([e164])
+  @@index([digits10])
+  @@index([digits7])
+  @@map("patient_phones")
+}
+
+enum PhoneType {
+  MOBILE
+  HOME
+  WORK
+}
+
+model CallLookupIndex {
+  e164            String   @id @map("e164")
+  lastSeenAt      DateTime @map("last_seen_at")
+  orgId           String?  @map("org_id")
+  patientId       String?  @map("patient_id")
+  lastConsultId   String?  @map("last_consult_id")
+
+  @@index([lastSeenAt])
+  @@map("call_lookup_index")
+}
+
+model IntakeLink {
+  id              String   @id @default(uuid())
+  marketerOrgId   String   @map("marketer_org_id")
+  services        String   @map("services") // 'RX'|'LABS'|'BOTH'
+  clientIds       Json     @map("client_ids") // Array of provider org IDs
+  campaign        String?  @map("campaign")
+  didNumber       String?  @map("did_number")
+  allowedOrigins  Json?    @map("allowed_origins")
+  rateLimit       Int?     @map("rate_limit")
+  webhookUrl      String?  @map("webhook_url")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([marketerOrgId, active])
+  @@index([didNumber])
+  @@map("intake_links")
+}
+
+model IntakeSubmission {
+  id              String   @id @default(uuid())
+  intakeLinkId    String   @map("intake_link_id")
+  marketerOrgId   String   @map("marketer_org_id")
+  patientStub     Json     @map("patient_stub") // {name, phone, dob, state, address?}
+  serviceRequested String  @map("service_requested")
+  triageJson      Json     @map("triage_json")
+  consent         Json     @map("consent") // {tcpa, hipaa}
+  files           Json?    @map("files")
+  ip              String   @map("ip")
+  userAgent       String   @map("user_agent")
+  status          String   @default("PENDING")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([intakeLinkId, createdAt])
+  @@index([marketerOrgId, status])
+  @@map("intake_submissions")
+}
+
+model InboundCall {
+  id              String   @id @default(uuid())
+  contactId       String   @map("contact_id")
+  dnis            String   @map("dnis")
+  ani             String   @map("ani")
+  marketerOrgId   String?  @map("marketer_org_id")
+  clientId        String?  @map("client_id")
+  consultId       String?  @map("consult_id")
+  recordingS3Key  String?  @map("recording_s3_key")
+  transcriptS3Key String?  @map("transcript_s3_key")
+  startedAt       DateTime @map("started_at")
+  endedAt         DateTime? @map("ended_at")
+
+  @@index([ani, startedAt])
+  @@index([consultId])
+  @@map("inbound_calls")
+}
+
+// Physician onboarding
+enum ProviderOnboardingStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model ProviderOnboarding {
+  id                          String                     @id @default(uuid())
+  userId                      String?                    @map("user_id")
+  email                       String
+  mobile                      String                     @map("mobile_phone")
+  firstName                   String                     @map("first_name")
+  lastName                    String                     @map("last_name")
+  emailVerified               Boolean                    @default(false) @map("email_verified")
+  mfaEnrolled                 Boolean                    @default(false) @map("mfa_enrolled")
+  status                      ProviderOnboardingStatus   @default(PENDING)
+  stepsCompleted              Int                        @default(0) @map("steps_completed")
+
+  // Step 2: credentials
+  npi                         String?                    @map("npi")
+  dea                         String?                    @map("dea")
+  licenses                    Json?                      @map("licenses_json")
+  boards                      Json?                      @map("boards_json")
+  malpractice                 Json?                      @map("malpractice_json")
+  uploads                     Json?                      @map("uploads_json")
+  pecosActive                 Boolean?                   @map("pecos_active")
+
+  // Step 3: practice
+  practice                    Json?                      @map("practice_json")
+
+  // Step 4: agreements
+  agreementsSignatureEventId  String?                    @map("agreements_signature_event_id")
+
+  createdAt                   DateTime                   @default(now()) @map("created_at")
+  updatedAt                   DateTime                   @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([status, createdAt])
+  @@map("provider_onboarding")
 }

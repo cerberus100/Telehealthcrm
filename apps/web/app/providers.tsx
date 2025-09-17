@@ -6,8 +6,11 @@ import { AccessibilityProvider } from '../components/AccessibilityProvider'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { OfflineIndicator } from '../lib/offline'
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ''
-export const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === 'true'
+// Ensure consistent values and match the current hostname (localhost vs 127.0.0.1)
+export const API_BASE_URL = typeof window !== 'undefined'
+  ? (process.env.NEXT_PUBLIC_API_BASE_URL || `http://${window.location.hostname}:3001`)
+  : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001')
+export const USE_MOCKS = true // Enable mocks for demo walkthrough
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({
@@ -18,12 +21,22 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       },
     },
   }))
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    if (USE_MOCKS) {
-      import('../mocks/browser').then(({ worker }) => worker.start())
-    }
+    setMounted(true)
   }, [])
+
+  // Mock service worker disabled since we're using real backend
+  // useEffect(() => {
+  //   if (USE_MOCKS) {
+  //     import('../mocks/browser').then(({ worker }) => worker.start())
+  //   }
+  // }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <ErrorBoundary>

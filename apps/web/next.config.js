@@ -12,7 +12,8 @@ const nextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data:",
-      "connect-src 'self' https:",
+      // Allow API and websockets to local backend
+      "connect-src 'self' https: http: ws: wss: http://localhost:3001 ws://localhost:3001 ws://localhost:3000 http://127.0.0.1:3001 ws://127.0.0.1:3001 ws://127.0.0.1:3000",
       "frame-ancestors 'none'"
     ].join('; ')
     return [

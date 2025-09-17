@@ -268,7 +268,7 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
 }
 
 export const Api = {
-  me: () => http('/me', MeSchema),
+  me: () => http('/auth/me', MeSchema),
   consults: () => http('/consults', ConsultListSchema),
   rxList: () => http('/rx', RxListSchema),
   rxDetail: (id: string) => http(`/rx/${id}`, RxSchema),
@@ -290,4 +290,23 @@ export const Api = {
   // Analytics
   dashboardMetrics: () => http('/operational-analytics/metrics', DashboardMetricsSchema),
   operationalMetrics: () => http('/operational-analytics/operational-metrics', OperationalMetricsSchema),
+  // Generic helpers for forms/files
+  get: async (path: string) => request(path, z.any()),
+  postJson: async (path: string, body: unknown) => request(path, z.any(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }),
+  postForm: async (path: string, form: FormData) => {
+    const base = (typeof window !== 'undefined' && ((window as any).NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL)) || 'http://127.0.0.1:3001'
+    const authHeader = typeof window !== 'undefined' ? (() => {
+      const raw = window.localStorage.getItem('auth')
+      if (!raw) return null
+      const { token } = JSON.parse(raw) as any
+      return token ? `Bearer ${token}` : null
+    })() : null
+    const res = await fetch(`${base}${path}`, { method: 'POST', body: form, headers: { ...(authHeader ? { Authorization: authHeader } : {}) } })
+    if (!res.ok) throw new Error('Upload failed')
+    return res.json().catch(()=>null)
+  },
 }

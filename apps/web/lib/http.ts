@@ -1,5 +1,15 @@
 import { z } from 'zod'
-import { API_BASE_URL, USE_MOCKS } from '../app/providers'
+import { USE_MOCKS } from '../app/providers'
+
+// Central API base URL: prefer explicit env, else infer from window hostname
+function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const env = (window as any).NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL
+    if (env) return env as string
+    return `http://${window.location.hostname}:3001`
+  }
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001'
+}
 import { getAuthHeader } from './auth'
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)) }
@@ -15,7 +25,7 @@ function uuid(): string {
 export async function request<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
   // Mocking handled by callers that want it; fall through to network
   const method = (init?.method || 'GET').toUpperCase()
-  const base = API_BASE_URL || ''
+  const base = getApiBaseUrl()
   const correlationId = uuid()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

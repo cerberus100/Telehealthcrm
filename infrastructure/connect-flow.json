@@ -1,0 +1,79 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "12345678-1234-1234-1234-123456789012",
+  "Metadata": {
+    "entryPointPosition": {"x": 40, "y": 40},
+    "snapToGrid": false,
+    "ActionMetadata": {
+      "12345678-1234-1234-1234-123456789012": {
+        "position": {"x": 40, "y": 40},
+        "useDynamic": false
+      },
+      "23456789-1234-1234-1234-123456789012": {
+        "position": {"x": 200, "y": 40},
+        "useDynamic": false
+      },
+      "34567890-1234-1234-1234-123456789012": {
+        "position": {"x": 360, "y": 40},
+        "useDynamic": false
+      },
+      "45678901-1234-1234-1234-123456789012": {
+        "position": {"x": 520, "y": 40},
+        "useDynamic": false
+      }
+    }
+  },
+  "Actions": [
+    {
+      "Identifier": "12345678-1234-1234-1234-123456789012",
+      "Type": "InvokeExternalResource",
+      "Parameters": {
+        "FunctionArn": "arn:aws:lambda:us-east-1:ACCOUNT:function:teleplatform-connect-identify",
+        "TimeLimit": "3"
+      },
+      "Transitions": {
+        "NextAction": "23456789-1234-1234-1234-123456789012",
+        "Errors": [
+          {
+            "NextAction": "45678901-1234-1234-1234-123456789012",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "23456789-1234-1234-1234-123456789012",
+      "Type": "SetContactAttributes",
+      "Parameters": {
+        "Attributes": {
+          "consultId": "$.External.consultId",
+          "patientId": "$.External.patientId", 
+          "serviceMode": "$.External.serviceMode",
+          "assignedProviderId": "$.External.assignedProviderId"
+        }
+      },
+      "Transitions": {
+        "NextAction": "34567890-1234-1234-1234-123456789012"
+      }
+    },
+    {
+      "Identifier": "34567890-1234-1234-1234-123456789012",
+      "Type": "SetRecordingBehavior",
+      "Parameters": {
+        "RecordingBehaviorOption": "Enable",
+        "RecordingParticipantOption": "Both"
+      },
+      "Transitions": {
+        "NextAction": "45678901-1234-1234-1234-123456789012"
+      }
+    },
+    {
+      "Identifier": "45678901-1234-1234-1234-123456789012", 
+      "Type": "TransferToQueue",
+      "Parameters": {
+        "QueueId": "arn:aws:connect:us-east-1:ACCOUNT:instance/INSTANCE-ID/queue/provider-queue"
+      },
+      "Transitions": {}
+    }
+  ]
+}
