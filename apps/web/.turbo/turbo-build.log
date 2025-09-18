@@ -52,14 +52,14 @@ Import trace for requested module:
 Route (app)                              Size     First Load JS
 ┌ ○ /                                    3.05 kB         136 kB
 ├ ○ /_not-found                          873 B          87.9 kB
-├ ○ /admin                               1.48 kB         131 kB
-├ ○ /admin/signatures                    3.54 kB         130 kB
-├ ○ /admin/users                         3.2 kB          126 kB
+├ ○ /admin                               1.47 kB         131 kB
+├ ○ /admin/signatures                    3.53 kB         130 kB
+├ ○ /admin/users                         3.19 kB         126 kB
 ├ ○ /agent/intake                        265 B            92 kB
 ├ ○ /clients                             1.35 kB         135 kB
 ├ ○ /consults                            996 B           134 kB
 ├ ƒ /consults/[id]                       2.28 kB         135 kB
-├ ○ /dashboard                           3.43 kB         137 kB
+├ ○ /dashboard                           3.42 kB         137 kB
 ├ ƒ /intake/[linkId]                     175 B          91.9 kB
 ├ ○ /lab-orders                          957 B           134 kB
 ├ ○ /lab-results                         960 B           134 kB

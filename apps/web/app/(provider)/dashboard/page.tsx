@@ -166,10 +166,10 @@ export default function ProviderDashboard() {
           urgentCount={2}
         />
         <DashboardCard
-          title="Kits in Transit"
-          value={dashboardData?.kitsInTransit || 0}
-          subtitle="Tracking active"
-          href="/lab-orders?status=in_transit"
+          title="Recent Activity"
+          value="2h ago"
+          subtitle="Last patient interaction"
+          href="/patients"
         />
       </div>
 

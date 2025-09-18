@@ -1,8 +1,13 @@
+"use client"
 import { RequireRole } from '../../lib/auth'
 import Link from 'next/link'
 import IncomingCallBanner from '../../components/IncomingCallBanner'
+import NewConsultModal from '../../components/NewConsultModal'
+import { useState } from 'react'
 
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
+  const [showNewConsult, setShowNewConsult] = useState(false)
+  
   return (
     <RequireRole allow={['DOCTOR', 'SUPER_ADMIN']}>
       <div className="min-h-screen bg-slate-50">
@@ -49,7 +54,10 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
             
             {/* Quick Actions */}
             <div className="flex items-center space-x-4">
-              <button className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <button 
+                onClick={() => setShowNewConsult(true)}
+                className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
                 New Consult
               </button>
               <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
@@ -66,6 +74,9 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {children}
         </main>
+        
+        {/* New Consult Modal */}
+        <NewConsultModal isOpen={showNewConsult} onClose={() => setShowNewConsult(false)} />
       </div>
     </RequireRole>
   )
