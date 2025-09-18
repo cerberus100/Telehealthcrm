@@ -1,0 +1,195 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "Start",
+  "Metadata": {
+    "entryPointPosition": {
+      "x": 410,
+      "y": 0
+    },
+    "snapshotPosition": {
+      "x": 410,
+      "y": 0
+    }
+  },
+  "Actions": [
+    {
+      "Identifier": "Start",
+      "Type": "MessageAndVarLib",
+      "Parameters": {
+        "Text": "Thank you for calling Telehealth CRM. Please hold while we connect you to a provider.",
+        "TextToSpeechType": "text"
+      },
+      "Transitions": {
+        "NextAction": "SetAttributes",
+        "Errors": [],
+        "Conditions": []
+      },
+      "Type": "MessageAndVarLib"
+    },
+    {
+      "Identifier": "SetAttributes",
+      "Type": "SetAttributes",
+      "Parameters": {
+        "Attributes": {
+          "CallId": "$${$.ContactId}",
+          "PhoneNumber": "$${$.CustomerEndpoint.Address}",
+          "Timestamp": "$${$.InitiationTimestamp}",
+          "Channel": "$${$.Channel}"
+        }
+      },
+      "Transitions": {
+        "NextAction": "InvokeLambda",
+        "Errors": [],
+        "Conditions": []
+      },
+      "Type": "SetAttributes"
+    },
+    {
+      "Identifier": "InvokeLambda",
+      "Type": "InvokeExternalResource",
+      "Parameters": {
+        "LambdaFunctionARN": "${LAMBDA_FUNCTION_ARN}",
+        "InvocationMethod": "FIRE_AND_FORGET",
+        "Parameters": {
+          "CallId": "$${$.ContactId}",
+          "PhoneNumber": "$${$.CustomerEndpoint.Address}",
+          "Timestamp": "$${$.InitiationTimestamp}",
+          "Channel": "$${$.Channel}"
+        }
+      },
+      "Transitions": {
+        "NextAction": "CheckQueueStatus",
+        "Errors": [
+          {
+            "NextAction": "ErrorHandler",
+            "Conditions": []
+          }
+        ],
+        "Conditions": []
+      },
+      "Type": "InvokeExternalResource"
+    },
+    {
+      "Identifier": "CheckQueueStatus",
+      "Type": "CheckQueueStatus",
+      "Parameters": {
+        "QueueARN": "${PROVIDER_QUEUE_ARN}"
+      },
+      "Transitions": {
+        "NextAction": "TransferToQueue",
+        "Errors": [
+          {
+            "NextAction": "NoAgentsAvailable",
+            "Conditions": []
+          }
+        ],
+        "Conditions": [
+          {
+            "NextAction": "TransferToQueue",
+            "Conditions": [
+              {
+                "Key": "QueueStatus",
+                "Value": "Available"
+              }
+            ]
+          }
+        ]
+      },
+      "Type": "CheckQueueStatus"
+    },
+    {
+      "Identifier": "TransferToQueue",
+      "Type": "TransferToQueue",
+      "Parameters": {
+        "QueueARN": "${PROVIDER_QUEUE_ARN}",
+        "CallerId": "$${$.CustomerEndpoint.Address}",
+        "CallerIdType": "PhoneNumber"
+      },
+      "Transitions": {
+        "NextAction": "EndCall",
+        "Errors": [
+          {
+            "NextAction": "ErrorHandler",
+            "Conditions": []
+          }
+        ],
+        "Conditions": []
+      },
+      "Type": "TransferToQueue"
+    },
+    {
+      "Identifier": "NoAgentsAvailable",
+      "Type": "MessageAndVarLib",
+      "Parameters": {
+        "Text": "We're sorry, but no providers are currently available. Please leave a message and we'll get back to you as soon as possible.",
+        "TextToSpeechType": "text"
+      },
+      "Transitions": {
+        "NextAction": "RecordVoicemail",
+        "Errors": [],
+        "Conditions": []
+      },
+      "Type": "MessageAndVarLib"
+    },
+    {
+      "Identifier": "RecordVoicemail",
+      "Type": "RecordVoicemail",
+      "Parameters": {
+        "MaxDuration": "300",
+        "RecordingFormat": "WAV",
+        "RecordingBehavior": "RecordFromStart",
+        "RecordingDestination": {
+          "Type": "S3",
+          "BucketName": "${VOICEMAIL_BUCKET}",
+          "Prefix": "voicemails/"
+        }
+      },
+      "Transitions": {
+        "NextAction": "EndCall",
+        "Errors": [
+          {
+            "NextAction": "ErrorHandler",
+            "Conditions": []
+          }
+        ],
+        "Conditions": []
+      },
+      "Type": "RecordVoicemail"
+    },
+    {
+      "Identifier": "ErrorHandler",
+      "Type": "MessageAndVarLib",
+      "Parameters": {
+        "Text": "We're experiencing technical difficulties. Please try calling back later or contact support.",
+        "TextToSpeechType": "text"
+      },
+      "Transitions": {
+        "NextAction": "EndCall",
+        "Errors": [],
+        "Conditions": []
+      },
+      "Type": "MessageAndVarLib"
+    },
+    {
+      "Identifier": "EndCall",
+      "Type": "DisconnectParticipant",
+      "Parameters": {
+        "Reason": "Normal"
+      },
+      "Transitions": {},
+      "Type": "DisconnectParticipant"
+    }
+  ],
+  "CustomerProfiles": {
+    "DomainName": "${CUSTOMER_PROFILES_DOMAIN}"
+  },
+  "System": {
+    "Name": "TelehealthCRM-InboundFlow",
+    "Description": "Inbound call flow for Telehealth CRM platform",
+    "Version": "1.0.0",
+    "CreatedBy": "Telehealth CRM Team",
+    "CreatedDate": "2025-01-15T00:00:00Z",
+    "LastModifiedBy": "Telehealth CRM Team",
+    "LastModifiedDate": "2025-01-15T00:00:00Z"
+  }
+}
