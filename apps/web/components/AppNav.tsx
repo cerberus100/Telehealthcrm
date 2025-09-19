@@ -10,8 +10,16 @@ export default function AppNav() {
   return (
     <>
       <nav className="flex items-center gap-4 text-sm flex-1">
+        {role === 'DOCTOR' && (
+          <Link href="/patients" className="hover:text-brand-600">My Patients</Link>
+        )}
         {(role === 'MARKETER' || role === 'MARKETER_ADMIN') && (
-          <Link href="/shipments" className="hover:text-brand-600">Specimen Shipments</Link>
+          <>
+            <Link href="/marketer/approvals" className="hover:text-brand-600">Approvals</Link>
+            <Link href="/marketer/intake-links" className="hover:text-brand-600">Intake Links</Link>
+            <Link href="/marketer/my-labs" className="hover:text-brand-600">My Labs</Link>
+            <Link href="/shipments" className="hover:text-brand-600">Shipments</Link>
+          </>
         )}
         {/* Consults hidden for marketers; keep for SUPER_ADMIN only for now */}
         {role === 'SUPER_ADMIN' && (

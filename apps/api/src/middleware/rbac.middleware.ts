@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware, ForbiddenException } from '@nestjs/common'
+import { Injectable, NestMiddleware, ForbiddenException, Inject, forwardRef } from '@nestjs/common'
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { CognitoService, CognitoUser } from '../auth/cognito.service'
 import { logger } from '../utils/logger'
@@ -23,10 +23,18 @@ export interface AccessControl {
 
 @Injectable()
 export class RbacMiddleware implements NestMiddleware<FastifyRequest, FastifyReply> {
-  constructor(private cognitoService: CognitoService) {}
+  constructor(
+    @Inject(forwardRef(() => CognitoService))
+    private readonly cognitoService: CognitoService
+  ) {}
 
   async use(req: RbacRequest, _res: FastifyReply, next: (err?: unknown) => void) {
     try {
+      // In demo mode, bypass RBAC to unblock local flows
+      if (process.env.API_DEMO_MODE === 'true') {
+        return next()
+      }
+
       const user = req.user
       if (!user) {
         throw new ForbiddenException('User not authenticated')

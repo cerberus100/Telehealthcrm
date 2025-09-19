@@ -3,10 +3,12 @@ import { useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Api } from '../lib/api'
 import { useRealtimeNotifications } from '../lib/realtime'
+import { useAuth } from '../lib/auth'
 import { useKeyboardNavigation } from '../lib/keyboard'
 import { FocusTrap } from './AccessibilityProvider'
 
 export default function NotificationsBell() {
+  const { isAuthenticated } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const bellRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -15,7 +17,8 @@ export default function NotificationsBell() {
   const { data } = useQuery({ 
     queryKey: ['notifications'], 
     queryFn: Api.notifications, 
-    refetchInterval: 15000 
+    refetchInterval: 15000,
+    enabled: isAuthenticated,
   })
   
   // Real-time notifications

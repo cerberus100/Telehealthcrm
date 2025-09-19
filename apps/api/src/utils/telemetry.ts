@@ -5,7 +5,7 @@ import { logger } from './logger'
 
 // Disable telemetry for now
 export function shutdownTelemetry() {
-  console.log('Telemetry shutdown disabled')
+  logger.info({ action: 'TELEMETRY_SHUTDOWN', message: 'Telemetry shutdown disabled' })
 }
 
 export const addSpanAttribute = (key: string, value: any) => {

@@ -31,10 +31,23 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     try {
-      await login({ email, password })
-      // Redirect will happen via useEffect
+      const next = await login({ email, password })
+      // Redirect immediately based on returned state to avoid hydration timing issues
+      const r = next.role || role
+      if (r === 'SUPER_ADMIN') {
+        router.replace('/admin')
+      } else if (r === 'MARKETER_ADMIN' || r === 'MARKETER') {
+        router.replace('/shipments')
+      } else if (r === 'DOCTOR') {
+        router.replace('/dashboard')
+      } else if (r === 'PHARMACIST' || r === 'LAB_TECH') {
+        router.replace('/')
+      } else {
+        router.replace('/')
+      }
     } catch (err) {
-      setError('Invalid credentials')
+      console.error('Login error:', err)
+      setError(err instanceof Error ? err.message : 'Invalid credentials')
     } finally {
       setLoading(false)
     }
@@ -50,7 +63,11 @@ export default function LoginPage() {
           <div className="p-3 bg-red-50 text-red-700 rounded text-sm">{error}</div>
         )}
         
+        <label htmlFor="email" className="sr-only">Email</label>
         <input 
+          id="email"
+          name="email"
+          autoComplete="email"
           className="border p-3 w-full rounded" 
           placeholder="Email" 
           type="email"
@@ -59,7 +76,11 @@ export default function LoginPage() {
           onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
         />
         
+        <label htmlFor="password" className="sr-only">Password</label>
         <input 
+          id="password"
+          name="password"
+          autoComplete="current-password"
           className="border p-3 w-full rounded" 
           placeholder="Password" 
           type="password" 

@@ -222,6 +222,140 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     }
   }
 
+  // Enhanced real-time event methods
+
+  /**
+   * Trigger screen-pop for incoming calls
+   */
+  emitScreenPop(targetOrgId: string, callData: {
+    consultId: string
+    contactId?: string
+    callerName?: string
+    callerPhone: string
+    serviceMode: string
+  }) {
+    const event = {
+      type: 'INCOMING_CALL',
+      ...callData,
+      callerPhone: callData.callerPhone.replace(/\d(?=\d{4})/g, '*'), // Mask phone for privacy
+      timestamp: new Date().toISOString()
+    }
+    
+    this.server.to(`org:${targetOrgId}`).emit('screen-pop', event)
+    
+    this.logger.log(`Screen-pop emitted to org ${targetOrgId} for consult ${callData.consultId}`)
+  }
+
+  /**
+   * Broadcast provider availability changes
+   */
+  emitProviderAvailability(orgId: string, providerId: string, available: boolean, providerName?: string) {
+    const event = {
+      type: 'PROVIDER_AVAILABILITY',
+      providerId,
+      providerName,
+      available,
+      timestamp: new Date().toISOString()
+    }
+    
+    this.server.to(`org:${orgId}`).emit('provider-availability', event)
+    
+    this.logger.log(`Provider availability broadcast: ${providerId} is ${available ? 'available' : 'offline'}`)
+  }
+
+  /**
+   * Send approval status updates to marketers (HIPAA-safe)
+   */
+  emitApprovalUpdate(marketerOrgId: string, approvalData: {
+    consultId: string
+    status: 'APPROVED' | 'DECLINED' | 'PENDING'
+    service: string
+    patientInitials?: string
+  }) {
+    const event = {
+      type: 'APPROVAL_UPDATE',
+      consultId: approvalData.consultId,
+      status: approvalData.status,
+      service: approvalData.service,
+      patientInitials: approvalData.patientInitials, // Safe: initials only
+      timestamp: new Date().toISOString()
+    }
+    
+    this.server.to(`org:${marketerOrgId}`).emit('approval-update', event)
+    
+    this.logger.log(`Approval update sent to marketer org ${marketerOrgId}: ${approvalData.status}`)
+  }
+
+  /**
+   * Send intake submission notifications
+   */
+  emitIntakeSubmission(marketerOrgId: string, submissionData: {
+    submissionId: string
+    consultId: string
+    patientName: string
+    serviceRequested: string
+    linkId: string
+  }) {
+    const event = {
+      type: 'INTAKE_SUBMISSION',
+      submissionId: submissionData.submissionId,
+      consultId: submissionData.consultId,
+      patientName: submissionData.patientName,
+      serviceRequested: submissionData.serviceRequested,
+      linkId: submissionData.linkId,
+      timestamp: new Date().toISOString()
+    }
+    
+    this.server.to(`org:${marketerOrgId}`).emit('intake-submission', event)
+    
+    this.logger.log(`Intake submission notification sent to marketer org ${marketerOrgId}`)
+  }
+
+  /**
+   * Send lab result notifications to providers
+   */
+  emitLabResult(providerOrgId: string, resultData: {
+    labOrderId: string
+    patientName: string
+    testName: string
+    flagged: boolean
+  }) {
+    const event = {
+      type: 'LAB_RESULT_READY',
+      labOrderId: resultData.labOrderId,
+      patientName: resultData.patientName,
+      testName: resultData.testName,
+      flagged: resultData.flagged,
+      timestamp: new Date().toISOString()
+    }
+    
+    this.server.to(`org:${providerOrgId}`).emit('lab-result', event)
+    
+    this.logger.log(`Lab result notification sent to provider org ${providerOrgId}`)
+  }
+
+  /**
+   * Send shipment updates to marketers (shipping info only)
+   */
+  emitShipmentUpdate(marketerOrgId: string, shipmentData: {
+    trackingNumber: string
+    status: string
+    city: string
+    state: string
+  }) {
+    const event = {
+      type: 'SHIPMENT_UPDATE',
+      trackingNumber: shipmentData.trackingNumber,
+      status: shipmentData.status,
+      location: `${shipmentData.city}, ${shipmentData.state}`, // Non-PHI location only
+      timestamp: new Date().toISOString()
+    }
+    
+    this.server.to(`org:${marketerOrgId}`).emit('shipment-update', event)
+    
+    this.logger.log(`Shipment update sent to marketer org ${marketerOrgId}: ${shipmentData.status}`)
+  }
+
   // Public method to send notifications
   async sendNotification(notification: {
     type: string;

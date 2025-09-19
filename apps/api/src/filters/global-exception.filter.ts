@@ -4,12 +4,7 @@ import { FastifyReply } from 'fastify'
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
-    console.error('GlobalExceptionFilter caught exception:', exception);
-    console.error('Exception details:', {
-      name: (exception as any)?.name,
-      message: (exception as any)?.message,
-      stack: (exception as any)?.stack,
-    });
+    // Exception handled by global filter
     
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<FastifyReply>()
@@ -17,7 +12,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR
     let code = 'INTERNAL_SERVER_ERROR'
-    let message = 'An unexpected error occurred'
+    let message = 'Internal server error'
     let details = null
 
     if (exception instanceof HttpException) {
@@ -68,11 +63,26 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     // Add correlation ID to response headers
-    const correlationId = request.headers['correlation-id'] || request.id
-    if (response.header) {
-      response.header('Correlation-Id', correlationId)
+    const correlationId = (request as any)?.headers?.['correlation-id'] || (request as any)?.id
+    if (typeof (response as any).header === 'function') {
+      ;(response as any).header('Correlation-Id', correlationId)
     }
 
-    response.status(status).send(errorResponse)
+    // Support both Fastify (reply.code) and Express (res.status)
+    const anyResponse: any = response as any
+    if (typeof anyResponse.status === 'function') {
+      anyResponse.status(status).send(errorResponse)
+      return
+    }
+    if (typeof anyResponse.code === 'function') {
+      anyResponse.code(status).send(errorResponse)
+      return
+    }
+    // Fallback
+    try {
+      anyResponse.send(errorResponse)
+    } catch {
+      // noop
+    }
   }
 }

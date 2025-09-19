@@ -26,6 +26,25 @@ export class TenantMiddleware implements NestMiddleware {
     try {
       // Extract org_id from claims
       const claims = (req as any).claims;
+
+      // In demo mode, short-circuit tenant resolution with a mock org
+      if (process.env.API_DEMO_MODE === 'true') {
+        const demoOrgId = (claims?.orgId as string) || 'mock-org-123'
+        const tenantContext: TenantContext = {
+          orgId: demoOrgId,
+          orgType: 'PROVIDER',
+          orgName: 'Demo Organization',
+          isActive: true,
+          compliance: { hipaaCompliant: false, baaSigned: false },
+        }
+        ;(req as any).tenant = tenantContext
+        res.setHeader('X-Tenant-ID', tenantContext.orgId)
+        res.setHeader('X-Tenant-Type', tenantContext.orgType)
+        res.setHeader('X-Tenant-Name', tenantContext.orgName)
+        this.logger.debug({ action: 'TENANT_ACCESS_DEMO', orgId: tenantContext.orgId, path: req.path, method: req.method })
+        next()
+        return
+      }
       
       if (!claims || !claims.orgId) {
         this.logger.warn('No organization ID found in claims');

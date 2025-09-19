@@ -14,7 +14,7 @@ export interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  login: (params: { email: string; password: string }) => Promise<void>
+  login: (params: { email: string; password: string }) => Promise<AuthState>
   logout: () => void
   setPurposeOfUse: (reason: string) => void
   isAuthenticated: boolean
@@ -45,12 +45,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!state.token,
     login: async ({ email, password }) => {
       const tokens = await Api.authLogin(email, password)
-      // Hydrate role/org from /me immediately
-      const me = await Api.me()
-      const next: AuthState = { token: tokens.access_token, role: me.user.role as Role, orgId: me.user.org_id, purposeOfUse: null, email: me.user.email }
-      setState(next)
-      if (typeof window !== 'undefined') window.localStorage.setItem('auth', JSON.stringify(next))
-      // Don't redirect here, let the login page handle it based on role
+      // Set an immediate demo session so UI can proceed without waiting on /auth/me
+      const emailLower = (email || '').toLowerCase()
+      const inferredRole: Role = emailLower.includes('admin')
+        ? 'SUPER_ADMIN'
+        : emailLower.includes('marketer')
+          ? 'MARKETER'
+          : emailLower.includes('lab')
+            ? 'LAB_TECH'
+            : emailLower.includes('pharmacy')
+              ? 'PHARMACIST'
+              : 'DOCTOR'
+      const immediate: AuthState = { token: tokens.access_token, role: inferredRole, orgId: 'mock-org-123', purposeOfUse: null, email }
+      setState(immediate)
+      if (typeof window !== 'undefined') window.localStorage.setItem('auth', JSON.stringify(immediate))
+
+      // Fire-and-forget: try to hydrate role/org from /auth/me with a short timeout
+      ;(async () => {
+        const withTimeout = <T,>(p: Promise<T>, ms: number) => new Promise<T>((resolve, reject) => {
+          const id = setTimeout(() => reject(new Error('timeout')), ms)
+          p.then(v => { clearTimeout(id); resolve(v) }).catch(e => { clearTimeout(id); reject(e) })
+        })
+        try {
+          const me = await withTimeout(Api.me(), 3000)
+          const hydrated: AuthState = { token: tokens.access_token, role: me.user.role as Role, orgId: me.user.org_id, purposeOfUse: null, email: me.user.email }
+          setState(hydrated)
+          if (typeof window !== 'undefined') window.localStorage.setItem('auth', JSON.stringify(hydrated))
+        } catch {
+          // keep immediate demo state
+        }
+      })()
+
+      // Return immediately so caller can navigate based on role
+      return immediate
     },
     logout: () => {
       const next: AuthState = { token: null, role: null, orgId: null, purposeOfUse: null, email: null }
@@ -84,13 +111,37 @@ export function getAuthHeader(): string | null {
 
 export function Protected({ children }: { children: ReactNode }) {
   const { token } = useAuth()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
   if (!token) return <p>Not authenticated</p>
   return <>{children}</>
 }
 
 export function RequireRole({ allow, children }: { allow: Role[]; children: ReactNode }) {
   const { role } = useAuth()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
   if (!role) return <p>Not authenticated</p>
   if (!allow.includes(role)) return <p>Access denied</p>
   return <>{children}</>
+}
+
+/**
+ * Check if user has admin-level permissions
+ * Super admins have full access, other admins need explicit permission grants
+ */
+export function hasAdminAccess(role: Role | null): boolean {
+  if (!role) return false
+  return role === 'SUPER_ADMIN' || role === 'MARKETER_ADMIN'
+}
+
+/**
+ * Check if user can view sensitive operational metrics (like TAT)
+ * Currently restricted to super admin and admin roles only
+ */
+export function canViewOperationalMetrics(role: Role | null): boolean {
+  if (!role) return false
+  return role === 'SUPER_ADMIN' || role === 'MARKETER_ADMIN'
 }

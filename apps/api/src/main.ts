@@ -40,15 +40,22 @@ async function bootstrap() {
     },
   } as any)
   
-  await app.register(cors as any, { 
-    origin: [
-      'https://main.*.amplifyapp.com',
-      'http://localhost:3000'
-    ], 
+  const allowedOrigins = new Set([
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'https://main.*.amplifyapp.com',
+  ])
+
+  await app.register(cors as any, {
+    origin: (origin: string, cb: (err: Error | null, allow?: boolean) => void) => {
+      // Allow non-browser requests (no Origin) and explicit allowlist
+      if (!origin) return cb(null, true)
+      cb(null, allowedOrigins.has(origin))
+    },
     credentials: false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'Correlation-Id'],
-    exposedHeaders: ['Correlation-Id', 'X-RateLimit-Remaining', 'Retry-After']
+    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Correlation-Id', 'x-correlation-id'],
+    exposedHeaders: ['X-Correlation-Id', 'x-correlation-id', 'X-RateLimit-Remaining', 'Retry-After']
   } as any)
   
   await app.register(rateLimit as any, {
@@ -60,6 +67,8 @@ async function bootstrap() {
       message: `Rate limit exceeded, retry in ${Math.round(context.ttl / 1000)} seconds.`,
     })
   } as any)
+
+  // Rely on @fastify/cors allowlist above for ACAO; no manual hook needed
 
   // Graceful shutdown handling
   const gracefulShutdown = async (signal: string) => {

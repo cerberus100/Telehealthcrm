@@ -1,40 +1,93 @@
 
-
 > web@0.1.0 build /Users/alexsiegel/teleplatform/apps/web
 > next build
 
-  [1m[38;2;173;127;168m▲ Next.js 14.2.5[39m[22m
+  ▲ Next.js 14.2.5
 
- [37m[1m [22m[39m Creating an optimized production build ...
- [32m[1m✓[22m[39m Compiled successfully
-[?25l [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G[?25h [37m[1m [22m[39m Linting and checking validity of types     [32m[1m✓[22m[39m Linting and checking validity of types 
-[?25l [37m[1m [22m[39m Collecting page data  [36m.[39m[2K[1G[?25h [37m[1m [22m[39m Collecting page data     [32m[1m✓[22m[39m Collecting page data 
-[?25l [37m[1m [22m[39m Generating static pages (0/15)  [36m[    ][39m[2K[1G[?25h [32m[1m✓[22m[39m Generating static pages (15/15)
-[?25l [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[?25l [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G[?25h [37m[1m [22m[39m Collecting build traces     [32m[1m✓[22m[39m Collecting build traces 
-[2K[1G[?25h [37m[1m [22m[39m Finalizing page optimization     [32m[1m✓[22m[39m Finalizing page optimization 
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
 
-[4mRoute (app)[24m                              [4mSize[24m     [4mFirst Load JS[24m
-┌ ○ /                                    4.65 kB         [37m[1m123 kB[22m[39m
-├ ○ /_not-found                          868 B            [37m[1m88 kB[22m[39m
-├ ○ /admin/users                         2.24 kB        [37m[1m89.4 kB[22m[39m
-├ ○ /clients                             3.77 kB         [37m[1m122 kB[22m[39m
-├ ○ /consults                            3.06 kB         [37m[1m114 kB[22m[39m
-├ ƒ /consults/[id]                       2.05 kB        [37m[1m97.2 kB[22m[39m
-├ ○ /lab-orders                          3.4 kB          [37m[1m121 kB[22m[39m
-├ ○ /lab-results                         3.41 kB         [37m[1m121 kB[22m[39m
-├ ○ /login                               1.13 kB        [37m[1m88.2 kB[22m[39m
-├ ○ /notifications                       3.44 kB         [37m[1m121 kB[22m[39m
-├ ○ /purpose                             1.05 kB        [37m[1m88.2 kB[22m[39m
-├ ○ /requisitions                        3.95 kB         [37m[1m122 kB[22m[39m
-├ ○ /rx                                  3.11 kB         [37m[1m114 kB[22m[39m
-└ ○ /shipments                           3.08 kB         [37m[1m114 kB[22m[39m
-+ First Load JS shared by all            [37m[1m87.1 kB[22m[39m
-  ├ chunks/91-dd882d5e2efd9cb2.js        31.5 kB
-  ├ chunks/b17e0889-81cec082ec83f538.js  53.6 kB
-  └ other shared chunks (total)          1.96 kB
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.1_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.1_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.1_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.1_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.1_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation-http@0.57.1_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation-http/build/src/http.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation-http@0.57.1_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation-http/build/src/index.js
+../../node_modules/.pnpm/@sentry+node@8.55.0/node_modules/@sentry/node/build/cjs/integrations/http/index.js
+../../node_modules/.pnpm/@sentry+node@8.55.0/node_modules/@sentry/node/build/cjs/index.js
+../../node_modules/.pnpm/@sentry+nextjs@8.55.0_@opentelemetry+context-async-hooks@1.30.1_@opentelemetry+api@1.9.0__@op_lpfrmvpricvy5w664gegehrfve/node_modules/@sentry/nextjs/build/cjs/index.server.js
+./components/ErrorBoundary.tsx
+./app/providers.tsx
+
+../../node_modules/.pnpm/require-in-the-middle@7.5.2/node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+../../node_modules/.pnpm/require-in-the-middle@7.5.2/node_modules/require-in-the-middle/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.2_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.2_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.2_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.57.2_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+../../node_modules/.pnpm/@sentry+opentelemetry@8.55.0_@opentelemetry+api@1.9.0_@opentelemetry+context-async-hooks@1.30_s7rvwg6oswxx5ppfmbgj4abvam/node_modules/@sentry/opentelemetry/build/cjs/index.js
+../../node_modules/.pnpm/@sentry+nextjs@8.55.0_@opentelemetry+context-async-hooks@1.30.1_@opentelemetry+api@1.9.0__@op_lpfrmvpricvy5w664gegehrfve/node_modules/@sentry/nextjs/build/cjs/server/index.js
+../../node_modules/.pnpm/@sentry+nextjs@8.55.0_@opentelemetry+context-async-hooks@1.30.1_@opentelemetry+api@1.9.0__@op_lpfrmvpricvy5w664gegehrfve/node_modules/@sentry/nextjs/build/cjs/index.server.js
+./components/ErrorBoundary.tsx
+./app/providers.tsx
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/31) ...
+   Generating static pages (7/31) 
+   Generating static pages (15/31) 
+   Generating static pages (23/31) 
+ ✓ Generating static pages (31/31)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    3.05 kB         136 kB
+├ ○ /_not-found                          873 B          87.9 kB
+├ ○ /admin                               1.47 kB         131 kB
+├ ○ /admin/signatures                    3.53 kB         130 kB
+├ ○ /admin/users                         3.19 kB         126 kB
+├ ○ /agent/intake                        265 B            92 kB
+├ ○ /clients                             1.35 kB         135 kB
+├ ○ /consults                            996 B           134 kB
+├ ƒ /consults/[id]                       2.28 kB         135 kB
+├ ○ /dashboard                           3.42 kB         137 kB
+├ ƒ /intake/[linkId]                     175 B          91.9 kB
+├ ○ /lab-orders                          957 B           134 kB
+├ ○ /lab-results                         960 B           134 kB
+├ ○ /login                               1.08 kB         124 kB
+├ ○ /marketer/approvals                  2.31 kB         141 kB
+├ ○ /marketer/intake-links               1.48 kB         125 kB
+├ ○ /marketer/my-labs                    1.74 kB         125 kB
+├ ○ /notifications                       1.02 kB         134 kB
+├ ○ /onboarding/physician/step1          1.79 kB        88.8 kB
+├ ○ /onboarding/physician/step2          3.51 kB        90.6 kB
+├ ○ /onboarding/physician/step3          2.67 kB        89.7 kB
+├ ○ /patients                            2.3 kB          136 kB
+├ ƒ /patients/[id]                       4.76 kB         131 kB
+├ ○ /portal                              802 B          94.7 kB
+├ ○ /portal/appointments                 756 B          87.8 kB
+├ ○ /portal/login                        807 B          87.9 kB
+├ ○ /portal/meds                         897 B            88 kB
+├ ○ /portal/results                      1.01 kB        88.1 kB
+├ ○ /purpose                             528 B           124 kB
+├ ○ /requisitions                        1.55 kB         135 kB
+├ ○ /rx                                  638 B           127 kB
+└ ○ /shipments                           5.51 kB         132 kB
++ First Load JS shared by all            87.1 kB
+  ├ chunks/3091-58b94a1216d7dc99.js      31.5 kB
+  ├ chunks/b17e0889-d7c0aab59d7d8c62.js  53.6 kB
+  └ other shared chunks (total)          1.9 kB
 
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
-[?25h

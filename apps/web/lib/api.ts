@@ -69,6 +69,59 @@ export type LabResultList = z.infer<typeof LabResultListSchema>
 const AuthLoginResponseSchema = z.object({ access_token: z.string(), refresh_token: z.string() })
 export type AuthLoginResponse = z.infer<typeof AuthLoginResponseSchema>
 
+// Analytics
+const DashboardMetricsSchema = z.object({
+  consultsApproved: z.object({
+    value: z.number(),
+    delta: z.number(),
+    trend: z.enum(['up', 'down']),
+    sparkline: z.array(z.number())
+  }),
+  avgTurnaroundTime: z.object({
+    value: z.number(),
+    suffix: z.string(),
+    delta: z.number(),
+    trend: z.enum(['up', 'down']),
+    sparkline: z.array(z.number())
+  }).optional(),
+  kitsInTransit: z.object({
+    value: z.number(),
+    delta: z.number(),
+    trend: z.enum(['up', 'down']),
+    sparkline: z.array(z.number())
+  }),
+  resultsAging: z.object({
+    value: z.number(),
+    delta: z.number(),
+    trend: z.enum(['up', 'down']),
+    sparkline: z.array(z.number())
+  })
+})
+export type DashboardMetrics = z.infer<typeof DashboardMetricsSchema>
+
+const OperationalMetricsSchema = z.object({
+  avgTurnaroundTime: z.object({
+    value: z.number(),
+    suffix: z.string(),
+    delta: z.number(),
+    trend: z.enum(['up', 'down']),
+    sparkline: z.array(z.number())
+  }),
+  processingEfficiency: z.object({
+    value: z.number(),
+    suffix: z.string(),
+    delta: z.number(),
+    trend: z.enum(['up', 'down'])
+  }),
+  resourceUtilization: z.object({
+    value: z.number(),
+    suffix: z.string(),
+    delta: z.number(),
+    trend: z.enum(['up', 'down'])
+  })
+})
+export type OperationalMetrics = z.infer<typeof OperationalMetricsSchema>
+
 const ClientSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -163,12 +216,59 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       const mock = { access_token: 'mock_access_user123', refresh_token: 'mock_refresh_user123' }
       return schema.parse(mock)
     }
+    if (path === '/operational-analytics/metrics') {
+      const mock = {
+        consultsApproved: {
+          value: 128,
+          delta: 5,
+          trend: 'up' as const,
+          sparkline: [5, 7, 8, 9, 10, 9, 12, 14]
+        },
+        kitsInTransit: {
+          value: 42,
+          delta: 2,
+          trend: 'up' as const,
+          sparkline: [20, 22, 25, 28, 30, 33, 38, 42]
+        },
+        resultsAging: {
+          value: 3,
+          delta: -1,
+          trend: 'down' as const,
+          sparkline: [6, 5, 5, 4, 4, 4, 3, 3]
+        }
+      }
+      return schema.parse(mock)
+    }
+    if (path === '/operational-analytics/operational-metrics') {
+      const mock = {
+        avgTurnaroundTime: {
+          value: 2.4,
+          suffix: 'h',
+          delta: -8,
+          trend: 'down' as const,
+          sparkline: [3.2, 3.0, 2.9, 2.8, 2.7, 2.6, 2.5, 2.4]
+        },
+        processingEfficiency: {
+          value: 94.2,
+          suffix: '%',
+          delta: 2.1,
+          trend: 'up' as const
+        },
+        resourceUtilization: {
+          value: 78.5,
+          suffix: '%',
+          delta: -1.2,
+          trend: 'down' as const
+        }
+      }
+      return schema.parse(mock)
+    }
   }
   return request(path, schema, init)
 }
 
 export const Api = {
-  me: () => http('/me', MeSchema),
+  me: () => http('/auth/me', MeSchema),
   consults: () => http('/consults', ConsultListSchema),
   rxList: () => http('/rx', RxListSchema),
   rxDetail: (id: string) => http(`/rx/${id}`, RxSchema),
@@ -187,4 +287,26 @@ export const Api = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   }),
+  // Analytics
+  dashboardMetrics: () => http('/operational-analytics/metrics', DashboardMetricsSchema),
+  operationalMetrics: () => http('/operational-analytics/operational-metrics', OperationalMetricsSchema),
+  // Generic helpers for forms/files
+  get: async (path: string) => request(path, z.any()),
+  postJson: async (path: string, body: unknown) => request(path, z.any(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }),
+  postForm: async (path: string, form: FormData) => {
+    const base = (typeof window !== 'undefined' && ((window as any).NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL)) || 'http://127.0.0.1:3001'
+    const authHeader = typeof window !== 'undefined' ? (() => {
+      const raw = window.localStorage.getItem('auth')
+      if (!raw) return null
+      const { token } = JSON.parse(raw) as any
+      return token ? `Bearer ${token}` : null
+    })() : null
+    const res = await fetch(`${base}${path}`, { method: 'POST', body: form, headers: { ...(authHeader ? { Authorization: authHeader } : {}) } })
+    if (!res.ok) throw new Error('Upload failed')
+    return res.json().catch(()=>null)
+  },
 }

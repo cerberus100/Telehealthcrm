@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { Api } from '../lib/api'
-import { Protected, useAuth } from '../lib/auth'
+import { Protected, useAuth, canViewOperationalMetrics } from '../lib/auth'
 import WorkQueue from '../components/WorkQueue'
 import { KpiTile } from '../components/KpiTile'
 import { Sparkline } from '../components/Sparkline'
@@ -14,6 +14,17 @@ export default function HomePage() {
     queryFn: Api.me,
   })
 
+  const { data: dashboardMetrics } = useQuery({
+    queryKey: ['dashboard-metrics'],
+    queryFn: Api.dashboardMetrics,
+  })
+
+  const { data: operationalMetrics } = useQuery({
+    queryKey: ['operational-metrics'],
+    queryFn: Api.operationalMetrics,
+    enabled: canViewOperationalMetrics(role), // Only fetch if user has permission
+  })
+
   return (
     <Protected>
       <div className="container mx-auto px-4 py-8">
@@ -21,20 +32,47 @@ export default function HomePage() {
         
         {/* KPI Tiles */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <KpiTile title="Consults Approved" value={128} delta={5} trend="up">
-            <Sparkline points={[5,7,8,9,10,9,12,14]} color="#16A34A" />
-          </KpiTile>
-          <KpiTile title="Avg TAT" value={2.4} suffix="h" delta={-8} trend="down">
-            <Sparkline points={[3.2,3.0,2.9,2.8,2.7,2.6,2.5,2.4]} color="#007DB8" />
-          </KpiTile>
-          {role !== 'DOCTOR' && (
-            <KpiTile title="Kits In Transit" value={42} delta={2} trend="up">
-              <Sparkline points={[20,22,25,28,30,33,38,42]} color="#4DAFE0" />
+          {dashboardMetrics?.consultsApproved && (
+            <KpiTile 
+              title="Consults Approved" 
+              value={dashboardMetrics.consultsApproved.value} 
+              delta={dashboardMetrics.consultsApproved.delta} 
+              trend={dashboardMetrics.consultsApproved.trend}
+            >
+              <Sparkline points={dashboardMetrics.consultsApproved.sparkline} color="#16A34A" />
             </KpiTile>
           )}
-          <KpiTile title="Results Aging >24h" value={3} delta={-1} trend="down">
-            <Sparkline points={[6,5,5,4,4,4,3,3]} color="#DC2626" />
-          </KpiTile>
+          {canViewOperationalMetrics(role) && operationalMetrics?.avgTurnaroundTime && (
+            <KpiTile 
+              title="Avg TAT" 
+              value={operationalMetrics.avgTurnaroundTime.value} 
+              suffix={operationalMetrics.avgTurnaroundTime.suffix}
+              delta={operationalMetrics.avgTurnaroundTime.delta} 
+              trend={operationalMetrics.avgTurnaroundTime.trend}
+            >
+              <Sparkline points={operationalMetrics.avgTurnaroundTime.sparkline} color="#007DB8" />
+            </KpiTile>
+          )}
+          {role !== 'DOCTOR' && dashboardMetrics?.kitsInTransit && (
+            <KpiTile 
+              title="Kits In Transit" 
+              value={dashboardMetrics.kitsInTransit.value} 
+              delta={dashboardMetrics.kitsInTransit.delta} 
+              trend={dashboardMetrics.kitsInTransit.trend}
+            >
+              <Sparkline points={dashboardMetrics.kitsInTransit.sparkline} color="#4DAFE0" />
+            </KpiTile>
+          )}
+          {dashboardMetrics?.resultsAging && (
+            <KpiTile 
+              title="Results Aging >24h" 
+              value={dashboardMetrics.resultsAging.value} 
+              delta={dashboardMetrics.resultsAging.delta} 
+              trend={dashboardMetrics.resultsAging.trend}
+            >
+              <Sparkline points={dashboardMetrics.resultsAging.sparkline} color="#DC2626" />
+            </KpiTile>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
