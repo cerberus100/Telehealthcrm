@@ -15,13 +15,8 @@ terraform {
   }
   
   # Backend configuration for state management
-  backend "s3" {
-    # Configure these values during deployment:
-    # bucket         = "telehealth-terraform-state-{random-suffix}"
-    # key            = "terraform.tfstate"
-    # region         = "us-east-1"
-    # encrypt        = true
-    # dynamodb_table = "terraform-state-lock"
+  backend "local" {
+    path = "terraform.tfstate"
   }
 }
 
