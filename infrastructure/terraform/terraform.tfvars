@@ -45,5 +45,8 @@ enable_cost_anomaly_detection = true
 alert_email = "admin@telehealth.com"
 
 # Domain Configuration
-domain_name = "api.telehealth.com"
+domain_name = ""
 certificate_arn = ""
+
+# API Configuration
+api_image_identifier = "337909762852.dkr.ecr.us-east-1.amazonaws.com/telehealth-api:latest"

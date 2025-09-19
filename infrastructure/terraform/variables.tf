@@ -169,3 +169,10 @@ variable "certificate_arn" {
   type        = string
   default     = ""
 }
+
+# API Configuration
+variable "api_image_identifier" {
+  description = "Docker image identifier for the API (ECR URI)"
+  type        = string
+  default     = ""
+}
