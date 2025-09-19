@@ -49,7 +49,7 @@ export default function MyLabs() {
   }
 
   const download = async (id: string) => {
-    const res = await fetch(`${location.origin.replace(/:\d+$/, ':3001')}/requisitions/templates/download`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'}/requisitions/templates/download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),

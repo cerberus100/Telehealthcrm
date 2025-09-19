@@ -13,7 +13,7 @@ export default function PhysicianStep1() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001'}/onboarding/physician/step1`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'}/onboarding/physician/step1`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ firstName, lastName, email, mobile, password })

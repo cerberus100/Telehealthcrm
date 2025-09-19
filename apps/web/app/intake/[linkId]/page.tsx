@@ -38,7 +38,7 @@ export default function PublicIntake({ params }: { params: { linkId: string } })
     if (!medicareId || !showLabs || !category) return
     setCheckingDupe(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001'}/duplicate-check/medicare`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'}/duplicate-check/medicare`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -27,7 +27,7 @@ export default function PhysicianStep3() {
     if (!(acceptTos && acceptBaa)) { setError('Please accept Terms of Use and BAA'); return }
     if (!signature.trim()) { setError('Please type your full name as signature'); return }
     // Demo: call sign endpoint
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001'}/onboarding/physician/step4/sign`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'}/onboarding/physician/step4/sign`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
     })
     setResult(res.ok ? await res.json() : { error: await res.text() })

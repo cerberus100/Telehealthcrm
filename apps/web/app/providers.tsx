@@ -8,9 +8,17 @@ import { OfflineIndicator } from '../lib/offline'
 
 // Ensure consistent values and match the current hostname (localhost vs 127.0.0.1)
 export const API_BASE_URL = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_API_BASE_URL || `http://${window.location.hostname}:3001`)
-  : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001')
-export const USE_MOCKS = true // Enable mocks for demo walkthrough
+  ? (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com')
+  : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com')
+export const USE_MOCKS = false // Disabled for production API
+
+// Production Cognito Configuration
+export const COGNITO_CONFIG = {
+  userPoolId: 'us-east-1_yBMYJzyA1',
+  clientId: 'crsnkji5f4i7f7v739tf6ef0u',
+  region: 'us-east-1',
+  domain: 'telehealth-auth-prod'
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({
