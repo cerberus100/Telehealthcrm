@@ -38,14 +38,14 @@ function PatientSearchBar({
           </div>
           <button
             type="submit"
-            className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2 rounded-md text-sm font-medium"
+            className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2 rounded-md text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
           >
             Search
           </button>
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-md text-sm font-medium"
+            className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
           >
             Filters
           </button>

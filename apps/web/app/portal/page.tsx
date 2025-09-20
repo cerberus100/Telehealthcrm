@@ -23,17 +23,47 @@ export default function PortalDashboard() {
         <div className="rounded-lg border p-4 bg-white">
           <h2 className="font-semibold mb-2">Quick actions</h2>
           <div className="flex flex-wrap gap-2 text-sm">
-            <Link className="px-3 py-2 rounded border" href="/portal/appointments">Schedule visit</Link>
-            <Link className="px-3 py-2 rounded border" href="/portal/results">View results</Link>
-            <Link className="px-3 py-2 rounded border" href="/portal/meds">Request refill</Link>
-            <Link className="px-3 py-2 rounded border" href="/portal/care-plans">Care plan</Link>
+            <Link 
+              className="bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-md text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors" 
+              href="/portal/appointments"
+            >
+              Schedule Visit
+            </Link>
+            <Link 
+              className="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" 
+              href="/portal/results"
+            >
+              View Results
+            </Link>
+            <Link 
+              className="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" 
+              href="/portal/meds"
+            >
+              Request Refill
+            </Link>
+            <Link 
+              className="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500" 
+              href="/portal/care-plans"
+            >
+              Care Plan
+            </Link>
           </div>
         </div>
         <div className="rounded-lg border p-4 bg-white">
           <h2 className="font-semibold mb-2">Wellness reminders</h2>
           <ul className="text-sm space-y-2">
-            <li className="flex items-center justify-between"><span>Flu vaccine</span><button className="px-2 py-1 rounded border">Schedule</button></li>
-            <li className="flex items-center justify-between"><span>Annual checkup</span><button className="px-2 py-1 rounded border">Schedule</button></li>
+            <li className="flex items-center justify-between">
+              <span>Flu vaccine</span>
+              <button className="bg-brand-600 hover:bg-brand-700 text-white px-2 py-1 rounded text-xs font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors">
+                Schedule
+              </button>
+            </li>
+            <li className="flex items-center justify-between">
+              <span>Annual checkup</span>
+              <button className="bg-brand-600 hover:bg-brand-700 text-white px-2 py-1 rounded text-xs font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors">
+                Schedule
+              </button>
+            </li>
           </ul>
         </div>
       </div>
