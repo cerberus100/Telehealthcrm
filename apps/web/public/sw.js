@@ -1,7 +1,7 @@
-// Teleplatform Service Worker - PWA Functionality
-const CACHE_NAME = 'teleplatform-v1'
-const STATIC_CACHE = 'teleplatform-static-v1'
-const DYNAMIC_CACHE = 'teleplatform-dynamic-v1'
+// Eudaura Service Worker - PWA Functionality
+const CACHE_NAME = 'eudaura-v1'
+const STATIC_CACHE = 'eudaura-static-v1'
+const DYNAMIC_CACHE = 'eudaura-dynamic-v1'
 
 // Files to cache for offline functionality
 const STATIC_FILES = [

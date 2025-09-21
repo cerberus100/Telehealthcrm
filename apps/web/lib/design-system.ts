@@ -1,4 +1,4 @@
-// Teleplatform Design System - McKesson Blue
+// Eudaura Design System - McKesson Blue
 // Ensures consistent styling across all user-facing components
 
 export const DESIGN_TOKENS = {

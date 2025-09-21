@@ -56,7 +56,7 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="max-w-md w-full space-y-4 p-8 border rounded-lg shadow-sm">
-        <h1 className="text-2xl font-semibold text-center">Teleplatform Login</h1>
+        <h1 className="text-2xl font-semibold text-center">Eudaura Login</h1>
         <p className="text-sm text-slate-600 text-center">Internal users only</p>
         
         {error && (

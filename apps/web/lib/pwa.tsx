@@ -192,7 +192,7 @@ export function PWAInstallBanner(): JSX.Element | null {
     <div className="fixed bottom-4 left-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50 md:left-auto md:right-4 md:max-w-sm">
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
-          <div className="font-medium text-sm">Install Teleplatform</div>
+          <div className="font-medium text-sm">Install Eudaura</div>
           <div className="text-xs opacity-90">Get the app for faster access and offline features</div>
         </div>
         <div className="flex gap-2">

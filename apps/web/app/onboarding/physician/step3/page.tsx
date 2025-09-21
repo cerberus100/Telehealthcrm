@@ -48,8 +48,8 @@ export default function PhysicianStep3() {
             <iframe src={tosUrl} className="w-full h-64 border rounded" title="Terms of Use" />
           ) : (
             <div className="text-sm text-slate-700 bg-slate-50 p-3 rounded h-64 overflow-auto border">
-              <h3 className="font-semibold mb-2">Teleplatform Terms of Use (Sample)</h3>
-              <p className="mb-2">These Terms govern your use of the Teleplatform clinician portal. By proceeding, you affirm that you are authorized to practice, and you will comply with applicable laws and standards of care.</p>
+              <h3 className="font-semibold mb-2">Eudaura Terms of Use (Sample)</h3>
+              <p className="mb-2">These Terms govern your use of the Eudaura clinician portal. By proceeding, you affirm that you are authorized to practice, and you will comply with applicable laws and standards of care.</p>
               <ul className="list-disc ml-5 space-y-1">
                 <li>Use of PHI: You agree to access and use PHI solely for treatment and minimum-necessary purposes.</li>
                 <li>Security: You will maintain account security, MFA, and report suspected incidents within 24 hours.</li>

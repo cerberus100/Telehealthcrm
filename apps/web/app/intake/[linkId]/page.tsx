@@ -112,7 +112,7 @@ export default function PublicIntake({ params }: { params: { linkId: string } })
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Teleplatform Intake</h1>
+      <h1 className="text-2xl font-semibold">Eudaura Intake</h1>
       <form onSubmit={submit} className="space-y-4 bg-white p-4 rounded shadow">
         {errors && <div className="p-2 bg-red-50 text-red-700 text-sm rounded">{errors}</div>}
         

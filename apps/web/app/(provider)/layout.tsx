@@ -15,8 +15,15 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         <nav className="bg-white border-b border-slate-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-lg font-semibold text-brand-600">
-                Provider Portal
+              <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold text-brand-600">
+                <div className="w-6 h-6 relative">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-600 to-slate-700" />
+                  <div className="absolute inset-0.5 rounded-full border border-amber-200 opacity-60" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-slate-100 font-light text-xs">e</span>
+                  </div>
+                </div>
+                Eudaura Provider
               </Link>
               <div className="flex space-x-6">
                 <Link 

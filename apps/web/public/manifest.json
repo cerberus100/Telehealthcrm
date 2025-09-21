@@ -1,7 +1,7 @@
 {
-  "name": "Teleplatform - Telehealth CRM",
-  "short_name": "Teleplatform",
-  "description": "HIPAA-compliant telehealth platform for providers, marketers, and patients",
+  "name": "Eudaura - Healthcare Platform",
+  "short_name": "Eudaura",
+  "description": "HIPAA-compliant healthcare platform for providers, marketers, and patients",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
