@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </header>
           <main id="main-content" className="p-4 min-h-[70vh]" role="main">{children}</main>
-          <footer className="p-4 border-t text-xs text-slate-600">Eudaura Healthcare Platform • Env: {buildInfo.env}</footer>
+          <footer className="p-4 border-t text-xs text-brand-600">Eudaura Healthcare Platform • Env: {buildInfo.env}</footer>
           <PWAInstallBanner />
         </Providers>
       </body>

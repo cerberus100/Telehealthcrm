@@ -19,33 +19,33 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                 Eudaura Provider
               </Link>
               <div className="flex space-x-6">
-                <Link 
-                  href="/dashboard" 
-                  className="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium"
+                <Link
+                  href="/dashboard"
+                  className="text-brand-600 hover:text-brand-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Dashboard
                 </Link>
-                <Link 
-                  href="/patients" 
-                  className="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium"
+                <Link
+                  href="/patients"
+                  className="text-brand-600 hover:text-brand-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Patients
                 </Link>
-                <Link 
-                  href="/consults" 
-                  className="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium"
+                <Link
+                  href="/consults"
+                  className="text-brand-600 hover:text-brand-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Consults
                 </Link>
-                <Link 
-                  href="/rx" 
-                  className="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium"
+                <Link
+                  href="/rx"
+                  className="text-brand-600 hover:text-brand-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Prescriptions
                 </Link>
-                <Link 
-                  href="/lab-results" 
-                  className="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium"
+                <Link
+                  href="/lab-results"
+                  className="text-brand-600 hover:text-brand-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Lab Results
                 </Link>

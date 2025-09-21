@@ -65,8 +65,8 @@ export default function LoginPage() {
       <div className="relative z-10 max-w-md w-full mx-4">
         <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl border border-white/20 p-8 space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to Eudaura</h1>
-            <p className="text-sm text-slate-600">Sign in to your account</p>
+            <h1 className="text-3xl font-bold text-brand-900 mb-2">Welcome to Eudaura</h1>
+            <p className="text-sm text-brand-600">Sign in to your account</p>
           </div>
 
           {error && (
@@ -75,14 +75,14 @@ export default function LoginPage() {
 
           <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-brand-700 mb-2">
                 Email Address
               </label>
               <input
                 id="email"
                 name="email"
                 autoComplete="email"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                className="w-full px-4 py-3 border border-brand-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors bg-white"
                 placeholder="Enter your email"
                 type="email"
                 value={email}
@@ -92,14 +92,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-brand-700 mb-2">
                 Password
               </label>
               <input
                 id="password"
                 name="password"
                 autoComplete="current-password"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                className="w-full px-4 py-3 border border-brand-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors bg-white"
                 placeholder="Enter your password"
                 type="password"
                 value={password}
@@ -119,7 +119,7 @@ export default function LoginPage() {
           </form>
 
           <div className="text-center">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-brand-500">
               Contact your administrator for access
             </p>
           </div>

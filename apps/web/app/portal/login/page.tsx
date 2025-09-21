@@ -34,12 +34,12 @@ export default function PortalLogin() {
       <div className="relative z-10 w-full max-w-sm mx-4">
         <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl border border-white/20 p-6 text-center">
           <div className="mb-4">
-            <h1 className="text-xl font-bold text-slate-900 mb-2">Eudaura Patient Portal</h1>
-            <p className="text-sm text-slate-600">Welcome to your healthcare portal</p>
+            <h1 className="text-xl font-bold text-brand-900 mb-2">Eudaura Patient Portal</h1>
+            <p className="text-sm text-brand-600">Welcome to your healthcare portal</p>
           </div>
 
           <div className="min-h-[60px] flex items-center justify-center">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-brand-700">
               {status || 'Validating token…'}
             </p>
           </div>
