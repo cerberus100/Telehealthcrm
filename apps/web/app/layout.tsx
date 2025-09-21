@@ -38,16 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <OfflineIndicator />
           <SessionBanner />
           <header className="p-4 border-b flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 font-semibold text-brand-600">
-              <div className="w-8 h-8 relative">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-600 to-slate-700" />
-                <div className="absolute inset-1 rounded-full border border-amber-200 opacity-60" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-slate-100 font-light text-xs">e</span>
-                </div>
-              </div>
-              Eudaura
-            </Link>
+            <Link href="/" className="font-semibold text-brand-600">Eudaura</Link>
             <AppNav />
             <div className="ml-auto flex items-center gap-4">
               <NotificationsBell />

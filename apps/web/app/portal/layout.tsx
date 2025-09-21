@@ -7,16 +7,7 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-white text-slate-900">
       <header className="sticky top-0 z-10 border-b bg-white">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-          <Link href="/portal" className="flex items-center gap-2 text-base font-semibold" style={{ color: '#007DB8' }}>
-            <div className="w-6 h-6 relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-600 to-slate-700" />
-              <div className="absolute inset-0.5 rounded-full border border-amber-200 opacity-60" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-slate-100 font-light text-xs">e</span>
-              </div>
-            </div>
-            Eudaura Patient Portal
-          </Link>
+          <Link href="/portal" className="text-base font-semibold" style={{ color: '#007DB8' }}>Eudaura Patient Portal</Link>
           <nav className="text-sm flex items-center gap-4">
             <Link href="/portal" className="hover:underline">Dashboard</Link>
             <Link href="/portal/appointments" className="hover:underline">Appointments</Link>
