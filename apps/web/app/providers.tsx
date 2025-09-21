@@ -10,7 +10,7 @@ import { OfflineIndicator } from '../lib/offline'
 export const API_BASE_URL = typeof window !== 'undefined'
   ? (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com')
   : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com')
-export const USE_MOCKS = false // Disabled for production API
+export const USE_MOCKS = true // Temporarily enabled to show UI changes
 
 // Production Cognito Configuration
 export const COGNITO_CONFIG = {
