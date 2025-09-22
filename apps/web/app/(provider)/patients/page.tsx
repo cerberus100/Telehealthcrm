@@ -39,7 +39,7 @@ function PatientSearchBar({
   }
 
   return (
-    <Card>
+    <Card className="card-pad">
       <form onSubmit={handleSearch} className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -50,20 +50,20 @@ function PatientSearchBar({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder='Search: name:"Jane D" dob:1990 phone:555-1234 mrn:MRN123'
-              className="input-premium w-full"
+              className="input-eu w-full"
             />
           </div>
           <div className="flex gap-2">
             <button
               type="submit"
-              className="btn-premium"
+              className="btn-primary"
             >
               Search
             </button>
             <button
               type="button"
               onClick={() => setShowFilters(!showFilters)}
-              className="border border-[rgba(46,59,45,0.25)] rounded-xl h-11 px-4 text-olive hover:border-gold focus-gold"
+              className="btn-secondary"
             >
               Filters
             </button>
@@ -72,24 +72,24 @@ function PatientSearchBar({
 
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-[rgba(46,59,45,0.08)]">
-            <select className="input-premium">
+            <select className="input-eu">
               <option value="">All patients</option>
               <option value="seen-by-me">Seen by me</option>
               <option value="assigned-to-me">Assigned to me</option>
             </select>
-            <select className="input-premium">
+            <select className="input-eu">
               <option value="">All time</option>
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
               <option value="90d">Last 90 days</option>
             </select>
-            <select className="input-premium">
+            <select className="input-eu">
               <option value="">Any status</option>
               <option value="open-consult">Has open consult</option>
               <option value="active-rx">Has active Rx</option>
               <option value="pending-results">Pending results</option>
             </select>
-            <select className="input-premium">
+            <select className="input-eu">
               <option value="">Default sort</option>
               <option value="name">Name A-Z</option>
               <option value="last-activity">Last activity</option>
@@ -309,8 +309,7 @@ export default function PatientsPage() {
                     <div className="meta text-sm">{patient.phone}</div>
                   </td>
                   <td className="td-eu text-center">
-                    <span className={`badge badge-${statusVariants[patient.status] === 'success' ? 'success' :
-                                                  statusVariants[patient.status] === 'warn' ? 'warn' : 'info'}`}>
+                    <span className={`badge badge-${statusVariants[patient.status] || 'info'}`}>
                       {patient.status}
                     </span>
                   </td>

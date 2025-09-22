@@ -155,8 +155,7 @@ export default function ConsultsPage() {
                     </Link>
                   </td>
                   <td className="td-eu">
-                    <span className={`badge badge-${statusVariants[consult.status] === 'success' ? 'success' :
-                                                  statusVariants[consult.status] === 'warn' ? 'warn' : 'info'}`}>
+                    <span className={`badge badge-${statusVariants[consult.status] || 'info'}`}>
                       {consult.status.toLowerCase()}
                     </span>
                   </td>

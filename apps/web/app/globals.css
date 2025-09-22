@@ -237,22 +237,93 @@
 .topbar { background: rgba(46,59,45,.04); font-size:12px; padding: 6px 12px; color: rgba(46,59,45,.75); }
 
 /* ========================================
-   EUDAURA PHYSICIAN DASHBOARD - UNIFIED SPEC
+   EUDAURA PHYSICIAN DASHBOARD - PREMIUM UI
    ======================================== */
 
-/* Main content wrapper */
-.content-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+/* Layout helpers */
+.container-eu { max-width: 1200px; margin-inline: auto; padding-inline: 1rem; }
+@media (min-width:768px){ .container-eu{ padding-inline: 1.5rem; } }
+
+/* Cards */
+.card {
+  border-radius: 16px;
+  border: 1px solid rgba(46,59,45,.12);
+  background: #F7F5EF; /* offwhite */
+  box-shadow: 0 8px 24px rgba(46,59,45,.08);
 }
-@media (min-width: 768px) {
-  .content-wrapper {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
+.card-pad { padding: 20px; } @media (min-width:768px){ .card-pad{ padding: 24px; } }
+.card-equal { min-height: 360px; }
+
+/* Typography */
+.h1   { font-size: 24px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+.h2   { font-size: 15px; font-weight: 600; color: var(--ink); }
+.meta { font-size: 12px; color: rgba(46,59,45,.70); }
+
+/* Buttons */
+.btn-primary {
+  display:inline-flex; align-items:center; justify-content:center;
+  height: 40px; padding: 0 16px; border-radius: 12px;
+  background: var(--sage); color: var(--offwhite);
+  transition: transform .14s ease, background-color .14s ease, box-shadow .14s ease;
 }
+.btn-primary:hover { background: var(--olive); transform: translateY(-1px); }
+.btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(199,168,103,.45); }
+
+.btn-pill {
+  display:inline-flex; align-items:center; justify-content:center;
+  height: 28px; padding: 0 12px; border-radius: 9999px;
+  background: var(--sage); color: var(--offwhite); font-size: 12px;
+  transition: background-color .14s ease, box-shadow .14s ease;
+}
+.btn-pill:hover { background: var(--olive); }
+.btn-pill:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(199,168,103,.45); }
+
+/* Inputs / selects (gold focus) */
+.input-eu, .select-eu {
+  height: 40px; border-radius: 12px; background:#fff;
+  border: 1px solid rgba(85,107,79,.55);
+  transition: border-color .14s ease, box-shadow .14s ease;
+}
+.input-eu:focus, .select-eu:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(199,168,103,.25);
+  outline: none;
+}
+
+/* Badges mapped to brand */
+.badge { display:inline-flex; align-items:center; height:22px; border-radius:9999px; padding:0 10px; font-size:12px; gap:6px; }
+.badge-success { background: rgba(85,107,79,.12); color: var(--olive); }   /* released / active / passed */
+.badge-warn    { background: rgba(199,168,103,.16); color: var(--olive); } /* submitted / pending */
+.badge-info    { background: rgba(46,59,45,.08); color: var(--ink); }      /* info/neutral */
+.badge-urgent::before { content:""; width:6px; height:6px; border-radius:9999px; background: var(--gold); }
+
+/* Tables */
+.table-eu { width:100%; border-collapse: separate; border-spacing:0; }
+.th-eu { height:48px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color: rgba(46,59,45,.75); border-bottom:1px solid rgba(46,59,45,.08); padding: 0 16px; text-align:left; }
+.td-eu { height:48px; padding: 0 16px; border-bottom:1px solid rgba(46,59,45,.08); vertical-align: middle; }
+.tr-eu:nth-child(even){ background: rgba(46,59,45,.02); }
+.tr-eu:hover { background: rgba(46,59,45,.035); }
+.id-mono { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; }
+
+/* Stat card (metrics) */
+.stat {
+  display:grid; grid-template-columns: 1fr auto; row-gap:6px; align-items:center;
+  border-radius: 16px; border: 1px solid rgba(46,59,45,.12); background: #F7F5EF; box-shadow: 0 8px 24px rgba(46,59,45,.08);
+  padding: 16px 16px 14px 16px;
+}
+.stat .label { font-size:12px; color: rgba(46,59,45,.70); }
+.stat .value { font-size: 28px; font-weight:600; color: var(--ink); letter-spacing:-.01em; }
+.stat .trend { display:flex; align-items:center; gap:6px; font-size:12px; color: rgba(46,59,45,.70); }
+
+/* Quick Action row */
+.action-row { display:flex; align-items:center; gap:10px; height:44px; padding:0 12px; border-radius:12px; border:1px solid rgba(46,59,45,.12); background:#fff; }
+.action-row:hover { background:rgba(46,59,45,.03); }
+
+/* Micro-interactions */
+.card:hover { transform: translateY(-1px); transition: transform .14s ease; }
+
+/* Subtle section band (optional) */
+.band { background: rgba(85,107,79,.04); border-radius: 12px; }
 
 /* Premium inputs */
 .input-premium {

@@ -145,8 +145,7 @@ export default function RxPage() {
                     </Link>
                   </td>
                   <td className="td-eu">
-                    <span className={`badge badge-${statusVariants[rx.status] === 'success' ? 'success' :
-                                                  statusVariants[rx.status] === 'warn' ? 'warn' : 'info'}`}>
+                    <span className={`badge badge-${statusVariants[rx.status] || 'info'}`}>
                       {rx.status.toLowerCase()}
                     </span>
                   </td>
