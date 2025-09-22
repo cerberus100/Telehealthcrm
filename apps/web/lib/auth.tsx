@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ...state,
     isAuthenticated: !!state.token,
     login: async ({ email, password }) => {
-      const tokens = await Api.authLogin(email, password)
+      const tokens = await Api.authLogin(email || '', password || '')
       // Set an immediate demo session so UI can proceed without waiting on /auth/me
       const emailLower = (email || '').toLowerCase()
       const inferredRole: Role = emailLower.includes('admin')
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : emailLower.includes('pharmacy')
               ? 'PHARMACIST'
               : 'DOCTOR'
-      const immediate: AuthState = { token: tokens.access_token, role: inferredRole, orgId: 'mock-org-123', purposeOfUse: null, email }
+      const immediate: AuthState = { token: tokens.access_token, role: inferredRole, orgId: 'mock-org-123', purposeOfUse: null, email: email || '' }
       setState(immediate)
       if (typeof window !== 'undefined') window.localStorage.setItem('auth', JSON.stringify(immediate))
 

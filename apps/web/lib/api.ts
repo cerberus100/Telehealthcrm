@@ -150,6 +150,12 @@ export type RequisitionTemplateList = z.infer<typeof RequisitionTemplateListSche
 
 async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
   if (USE_MOCKS) {
+    // Handle auth/login first
+    if (path === '/auth/login') {
+      const mock = { access_token: 'mock_access_user123', refresh_token: 'mock_refresh_user123' }
+      return schema.parse(mock)
+    }
+
     if (path === '/me') {
       const mock = {
         user: { id: 'u_1', email: 'dr@example.com', role: 'DOCTOR', org_id: 'org_1', last_login_at: new Date().toISOString() },
@@ -198,10 +204,10 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       return schema.parse(mock)
     }
     if (path.startsWith('/requisition-templates')) {
-      const mock = { items: [{ 
-        id: 'rt_1', 
-        name: 'COVID-19 Test Kit', 
-        version: '1.0', 
+      const mock = { items: [{
+        id: 'rt_1',
+        name: 'COVID-19 Test Kit',
+        version: '1.0',
         fields: [
           { name: 'patient_name', type: 'text', required: true },
           { name: 'dob', type: 'date', required: true },
@@ -210,10 +216,6 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
         created_by_org_id: 'org_lab',
         published_at: new Date().toISOString()
       }], next_cursor: null }
-      return schema.parse(mock)
-    }
-    if (path === '/auth/login') {
-      const mock = { access_token: 'mock_access_user123', refresh_token: 'mock_refresh_user123' }
       return schema.parse(mock)
     }
     if (path === '/operational-analytics/metrics') {
@@ -263,6 +265,12 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       }
       return schema.parse(mock)
     }
+
+    // If no mock found and USE_MOCKS is true, return a basic mock
+    if (USE_MOCKS) {
+      console.warn(`No mock found for path: ${path}, returning empty mock`)
+      return schema.parse({} as T)
+    }
   }
   return request(path, schema, init)
 }
@@ -285,7 +293,7 @@ export const Api = {
   authLogin: (email: string, password: string) => http('/auth/login', AuthLoginResponseSchema, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email: email || '', password: password || '' }),
   }),
   // Analytics
   dashboardMetrics: () => http('/operational-analytics/metrics', DashboardMetricsSchema),

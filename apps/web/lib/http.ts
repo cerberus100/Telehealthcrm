@@ -23,7 +23,7 @@ function uuid(): string {
 }
 
 export async function request<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
-  // Skip network requests when using mocks (for deployed environment)
+  // When using mocks, don't make real network requests
   if (USE_MOCKS) {
     // Return a resolved promise that will be handled by mock logic in api.ts
     return new Promise((resolve) => {
@@ -36,6 +36,7 @@ export async function request<T>(path: string, schema: z.ZodSchema<T>, init?: Re
 
   // Mocking handled by callers that want it; fall through to network
   const method = (init?.method || 'GET').toUpperCase()
+
   const base = getApiBaseUrl()
   const correlationId = uuid()
   const headers: Record<string, string> = {
