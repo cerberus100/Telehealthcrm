@@ -23,6 +23,17 @@ function uuid(): string {
 }
 
 export async function request<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
+  // Skip network requests when using mocks (for deployed environment)
+  if (USE_MOCKS) {
+    // Return a resolved promise that will be handled by mock logic in api.ts
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // This will fall through to the mock handling in api.ts
+        resolve({} as T)
+      }, 0)
+    })
+  }
+
   // Mocking handled by callers that want it; fall through to network
   const method = (init?.method || 'GET').toUpperCase()
   const base = getApiBaseUrl()
