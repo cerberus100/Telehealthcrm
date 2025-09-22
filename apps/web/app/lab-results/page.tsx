@@ -135,84 +135,84 @@ export default function LabResultsPage() {
     <div className="min-h-screen bg-background">
       <Topbar>Signed in as dr@demo.health (DOCTOR)</Topbar>
 
-      <div className="content-wrapper py-8">
+      <div className="container-eu py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="h1 mb-2">Lab Results</h1>
-          <p className="meta">Review and manage laboratory test results</p>
-        </div>
+        <h1 className="h1 mb-4">Lab Results</h1>
+        <p className="meta mb-6">Review and manage laboratory test results</p>
 
         {/* Controls */}
-        <Card className="p-5 md:p-6 mb-6">
+        <Card className="card-pad mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-foreground">Filter by Status:</label>
-              <select className="input-premium w-48">
+              <select className="input-eu w-48">
                 <option value="">All Results</option>
                 <option value="released">Released</option>
                 <option value="pending">Pending</option>
                 <option value="abnormal">Abnormal</option>
               </select>
             </div>
-            <Link href="/lab-orders/new" className="btn-premium">
+            <Link href="/lab-orders/new" className="btn-primary">
               Order Tests
             </Link>
           </div>
         </Card>
 
         {/* Table */}
-        <table className="table">
-          <thead>
-            <tr className="h-12">
-              <th className="text-left">ID</th>
-              <th className="text-left">Lab Order</th>
-              <th className="text-center">Status</th>
-              <th className="text-center">Released</th>
-              <th className="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((result) => (
-              <tr key={result.id} className="h-12">
-                <td className="cell-mono">
-                  <Link href={`/lab-results/${result.id}`} className="link">
-                    {result.id}
-                  </Link>
-                </td>
-                <td>
-                  <Link href={`/lab-orders/${result.lab_order_id}`} className="link">
-                    {result.lab_order_id}
-                  </Link>
-                </td>
-                <td className="text-center">
-                  {result.flagged_abnormal ? (
-                    <span className="badge badge-urgent">Abnormal</span>
-                  ) : result.released_to_provider_at ? (
-                    <span className="badge badge-success">Released</span>
-                  ) : (
-                    <span className="badge badge-warn">Pending</span>
-                  )}
-                </td>
-                <td className="text-center meta">
-                  {result.released_to_provider_at
-                    ? new Date(result.released_to_provider_at).toLocaleDateString()
-                    : '—'
-                  }
-                </td>
-                <td className="text-center">
-                  <Link href={`/lab-results/${result.id}`} className="btn-premium text-sm">
-                    View
-                  </Link>
-                </td>
+        <Card className="card-pad">
+          <table className="table-eu">
+            <thead>
+              <tr>
+                <th className="th-eu">ID</th>
+                <th className="th-eu">LAB ORDER</th>
+                <th className="th-eu text-center">STATUS</th>
+                <th className="th-eu text-center">RELEASED</th>
+                <th className="th-eu text-right">ACTIONS</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.items.map((result) => (
+                <tr key={result.id} className="tr-eu">
+                  <td className="td-eu id-mono">
+                    <Link href={`/lab-results/${result.id}`} className="link">
+                      {result.id}
+                    </Link>
+                  </td>
+                  <td className="td-eu">
+                    <Link href={`/lab-orders/${result.lab_order_id}`} className="link">
+                      {result.lab_order_id}
+                    </Link>
+                  </td>
+                  <td className="td-eu text-center">
+                    {result.flagged_abnormal ? (
+                      <span className="badge badge-urgent">abnormal</span>
+                    ) : result.released_to_provider_at ? (
+                      <span className="badge badge-success">released</span>
+                    ) : (
+                      <span className="badge badge-warn">pending</span>
+                    )}
+                  </td>
+                  <td className="td-eu text-center meta">
+                    {result.released_to_provider_at
+                      ? new Date(result.released_to_provider_at).toLocaleDateString()
+                      : '—'
+                    }
+                  </td>
+                  <td className="td-eu text-right">
+                    <Link href={`/lab-results/${result.id}`} className="btn-pill">
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
 
         {data.items.length === 0 && (
           <div className="text-center py-12">
             <p className="meta mb-4">No lab results found</p>
-            <Link href="/lab-orders/new" className="btn-premium">
+            <Link href="/lab-orders/new" className="btn-primary">
               Order First Test
             </Link>
           </div>

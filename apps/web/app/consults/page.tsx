@@ -106,20 +106,18 @@ export default function ConsultsPage() {
     <div className="min-h-screen bg-background">
       <Topbar>Signed in as dr@demo.health (DOCTOR)</Topbar>
 
-      <div className="content-wrapper py-8">
+      <div className="container-eu py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="h1 mb-2">Consults</h1>
-          <p className="meta">Manage patient consultations and reviews</p>
-        </div>
+        <h1 className="h1 mb-4">Consults</h1>
+        <p className="meta mb-6">Manage patient consultations and reviews</p>
 
         {/* Controls */}
-        <Card className="p-5 md:p-6 mb-6">
+        <Card className="card-pad mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-foreground">Filter by Status:</label>
               <select
-                className="input-premium w-48"
+                className="input-eu w-48"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
@@ -131,54 +129,55 @@ export default function ConsultsPage() {
                 <option value="DECLINED">DECLINED</option>
               </select>
             </div>
-            <Link href="/consults/new" className="btn-premium">
+            <Link href="/consults/new" className="btn-primary">
               New Consult
             </Link>
           </div>
         </Card>
 
         {/* Table */}
-        <table className="table">
-          <thead>
-            <tr className="h-12">
-              <th className="text-left">ID</th>
-              <th className="text-left">Status</th>
-              <th className="text-left">Created</th>
-              <th className="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((consult) => (
-              <tr key={consult.id} className="h-12">
-                <td className="cell-mono">
-                  <Link href={`/consults/${consult.id}`} className="link">
-                    {consult.id}
-                  </Link>
-                </td>
-                <td>
-                  <span className={`badge ${statusVariants[consult.status] === 'success' ? 'badge-success' :
-                                            statusVariants[consult.status] === 'warn' ? 'badge-warn' :
-                                            statusVariants[consult.status] === 'urgent' ? 'badge-urgent' : 'badge-info'}`}>
-                    {consult.status}
-                  </span>
-                </td>
-                <td className="meta">
-                  {new Date(consult.created_at).toLocaleString()}
-                </td>
-                <td className="text-center">
-                  <Link href={`/consults/${consult.id}`} className="btn-premium text-sm">
-                    Open
-                  </Link>
-                </td>
+        <Card className="card-pad">
+          <table className="table-eu">
+            <thead>
+              <tr>
+                <th className="th-eu">ID</th>
+                <th className="th-eu">STATUS</th>
+                <th className="th-eu">CREATED</th>
+                <th className="th-eu text-right">ACTIONS</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredData.map((consult) => (
+                <tr key={consult.id} className="tr-eu">
+                  <td className="td-eu id-mono">
+                    <Link href={`/consults/${consult.id}`} className="link">
+                      {consult.id}
+                    </Link>
+                  </td>
+                  <td className="td-eu">
+                    <span className={`badge badge-${statusVariants[consult.status] === 'success' ? 'success' :
+                                                  statusVariants[consult.status] === 'warn' ? 'warn' : 'info'}`}>
+                      {consult.status.toLowerCase()}
+                    </span>
+                  </td>
+                  <td className="td-eu meta">
+                    {new Date(consult.created_at).toLocaleString()}
+                  </td>
+                  <td className="td-eu text-right">
+                    <Link href={`/consults/${consult.id}`} className="btn-pill">
+                      Open
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
 
         {filteredData.length === 0 && (
           <div className="text-center py-12">
             <p className="meta mb-4">No consults found</p>
-            <Link href="/consults/new" className="btn-premium">
+            <Link href="/consults/new" className="btn-primary">
               Create First Consult
             </Link>
           </div>

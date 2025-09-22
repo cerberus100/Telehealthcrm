@@ -254,14 +254,14 @@ export default function PatientsPage() {
     <div className="min-h-screen bg-background">
       <Topbar>Signed in as dr@demo.health (DOCTOR)</Topbar>
 
-      <div className="content-wrapper py-8">
+      <div className="container-eu py-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="h1 mb-2">My Patients</h1>
             <p className="meta">Patients you have served or are assigned to</p>
           </div>
-          <Link href="/patients/new" className="btn-premium">
+          <Link href="/patients/new" className="btn-primary">
             Add Patient
           </Link>
         </div>
@@ -272,63 +272,65 @@ export default function PatientsPage() {
         </div>
 
         {/* Table */}
-        <table className="table">
-          <thead>
-            <tr className="h-12">
-              <th className="text-left">Patient</th>
-              <th className="text-left">Contact</th>
-              <th className="text-center">Status</th>
-              <th className="text-left">Last Activity</th>
-              <th className="text-left">Next Action</th>
-              <th className="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {patients.map((patient) => (
-              <tr key={patient.id} className="h-12">
-                <td>
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-8 w-8">
-                      <div className="h-8 w-8 rounded-full bg-[rgba(85,107,79,0.12)] flex items-center justify-center">
-                        <span className="text-sm font-medium text-olive">
-                          {patient.name.split(' ').map((n: string) => n[0]).join('')}
-                        </span>
+        <Card className="card-pad">
+          <table className="table-eu">
+            <thead>
+              <tr>
+                <th className="th-eu">PATIENT</th>
+                <th className="th-eu">CONTACT</th>
+                <th className="th-eu text-center">STATUS</th>
+                <th className="th-eu">LAST ACTIVITY</th>
+                <th className="th-eu">NEXT ACTION</th>
+                <th className="th-eu text-right">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {patients.map((patient) => (
+                <tr key={patient.id} className="tr-eu">
+                  <td className="td-eu">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-8 w-8">
+                        <div className="h-8 w-8 rounded-full bg-[rgba(85,107,79,0.12)] flex items-center justify-center">
+                          <span className="text-sm font-medium text-olive">
+                            {patient.name.split(' ').map((n: string) => n[0]).join('')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <Link href={`/patients/${patient.id}`} className="link font-medium">
+                          {patient.name}
+                        </Link>
+                        <div className="meta text-xs">DOB: {new Date(patient.dob).toLocaleDateString()}</div>
                       </div>
                     </div>
-                    <div className="ml-3">
-                      <Link href={`/patients/${patient.id}`} className="link font-medium">
-                        {patient.name}
-                      </Link>
-                      <div className="meta text-xs">DOB: {new Date(patient.dob).toLocaleDateString()}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div className="text-sm font-medium text-foreground cell-mono">{patient.mrn}</div>
-                  <div className="meta text-sm">{patient.phone}</div>
-                </td>
-                <td className="text-center">
-                  <span className={`badge ${statusVariants[patient.status] === 'success' ? 'badge-success' :
-                                            statusVariants[patient.status] === 'warn' ? 'badge-warn' : 'badge-info'}`}>
-                    {patient.status}
-                  </span>
-                </td>
-                <td className="meta">{patient.lastActivity}</td>
-                <td className="meta">{patient.nextAction}</td>
-                <td className="text-center">
-                  <Link href={`/patients/${patient.id}`} className="btn-premium text-sm">
-                    View Profile
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                  <td className="td-eu">
+                    <div className="text-sm font-medium text-foreground id-mono">{patient.mrn}</div>
+                    <div className="meta text-sm">{patient.phone}</div>
+                  </td>
+                  <td className="td-eu text-center">
+                    <span className={`badge badge-${statusVariants[patient.status] === 'success' ? 'success' :
+                                                  statusVariants[patient.status] === 'warn' ? 'warn' : 'info'}`}>
+                      {patient.status}
+                    </span>
+                  </td>
+                  <td className="td-eu meta">{patient.lastActivity}</td>
+                  <td className="td-eu meta">{patient.nextAction}</td>
+                  <td className="td-eu text-right">
+                    <Link href={`/patients/${patient.id}`} className="btn-pill">
+                      View Profile
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
 
         {patients.length === 0 && (
           <div className="text-center py-12">
             <p className="meta mb-4">No patients found</p>
-            <Link href="/patients/new" className="btn-premium">
+            <Link href="/patients/new" className="btn-primary">
               Add First Patient
             </Link>
           </div>
