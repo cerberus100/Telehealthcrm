@@ -176,6 +176,82 @@
 }
 .aura-pulse { animation: auraPulse 6s ease-in-out infinite; }
 
+/* ========================================
+   EUDAURA UI SYSTEM - PHYSICIAN DASHBOARD
+   ======================================== */
+
+/* Base card system */
+.card {
+  border-radius: 16px;
+  border: 1px solid rgba(46,59,45,0.12);
+  background: #F7F5EF;
+  box-shadow: 0 8px 24px rgba(46,59,45,0.08);
+}
+.card-pad { padding: 20px; }
+@media(min-width:768px){ .card-pad{ padding:24px; } }
+
+/* Typography hierarchy */
+.h1     { font-size: 24px; font-weight: 600; letter-spacing:-.01em; color: var(--ink); }
+.h2     { font-size: 15px; font-weight: 600; color: var(--ink); }
+.meta   { font-size: 12px; color: rgba(46,59,45,.70); }
+
+/* Badge system */
+.badge  { display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 8px; border-radius:9999px; font-size:12px; }
+.badge-success { background: rgba(85,107,79,.12); color: var(--olive); }
+.badge-info    { background: rgba(46,59,45,.08); color: var(--ink); }
+.badge-warn    { background: rgba(199,168,103,.16); color: var(--olive); }
+.badge-urgent::before { content:""; width:6px; height:6px; border-radius:9999px; background: var(--gold); display:inline-block; }
+
+/* Table system */
+.table { width:100%; border-collapse: separate; border-spacing:0; }
+.tr    { height:48px; }
+.tr:nth-child(even) { background: rgba(46,59,45,.02); }
+.tr:hover { background: rgba(46,59,45,.035); }
+.td, .th { padding: 0 16px; border-bottom: 1px solid rgba(46,59,45,.08); }
+.th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color: rgba(46,59,45,.75); }
+.cell-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; }
+
+/* Link and focus styles */
+.link     { color: var(--olive); text-decoration: underline; text-decoration-color: rgba(199,168,103,.6); text-underline-offset: 3px; }
+.focus-gold:focus-visible { outline:none; box-shadow: 0 0 0 3px rgba(199,168,103,.45); border-radius:12px; }
+
+/* Topbar */
+.topbar { background: rgba(46,59,45,.04); font-size:12px; padding: 6px 12px; color: rgba(46,59,45,.75); }
+
+/* Premium inputs */
+.input-premium {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(85,107,79,0.55);
+  background: #fff;
+  transition: border-color .14s ease, box-shadow .14s ease;
+  font-size: 16px;
+  padding: 0 16px;
+}
+.input-premium:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(199,168,103,0.25);
+  outline: none;
+}
+.input-premium::placeholder {
+  color: rgba(46,59,45,0.5);
+}
+
+/* Premium buttons */
+.btn-premium {
+  background: var(--sage);
+  color: var(--offwhite);
+  height: 44px;
+  border-radius: 12px;
+  transition: transform .14s ease, background-color .14s ease, box-shadow .14s ease;
+  padding: 0 20px;
+  border: none;
+  font-weight: 500;
+}
+.btn-premium:hover { background: var(--olive); transform: translateY(-1px); }
+.btn-premium:active { transform: translateY(0); }
+.btn-premium:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(199,168,103,0.60); }
+
 /* SVG ring styling */
 .login-aura-ring circle {
   stroke: #C7A867;

@@ -3,16 +3,19 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../../lib/auth'
 import { Api } from '../../../lib/api'
 import Link from 'next/link'
+import { Card } from '../../../components/Card'
+import { Badge } from '../../../components/Badge'
+import { Topbar } from '../../../components/Topbar'
 import ProviderAvailability from '../../../components/ProviderAvailability'
 
 // Provider Dashboard KPI Cards
-function DashboardCard({ 
-  title, 
-  value, 
-  subtitle, 
-  href, 
-  urgentCount = 0 
-}: { 
+function DashboardCard({
+  title,
+  value,
+  subtitle,
+  href,
+  urgentCount = 0
+}: {
   title: string
   value: string | number
   subtitle: string
@@ -21,56 +24,47 @@ function DashboardCard({
 }) {
   return (
     <Link href={href} className="block">
-      <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+      <Card className="flex flex-col gap-2 justify-between h-full hover:shadow-lg transition-shadow focus-gold">
+        <div className="h2">{title}</div>
+        <div className="text-3xl font-semibold text-foreground">{value}</div>
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-600">{title}</p>
-            <p className="text-2xl font-semibold text-slate-900">{value}</p>
-            <p className="text-sm text-slate-500">{subtitle}</p>
-          </div>
+          <span className="meta">{subtitle}</span>
           {urgentCount > 0 && (
-            <div className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-              {urgentCount} urgent
-            </div>
+            <Badge variant="urgent">{urgentCount} urgent</Badge>
           )}
         </div>
-      </div>
+      </Card>
     </Link>
   )
 }
 
 // Recent Activity Item
-function ActivityItem({ 
-  title, 
-  subtitle, 
-  time, 
-  href, 
-  status 
-}: { 
+function ActivityItem({
+  title,
+  subtitle,
+  time,
+  href,
+  status
+}: {
   title: string
   subtitle: string
   time: string
   href: string
   status: 'success' | 'warning' | 'info'
 }) {
-  const statusColors = {
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    info: 'bg-brand-100 text-brand-800',
-  }
+  const statusVariant = status === 'success' ? 'success' :
+                       status === 'warning' ? 'warn' : 'info'
 
   return (
-    <Link href={href} className="block hover:bg-slate-50 px-4 py-3 rounded-md">
+    <Link href={href} className="block hover:bg-[rgba(46,59,45,0.035)] p-4 rounded-lg focus-gold">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-900">{title}</p>
-          <p className="text-sm text-slate-500">{subtitle}</p>
+          <p className="text-sm font-medium text-foreground">{title}</p>
+          <p className="text-sm meta">{subtitle}</p>
         </div>
         <div className="flex items-center space-x-3">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[status]}`}>
-            {status}
-          </span>
-          <span className="text-xs text-slate-400">{time}</span>
+          <Badge variant={statusVariant}>{status}</Badge>
+          <span className="text-xs meta">{time}</span>
         </div>
       </div>
     </Link>
@@ -79,7 +73,7 @@ function ActivityItem({
 
 export default function ProviderDashboard() {
   const { role, orgId } = useAuth()
-  
+
   // Mock data for dashboard - replace with actual API calls
   const { data: dashboardData } = useQuery({
     queryKey: ['provider-dashboard', orgId],
@@ -120,58 +114,149 @@ export default function ProviderDashboard() {
   })
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="md:flex md:items-center md:justify-between">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:text-3xl sm:truncate">
-            Provider Dashboard
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Welcome back! Here's what needs your attention today.
-          </p>
-        </div>
-        <div className="mt-4 flex md:mt-0 md:ml-4">
-          <ProviderAvailability />
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Top Bar */}
+      <Topbar>
+        Signed in as dr@demo.health (DOCTOR)
+      </Topbar>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <DashboardCard
-          title="My Patients"
-          value={dashboardData?.myPatients || 0}
-          subtitle="Active patients"
-          href="/patients"
-        />
-        <DashboardCard
-          title="Consults to Review"
-          value={dashboardData?.consultsToReview || 0}
-          subtitle="Pending approval"
-          href="/consults?status=pending"
-          urgentCount={1}
-        />
-        <DashboardCard
-          title="Rx to Sign"
-          value={dashboardData?.rxToSign || 0}
-          subtitle="Awaiting signature"
-          href="/rx?status=draft"
-          urgentCount={dashboardData?.rxToSign || 0}
-        />
-        <DashboardCard
-          title="Results Arrived"
-          value={dashboardData?.resultsArrived || 0}
-          subtitle="New lab results"
-          href="/lab-results?status=new"
-          urgentCount={2}
-        />
-        <DashboardCard
-          title="Recent Activity"
-          value="2h ago"
-          subtitle="Last patient interaction"
-          href="/patients"
-        />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="h1 mb-2">Provider Dashboard</h1>
+          <p className="meta">Welcome back! Here's what needs your attention today.</p>
+        </div>
+
+        {/* 12-Column Grid Layout */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Top metrics row: 4 cards -> col-span-12 md:col-span-3 each */}
+          <DashboardCard
+            title="My Patients"
+            value={dashboardData?.myPatients || 0}
+            subtitle="Active patients"
+            href="/patients"
+          />
+          <DashboardCard
+            title="Consults to Review"
+            value={dashboardData?.consultsToReview || 0}
+            subtitle="Pending approval"
+            href="/consults?status=pending"
+            urgentCount={1}
+          />
+          <DashboardCard
+            title="Rx to Sign"
+            value={dashboardData?.rxToSign || 0}
+            subtitle="Awaiting signature"
+            href="/rx?status=draft"
+            urgentCount={dashboardData?.rxToSign || 0}
+          />
+          <DashboardCard
+            title="Results Arrived"
+            value={dashboardData?.resultsArrived || 0}
+            subtitle="New lab results"
+            href="/lab-results?status=new"
+            urgentCount={2}
+          />
+
+          {/* Recent Activity and Quick Actions - equal min-height */}
+          <Card className="col-span-12 md:col-span-7 min-h-[360px]">
+            <div className="h2 mb-4">Recent Activity</div>
+            <div className="space-y-2">
+              {dashboardData?.recentActivity?.map((activity) => (
+                <ActivityItem
+                  key={activity.id}
+                  title={activity.title}
+                  subtitle={activity.subtitle}
+                  time={activity.time}
+                  href={activity.href}
+                  status={activity.status}
+                />
+              ))}
+            </div>
+            <div className="mt-6 pt-4 border-t border-[rgba(46,59,45,0.08)]">
+              <Link href="/activity" className="link">
+                View all activity →
+              </Link>
+            </div>
+          </Card>
+
+          <Card className="col-span-12 md:col-span-5 min-h-[360px]">
+            <div className="h2 mb-4">Quick Actions</div>
+            <div className="space-y-4">
+              <Link
+                href="/consults/new"
+                className="flex items-center p-4 border border-[rgba(46,59,45,0.25)] rounded-xl hover:border-gold hover:bg-[rgba(199,168,103,0.05)] transition-colors focus-gold"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-[rgba(85,107,79,0.12)] rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-olive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-foreground">New Consult</p>
+                  <p className="text-sm meta">Start a new patient consultation</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/rx/compose"
+                className="flex items-center p-4 border border-[rgba(46,59,45,0.25)] rounded-xl hover:border-gold hover:bg-[rgba(199,168,103,0.05)] transition-colors focus-gold"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-[rgba(85,107,79,0.12)] rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-olive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-foreground">Compose Prescription</p>
+                  <p className="text-sm meta">Write and e-sign prescription</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/lab-orders/new"
+                className="flex items-center p-4 border border-[rgba(46,59,45,0.25)] rounded-xl hover:border-gold hover:bg-[rgba(199,168,103,0.05)] transition-colors focus-gold"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-[rgba(85,107,79,0.12)] rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-olive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-foreground">Order Labs</p>
+                  <p className="text-sm meta">Request laboratory tests</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/patients/search"
+                className="flex items-center p-4 border border-[rgba(46,59,45,0.25)] rounded-xl hover:border-gold hover:bg-[rgba(199,168,103,0.05)] transition-colors focus-gold"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-[rgba(46,59,45,0.08)] rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-foreground">Find Patient</p>
+                  <p className="text-sm meta">Search by name, MRN, or phone</p>
+                </div>
+              </Link>
+            </div>
+          </Card>
+        </div>
       </div>
+    </div>
+  )
+}
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
