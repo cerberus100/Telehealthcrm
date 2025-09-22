@@ -101,7 +101,7 @@ export default function RxPage() {
     <div className="min-h-screen bg-background">
       <Topbar>Signed in as dr@demo.health (DOCTOR)</Topbar>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="content-wrapper py-8">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="h1 mb-2">Prescriptions</h1>
@@ -109,7 +109,7 @@ export default function RxPage() {
         </div>
 
         {/* Controls */}
-        <Card className="mb-6">
+        <Card className="p-5 md:p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-foreground">Filter by Status:</label>
@@ -128,12 +128,51 @@ export default function RxPage() {
         </Card>
 
         {/* Table */}
-        <DataTable
-          data={data.items}
-          columns={columns}
-          emptyMessage="No prescriptions found"
-          emptyAction={<Link href="/rx/compose" className="btn-premium">Compose First Prescription</Link>}
-        />
+        <table className="table">
+          <thead>
+            <tr className="h-12">
+              <th className="text-left">ID</th>
+              <th className="text-left">Status</th>
+              <th className="text-center">Refills</th>
+              <th className="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((rx) => (
+              <tr key={rx.id} className="h-12">
+                <td className="cell-mono">
+                  <Link href={`/rx/${rx.id}`} className="link">
+                    {rx.id}
+                  </Link>
+                </td>
+                <td>
+                  <span className={`badge ${statusVariants[rx.status] === 'success' ? 'badge-success' :
+                                            statusVariants[rx.status] === 'warn' ? 'badge-warn' :
+                                            statusVariants[rx.status] === 'urgent' ? 'badge-urgent' : 'badge-info'}`}>
+                    {rx.status}
+                  </span>
+                </td>
+                <td className="text-center meta">
+                  {rx.refills_used}/{rx.refills_allowed}
+                </td>
+                <td className="text-center">
+                  <Link href={`/rx/${rx.id}`} className="btn-premium text-sm">
+                    View
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {data.items.length === 0 && (
+          <div className="text-center py-12">
+            <p className="meta mb-4">No prescriptions found</p>
+            <Link href="/rx/compose" className="btn-premium">
+              Compose First Prescription
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )
