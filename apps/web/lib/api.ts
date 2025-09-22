@@ -298,7 +298,7 @@ export const Api = {
     body: JSON.stringify(body),
   }),
   postForm: async (path: string, form: FormData) => {
-    const base = (typeof window !== 'undefined' && ((window as any).NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL)) || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'
+    const base = (typeof window !== 'undefined' && ((window as any).NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL)) || 'http://127.0.0.1:3001'
     const authHeader = typeof window !== 'undefined' ? (() => {
       const raw = window.localStorage.getItem('auth')
       if (!raw) return null

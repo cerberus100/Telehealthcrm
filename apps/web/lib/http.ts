@@ -6,9 +6,9 @@ function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const env = (window as any).NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL
     if (env) return env as string
-    return 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'
+    return 'http://127.0.0.1:3001' // Consistent with providers.tsx
   }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001' // Consistent with providers.tsx
 }
 import { getAuthHeader } from './auth'
 

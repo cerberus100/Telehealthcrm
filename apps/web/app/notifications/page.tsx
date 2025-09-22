@@ -61,7 +61,7 @@ export default function NotificationsPage() {
                       </p>
                     </div>
                     {link && (
-                      <span className="text-blue-600 text-sm">View →</span>
+                      <span className="text-brand-600 text-sm">View →</span>
                     )}
                   </div>
                 </div>

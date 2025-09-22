@@ -171,7 +171,7 @@ export default function PublicIntake({ params }: { params: { linkId: string } })
               <div className="flex gap-2">
                 <input className="mt-1 flex-1 border rounded px-2 py-1" value={medicareId} onChange={(e)=>setMedicareId(e.target.value)} />
                 {medicareId && showLabs && (
-                  <button type="button" onClick={checkDuplicate} disabled={checkingDupe} className="mt-1 px-3 py-1 border rounded text-sm bg-blue-50 hover:bg-blue-100 disabled:opacity-50">
+                  <button type="button" onClick={checkDuplicate} disabled={checkingDupe} className="mt-1 px-3 py-1 border rounded text-sm bg-brand-50 hover:bg-brand-100 disabled:opacity-50">
                     {checkingDupe ? 'Checking...' : 'Check'}
                   </button>
                 )}

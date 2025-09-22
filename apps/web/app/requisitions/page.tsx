@@ -49,7 +49,7 @@ export default function RequisitionsPage() {
           {canCreate && (
             <button
               onClick={() => setShowUploadForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700"
             >
               Upload Template
             </button>
@@ -130,7 +130,7 @@ export default function RequisitionsPage() {
                         {template.published_at ? 'Published' : 'Draft'}
                       </span>
                       {role === 'MARKETER' && (
-                        <button className="text-blue-600 text-sm hover:underline">
+                        <button className="text-brand-600 text-sm hover:underline">
                           Use Template
                         </button>
                       )}

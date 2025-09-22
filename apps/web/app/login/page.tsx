@@ -55,76 +55,135 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-slate-900">
-      {/* Background Eudaura Logo */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <EudauraLogo size="bg" className="opacity-20 scale-150" />
+    <main className="min-h-screen bg-hero-aura relative flex items-center justify-center px-4">
+      {/* FULL-VIEWPORT AURA */}
+      <div aria-hidden className="aura-viewport">
+        <svg
+          className="aura-size aura-pulse"
+          viewBox="0 0 1000 1000"
+          preserveAspectRatio="xMidYMid slice"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            {/* soft golden gradient for the stroke */}
+            <linearGradient id="goldStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#C7A867" stopOpacity="0.95"/>
+              <stop offset="60%" stopColor="#C7A867" stopOpacity="0.90"/>
+              <stop offset="100%" stopColor="#C7A867" stopOpacity="0.85"/>
+            </linearGradient>
+
+            {/* outer glow: gaussian blur + blend */}
+            <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+
+            {/* faint fill halo to enrich glow without looking "neon" */}
+            <radialGradient id="haloFill" cx="50%" cy="50%" r="50%">
+              <stop offset="55%" stopColor="#C7A867" stopOpacity="0.12"/>
+              <stop offset="75%" stopColor="#C7A867" stopOpacity="0.06"/>
+              <stop offset="100%" stopColor="#C7A867" stopOpacity="0"/>
+            </radialGradient>
+          </defs>
+
+          {/* subtle wide halo */}
+          <circle cx="500" cy="500" r="420" fill="url(#haloFill)"/>
+
+          {/* main ring */}
+          <circle
+            cx="500" cy="500" r="400"
+            fill="none"
+            stroke="url(#goldStroke)"
+            strokeWidth="12"
+            filter="url(#softGlow)"
+          />
+
+          {/* secondary inner ring for richness (very faint) */}
+          <circle
+            cx="500" cy="500" r="330"
+            fill="none"
+            stroke="#C7A867"
+            strokeOpacity="0.25"
+            strokeWidth="6"
+            filter="url(#softGlow)"
+          />
+        </svg>
       </div>
 
-      {/* Login Form */}
-      <div className="relative z-10 max-w-md w-full mx-4">
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl border border-white/20 p-8 space-y-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-brand-900 mb-2">Welcome to Eudaura</h1>
-            <p className="text-sm text-brand-600">Sign in to your account</p>
+      {/* CARD */}
+      <div className="relative w-full max-w-md fade-up">
+        <div className="card-premium p-8 rounded-2xl shadow-lg" role="main" aria-labelledby="login-heading">
+          <div className="flex flex-col items-center mb-6">
+            <div className="text-2xl font-semibold tracking-tight text-foreground">Eudaura</div>
+            <p className="mt-1 text-xs text-muted">The future of medicine is presence.</p>
           </div>
 
+          <h1 id="login-heading" className="text-center text-lg font-semibold text-foreground mb-1">
+            Welcome to Eudaura
+          </h1>
+          <p className="text-center text-sm text-muted mb-5">Sign in to your account</p>
+
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm mb-4" role="alert" aria-live="polite">
+              {error}
+            </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-brand-700 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
+          <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4" noValidate>
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-foreground">Email Address</label>
+              <input 
+                id="email" 
                 name="email"
+                type="email" 
                 autoComplete="email"
-                className="w-full px-4 py-3 border border-brand-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors bg-white"
-                placeholder="Enter your email"
-                type="email"
+                placeholder="Enter your email" 
+                className="input-premium w-full px-3 text-foreground" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                aria-describedby={error ? "error-message" : undefined}
               />
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-brand-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-foreground">Password</label>
+              <input 
+                id="password" 
                 name="password"
+                type="password" 
                 autoComplete="current-password"
-                className="w-full px-4 py-3 border border-brand-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors bg-white"
-                placeholder="Enter your password"
-                type="password"
+                placeholder="Enter your password" 
+                className="input-premium w-full px-3 text-foreground" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                aria-describedby={error ? "error-message" : undefined}
               />
             </div>
-
-            <button
-              className="w-full bg-brand-600 text-white py-3 px-4 rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            <button 
+              type="submit" 
+              className="btn-premium w-full font-medium"
               onClick={handleLogin}
               disabled={loading || !email || !password}
-              type="submit"
+              aria-describedby="login-help"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <>
+                  <span className="sr-only">Signing in, please wait</span>
+                  <span aria-hidden="true">Signing in...</span>
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 
-          <div className="text-center">
-            <p className="text-xs text-brand-500">
-              Contact your administrator for access
-            </p>
-          </div>
+          <p id="login-help" className="mt-4 text-center text-xs text-muted">Contact your administrator for access</p>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

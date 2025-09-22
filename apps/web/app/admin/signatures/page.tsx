@@ -61,7 +61,7 @@ function SignatureEventRow({
   const getSignatureTypeColor = (type: string) => {
     switch (type) {
       case 'WEBAUTHN_KMS': return 'bg-green-100 text-green-800'
-      case 'TOTP_KMS': return 'bg-blue-100 text-blue-800'
+      case 'TOTP_KMS': return 'bg-brand-100 text-brand-800'
       case 'PASSWORD_KMS': return 'bg-yellow-100 text-yellow-800'
       default: return 'bg-slate-100 text-slate-800'
     }
@@ -95,7 +95,7 @@ function SignatureEventRow({
             </span>
           )}
           {event.mfaUsed && (
-            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-brand-100 text-brand-800">
               MFA
             </span>
           )}

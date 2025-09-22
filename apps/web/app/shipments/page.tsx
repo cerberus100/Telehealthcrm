@@ -24,7 +24,7 @@ const carrierLink = (carrier: string, tracking: string): string => {
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, string> = {
     CREATED: 'bg-slate-100 text-slate-700',
-    IN_TRANSIT: 'bg-blue-100 text-blue-800',
+    IN_TRANSIT: 'bg-brand-100 text-brand-800',
     OUT_FOR_DELIVERY: 'bg-amber-100 text-amber-800',
     DELIVERED: 'bg-green-100 text-green-800',
     EXCEPTION: 'bg-red-100 text-red-800',

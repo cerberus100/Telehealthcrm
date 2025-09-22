@@ -47,7 +47,7 @@ export default function ClientsPage() {
           <h1 className="text-2xl font-bold">Clients</h1>
           <button
             onClick={() => setShowNewClientForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700"
           >
             Add Client
           </button>
