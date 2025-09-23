@@ -33,7 +33,9 @@ export function useRealtime(): RealtimeHook {
     // Only connect if authenticated
     if (!token || !orgId) return
     
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'
+    // Prefer an explicit env var; otherwise default to the production ALB over TLS.
+    // Using HTTPS here ensures the client upgrades to WSS for socket.io and avoids mixed-content blocks.
+    const wsUrl = (process.env.NEXT_PUBLIC_WS_URL || 'https://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com')
     
     const socket = io(`${wsUrl}/realtime`, {
       transports: ['websocket'],

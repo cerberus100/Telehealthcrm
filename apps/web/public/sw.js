@@ -1,7 +1,8 @@
 // Eudaura Service Worker - PWA Functionality
-const CACHE_NAME = 'eudaura-v1'
-const STATIC_CACHE = 'eudaura-static-v1'
-const DYNAMIC_CACHE = 'eudaura-dynamic-v1'
+const VERSION = 'v3' // bump to invalidate old UI cache in clients
+const CACHE_NAME = `eudaura-${VERSION}`
+const STATIC_CACHE = `eudaura-static-${VERSION}`
+const DYNAMIC_CACHE = `eudaura-dynamic-${VERSION}`
 
 // Files to cache for offline functionality
 const STATIC_FILES = [

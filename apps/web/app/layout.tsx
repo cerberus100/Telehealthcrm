@@ -12,10 +12,10 @@ export const metadata = {
   title: 'Eudaura - Healthcare Platform',
   description: 'HIPAA-compliant healthcare platform for providers, marketers, and patients',
   manifest: '/manifest.json',
-  icons: {
-    icon: '/favicon.svg',
-    apple: '/icons/icon-192x192.png'
-  },
+      icons: {
+        icon: '/favicon.svg',
+        apple: '/favicon.svg'
+      },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
