@@ -38,7 +38,7 @@ export default function PublicIntake({ params }: { params: { linkId: string } })
     if (!medicareId || !showLabs || !category) return
     setCheckingDupe(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001'}/duplicate-check/medicare`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'}/duplicate-check/medicare`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -112,7 +112,7 @@ export default function PublicIntake({ params }: { params: { linkId: string } })
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Teleplatform Intake</h1>
+      <h1 className="text-2xl font-semibold">Eudaura Intake</h1>
       <form onSubmit={submit} className="space-y-4 bg-white p-4 rounded shadow">
         {errors && <div className="p-2 bg-red-50 text-red-700 text-sm rounded">{errors}</div>}
         
@@ -171,7 +171,7 @@ export default function PublicIntake({ params }: { params: { linkId: string } })
               <div className="flex gap-2">
                 <input className="mt-1 flex-1 border rounded px-2 py-1" value={medicareId} onChange={(e)=>setMedicareId(e.target.value)} />
                 {medicareId && showLabs && (
-                  <button type="button" onClick={checkDuplicate} disabled={checkingDupe} className="mt-1 px-3 py-1 border rounded text-sm bg-blue-50 hover:bg-blue-100 disabled:opacity-50">
+                  <button type="button" onClick={checkDuplicate} disabled={checkingDupe} className="mt-1 px-3 py-1 border rounded text-sm bg-brand-50 hover:bg-brand-100 disabled:opacity-50">
                     {checkingDupe ? 'Checking...' : 'Check'}
                   </button>
                 )}
@@ -335,7 +335,9 @@ export default function PublicIntake({ params }: { params: { linkId: string } })
         </div>
 
         <div className="flex justify-end">
-          <button className="px-4 py-2 rounded bg-brand-600 text-white">Submit</button>
+          <button className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-md text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 transition-colors">
+            Submit Intake
+          </button>
         </div>
       </form>
     </div>

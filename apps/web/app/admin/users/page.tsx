@@ -36,7 +36,7 @@ function StatusBadge({ status }: { status: string }) {
 function RoleBadge({ role }: { role: string }) {
   const styles: Record<string, string> = {
     SUPER_ADMIN: 'bg-purple-100 text-purple-800',
-    MARKETER_ADMIN: 'bg-blue-100 text-blue-800',
+    MARKETER_ADMIN: 'bg-brand-100 text-brand-800',
     MARKETER: 'bg-brand-100 text-brand-800',
     DOCTOR: 'bg-green-100 text-green-800',
     LAB_TECH: 'bg-amber-100 text-amber-800',

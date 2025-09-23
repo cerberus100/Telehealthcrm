@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Eudaura Brand Colors - Official Logo Palette Only */
+:root {
+  /* Core brand colors from logo */
+  --sage: #556B4F;      /* Primary surfaces, buttons */
+  --olive: #2E3B2D;     /* Headings, text, foreground */
+  --gold: #C7A867;      /* Accents, glow, CTA hover */
+  --offwhite: #F7F5EF;  /* Backgrounds, panels */
+  --ink: #2E3B2D;       /* Main text (same as olive) */
+  
+  /* Semantic mappings - NO GRAYS */
+  --color-primary: var(--sage);
+  --color-secondary: var(--olive);
+  --color-accent: var(--gold);
+  --color-background: var(--offwhite);
+  --color-foreground: var(--ink);
+}
+
+/* Aura utility for subtle glow effects */
+.aura-ring {
+  position: relative;
+}
+.aura-ring::after {
+  content: "";
+  position: absolute; 
+  inset: -20px;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgba(199,168,103,0.25), transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
 /* Accessibility utilities */
 .sr-only {
   position: absolute;
@@ -28,7 +59,7 @@
 
 /* Focus indicators */
 .focus-visible:focus {
-  outline: 2px solid theme('colors.brand.500');
+  outline: 2px solid theme('colors.accent');
   outline-offset: 2px;
 }
 
@@ -50,13 +81,13 @@
     border-width: 2px;
   }
   
-  .text-slate-600 {
-    color: theme('colors.slate.900');
+  .text-secondary {
+    color: theme('colors.foreground');
   }
   
-  .bg-slate-50 {
-    background-color: theme('colors.white');
-    border: 1px solid theme('colors.slate.300');
+  .bg-background {
+    background-color: theme('colors.background');
+    border: 1px solid theme('colors.secondary');
   }
 }
 
@@ -66,4 +97,371 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+/* Premium card depth */
+.card-premium {
+  background: linear-gradient(180deg, rgba(247,245,239,0.98), rgba(247,245,239,0.94));
+  border: 1px solid rgba(46,59,45,0.16);
+  box-shadow:
+    0 24px 48px rgba(46,59,45,0.35),
+    0 1px 0 rgba(255,255,255,0.85) inset;
+  backdrop-filter: saturate(1.05);
+  border-radius: 16px;
+}
+
+/* Primary button with premium states */
+.btn-premium {
+  background: var(--sage);
+  color: var(--offwhite);
+  height: 44px;
+  border-radius: 12px;
+  transition: transform .14s ease, background-color .14s ease, box-shadow .14s ease;
+}
+.btn-premium:hover { background: var(--olive); transform: translateY(-1px); }
+.btn-premium:active { transform: translateY(0); }
+.btn-premium:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(199,168,103,0.60); }
+
+/* Inputs with gold focus */
+.input-premium {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(85,107,79,0.55); /* sage */
+  background: #fff;
+  transition: border-color .14s ease, box-shadow .14s ease;
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+.input-premium:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(199,168,103,0.25);
+  outline: none;
+}
+.input-premium::placeholder {
+  color: rgba(46,59,45,0.5);
+}
+
+/* Soft page background (alive, not busy) */
+.bg-hero-aura {
+  background:
+    radial-gradient(1100px 700px at 68% 42%, rgba(199,168,103,0.10), transparent 60%),
+    radial-gradient(900px 600px at 28% 70%, rgba(199,168,103,0.06), transparent 60%),
+    var(--sage);
+}
+
+/* Muted text helper + animation */
+.text-muted { color: rgba(46,59,45,0.75); }
+@keyframes fadeUp { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:translateY(0) } }
+.fade-up { animation: fadeUp .28s ease both; }
+
+/* Container that holds the full-viewport aura */
+.aura-viewport {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Size helper: scales ring with viewport but caps for perf */
+.aura-size {
+  width: min(125vmin, 1200px);
+  height: min(125vmin, 1200px);
+}
+
+/* Optional: subtle slow pulse for luxe feel (very gentle) */
+@keyframes auraPulse {
+  0%, 100% { filter: drop-shadow(0 0 42px rgba(199,168,103,0.40)); opacity: .95; }
+  50%      { filter: drop-shadow(0 0 60px rgba(199,168,103,0.55)); opacity: 1; }
+}
+.aura-pulse { animation: auraPulse 6s ease-in-out infinite; }
+
+/* ========================================
+   EUDAURA UI SYSTEM - PHYSICIAN DASHBOARD
+   ======================================== */
+
+/* Base card system */
+.card {
+  border-radius: 16px;
+  border: 1px solid rgba(46,59,45,0.12);
+  background: #F7F5EF;
+  box-shadow: 0 8px 24px rgba(46,59,45,0.08);
+}
+.card-pad { padding: 20px; }
+@media(min-width:768px){ .card-pad{ padding:24px; } }
+
+/* Typography hierarchy */
+.h1     { font-size: 24px; font-weight: 600; letter-spacing:-.01em; color: var(--ink); }
+.h2     { font-size: 15px; font-weight: 600; color: var(--ink); }
+.meta   { font-size: 12px; color: rgba(46,59,45,.70); }
+
+/* Badge system */
+.badge  { display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 8px; border-radius:9999px; font-size:12px; }
+.badge-success { background: rgba(85,107,79,.12); color: var(--olive); }
+.badge-info    { background: rgba(46,59,45,.08); color: var(--ink); }
+.badge-warn    { background: rgba(199,168,103,.16); color: var(--olive); }
+.badge-urgent::before { content:""; width:6px; height:6px; border-radius:9999px; background: var(--gold); display:inline-block; }
+
+/* Table system */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.tr    { height: 48px; }
+.tr:nth-child(even) { background: rgba(46,59,45,.02); }
+.tr:hover { background: rgba(46,59,45,.035); }
+.td, .th {
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(46,59,45,.08);
+  vertical-align: middle;
+}
+.th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: rgba(46,59,45,.75);
+  font-weight: 600;
+}
+.cell-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Link and focus styles */
+.link     { color: var(--olive); text-decoration: underline; text-decoration-color: rgba(199,168,103,.6); text-underline-offset: 3px; }
+.focus-gold:focus-visible { outline:none; box-shadow: 0 0 0 3px rgba(199,168,103,.45); border-radius:12px; }
+
+/* Topbar */
+.topbar { background: rgba(46,59,45,.04); font-size:12px; padding: 6px 12px; color: rgba(46,59,45,.75); }
+
+/* ========================================
+   EUDAURA PHYSICIAN DASHBOARD - PREMIUM UI
+   ======================================== */
+
+/* Layout helpers */
+.container-eu { max-width: 1200px; margin-inline: auto; padding-inline: 1rem; }
+@media (min-width:768px){ .container-eu{ padding-inline: 1.5rem; } }
+
+/* Cards */
+.card {
+  border-radius: 16px;
+  border: 1px solid rgba(46,59,45,.12);
+  background: #F7F5EF; /* offwhite */
+  box-shadow: 0 8px 24px rgba(46,59,45,.08);
+}
+.card-pad { padding: 20px; } @media (min-width:768px){ .card-pad{ padding: 24px; } }
+.card-equal { min-height: 360px; }
+
+/* Typography */
+.h1   { font-size: 24px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+.h2   { font-size: 15px; font-weight: 600; color: var(--ink); }
+.meta { font-size: 12px; color: rgba(46,59,45,.70); }
+
+/* Buttons */
+.btn-primary {
+  display:inline-flex; align-items:center; justify-content:center;
+  height: 40px; padding: 0 16px; border-radius: 12px;
+  background: var(--sage); color: var(--offwhite);
+  transition: transform .14s ease, background-color .14s ease, box-shadow .14s ease;
+}
+.btn-primary:hover { background: var(--olive); transform: translateY(-1px); }
+.btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(199,168,103,.45); }
+
+.btn-pill {
+  display:inline-flex; align-items:center; justify-content:center;
+  height: 28px; padding: 0 12px; border-radius: 9999px;
+  background: var(--sage); color: var(--offwhite); font-size: 12px;
+  transition: background-color .14s ease, box-shadow .14s ease;
+}
+.btn-pill:hover { background: var(--olive); }
+.btn-pill:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(199,168,103,.45); }
+
+/* Inputs / selects (gold focus) */
+.input-eu, .select-eu {
+  height: 40px; border-radius: 12px; background:#fff;
+  border: 1px solid rgba(85,107,79,.55);
+  transition: border-color .14s ease, box-shadow .14s ease;
+}
+.input-eu:focus, .select-eu:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(199,168,103,.25);
+  outline: none;
+}
+
+/* Badges mapped to brand */
+.badge { display:inline-flex; align-items:center; height:22px; border-radius:9999px; padding:0 10px; font-size:12px; gap:6px; }
+.badge-success { background: rgba(85,107,79,.12); color: var(--olive); }   /* released / active / passed */
+.badge-warn    { background: rgba(199,168,103,.16); color: var(--olive); } /* submitted / pending */
+.badge-info    { background: rgba(46,59,45,.08); color: var(--ink); }      /* info/neutral */
+.badge-urgent::before { content:""; width:6px; height:6px; border-radius:9999px; background: var(--gold); }
+
+/* Tables */
+.table-eu { width:100%; border-collapse: separate; border-spacing:0; }
+.th-eu { height:48px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color: rgba(46,59,45,.75); border-bottom:1px solid rgba(46,59,45,.08); padding: 0 16px; text-align:left; }
+.td-eu { height:48px; padding: 0 16px; border-bottom:1px solid rgba(46,59,45,.08); vertical-align: middle; }
+.tr-eu:nth-child(even){ background: rgba(46,59,45,.02); }
+.tr-eu:hover { background: rgba(46,59,45,.035); }
+.id-mono { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; }
+
+/* Stat card (metrics) */
+.stat {
+  display:grid; grid-template-columns: 1fr auto; row-gap:6px; align-items:center;
+  border-radius: 16px; border: 1px solid rgba(46,59,45,.12); background: #F7F5EF; box-shadow: 0 8px 24px rgba(46,59,45,.08);
+  padding: 16px 16px 14px 16px;
+}
+.stat .label { font-size:12px; color: rgba(46,59,45,.70); }
+.stat .value { font-size: 28px; font-weight:600; color: var(--ink); letter-spacing:-.01em; }
+.stat .trend { display:flex; align-items:center; gap:6px; font-size:12px; color: rgba(46,59,45,.70); }
+
+/* Quick Action row */
+.action-row { display:flex; align-items:center; gap:10px; height:44px; padding:0 12px; border-radius:12px; border:1px solid rgba(46,59,45,.12); background:#fff; }
+.action-row:hover { background:rgba(46,59,45,.03); }
+
+/* Micro-interactions */
+.card:hover { transform: translateY(-1px); transition: transform .14s ease; }
+
+/* Subtle section band (optional) */
+.band { background: rgba(85,107,79,.04); border-radius: 12px; }
+
+/* Premium inputs */
+.input-premium {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(85,107,79,0.55);
+  background: #fff;
+  transition: border-color .14s ease, box-shadow .14s ease;
+  font-size: 16px;
+  padding: 0 16px;
+}
+.input-premium:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(199,168,103,0.25);
+  outline: none;
+}
+.input-premium::placeholder {
+  color: rgba(46,59,45,0.5);
+}
+
+/* Premium buttons */
+.btn-premium {
+  background: var(--sage);
+  color: var(--offwhite);
+  height: 44px;
+  border-radius: 12px;
+  transition: transform .14s ease, background-color .14s ease, box-shadow .14s ease;
+  padding: 0 20px;
+  border: none;
+  font-weight: 500;
+}
+.btn-premium:hover { background: var(--olive); transform: translateY(-1px); }
+.btn-premium:active { transform: translateY(0); }
+.btn-premium:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(199,168,103,0.60); }
+
+/* Secondary buttons */
+.btn-secondary {
+  border: 1px solid rgba(46,59,45,0.25);
+  background: transparent;
+  color: var(--olive);
+  height: 40px;
+  border-radius: 12px;
+  transition: border-color .14s ease, background-color .14s ease;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.btn-secondary:hover {
+  border-color: var(--gold);
+  background: rgba(199,168,103,0.05);
+}
+.btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(199,168,103,0.45);
+}
+
+/* Badge system - Unified */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  border-radius: 9999px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-success {
+  background: rgba(85,107,79,0.12);
+  color: var(--olive);
+}
+.badge-info {
+  background: rgba(46,59,45,0.08);
+  color: var(--ink);
+}
+.badge-warn {
+  background: rgba(199,168,103,0.16);
+  color: var(--olive);
+}
+.badge-urgent {
+  background: rgba(199,168,103,0.16);
+  color: var(--olive);
+}
+.badge-urgent::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--gold);
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Table system - Unified */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.table thead tr {
+  height: 48px;
+}
+.table thead th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(46,59,45,0.75);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(46,59,45,0.08);
+  padding: 0 16px;
+  vertical-align: middle;
+}
+.table tbody tr {
+  height: 48px;
+}
+.table tbody tr:nth-child(odd) {
+  background: #fff;
+}
+.table tbody tr:nth-child(even) {
+  background: rgba(46,59,45,0.02);
+}
+.table tbody tr:hover {
+  background: rgba(46,59,45,0.035);
+}
+.table tbody td {
+  border-bottom: 1px solid rgba(46,59,45,0.08);
+  padding: 0 16px;
+  vertical-align: middle;
+}
+.table .cell-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* SVG ring styling */
+.login-aura-ring circle {
+  stroke: #C7A867;
+  stroke-width: 5;
+  stroke-opacity: 0.95;
+  filter: drop-shadow(0 0 42px rgba(199,168,103,0.45));
 }

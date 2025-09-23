@@ -6,9 +6,9 @@ function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const env = (window as any).NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL
     if (env) return env as string
-    return `http://${window.location.hostname}:3001`
+    return 'http://127.0.0.1:3001' // Consistent with providers.tsx
   }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001'
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001' // Consistent with providers.tsx
 }
 import { getAuthHeader } from './auth'
 
@@ -23,8 +23,20 @@ function uuid(): string {
 }
 
 export async function request<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
+  // When using mocks, don't make real network requests
+  if (USE_MOCKS) {
+    // Return a resolved promise that will be handled by mock logic in api.ts
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // This will fall through to the mock handling in api.ts
+        resolve({} as T)
+      }, 0)
+    })
+  }
+
   // Mocking handled by callers that want it; fall through to network
   const method = (init?.method || 'GET').toUpperCase()
+
   const base = getApiBaseUrl()
   const correlationId = uuid()
   const headers: Record<string, string> = {

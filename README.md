@@ -1,6 +1,6 @@
-# Telehealth CRM API
+# Eudaura Healthcare Platform API
 
-Multi-tenant, HIPAA-eligible telehealth SaaS API built with NestJS and Fastify.
+Multi-tenant, HIPAA-eligible healthcare SaaS API built with NestJS and Fastify.
 
 ## Features
 

@@ -102,12 +102,12 @@ export default function HomePage() {
         {/* Role-specific quick actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {role === 'DOCTOR' && (
-            <div className="bg-blue-50 p-4 rounded border border-blue-200">
-              <h3 className="font-semibold text-blue-800 mb-2">Quick Actions</h3>
+            <div className="bg-brand-50 p-4 rounded border border-brand-200">
+              <h3 className="font-semibold text-brand-800 mb-2">Quick Actions</h3>
               <div className="space-y-1">
-                <a href="/consults" className="block text-blue-600 hover:underline">Review Consults</a>
-                <a href="/rx" className="block text-blue-600 hover:underline">Sign Prescriptions</a>
-                <a href="/lab-results" className="block text-blue-600 hover:underline">Review Lab Results</a>
+                <a href="/consults" className="block text-brand-600 hover:underline">Review Consults</a>
+                <a href="/rx" className="block text-brand-600 hover:underline">Sign Prescriptions</a>
+                <a href="/lab-results" className="block text-brand-600 hover:underline">Review Lab Results</a>
               </div>
             </div>
           )}

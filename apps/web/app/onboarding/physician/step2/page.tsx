@@ -132,7 +132,7 @@ export default function PhysicianStep2() {
       uploads: { gov_id_b64: govIdB64 },
     }
     if (cvB64) payload.uploads.cv_b64 = cvB64
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001'}/onboarding/physician/step2`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'}/onboarding/physician/step2`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
     })
     setResult(res.ok ? await res.json() : { error: await res.text() })

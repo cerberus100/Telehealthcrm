@@ -1,0 +1,50 @@
+{
+  "name": "Eudaura - Healthcare Platform",
+  "short_name": "Eudaura",
+  "description": "HIPAA-compliant healthcare platform for providers, marketers, and patients",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#556B4F",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["medical", "health", "productivity"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Provider Dashboard",
+      "short_name": "Dashboard",
+      "description": "View patient consults and quick actions",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "New Consult",
+      "short_name": "New Consult",
+      "description": "Create a new patient consultation",
+      "url": "/consults/new",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Patient Search",
+      "short_name": "Search",
+      "description": "Find patients by name or phone",
+      "url": "/patients",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Approvals",
+      "short_name": "Approvals",
+      "description": "Marketer approval dashboard",
+      "url": "/marketer/approvals",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}

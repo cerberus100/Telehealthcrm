@@ -1,7 +1,7 @@
-## Teleplatform System Specification (HIPAA/SOC 2‑aligned)
+## Eudaura Healthcare Platform System Specification (HIPAA/SOC 2‑aligned)
 
 ### Overview
-A multi‑tenant telehealth SaaS for Providers/Doctors, Labs, Pharmacies, and Marketing Companies. The platform enforces HIPAA minimum‑necessary, SOC 2 control alignment, and ABAC guardrails. All PHI is encrypted in transit and at rest; audit is WORM.
+A multi‑tenant healthcare SaaS for Providers/Doctors, Labs, Pharmacies, and Marketing Companies. The platform enforces HIPAA minimum‑necessary, SOC 2 control alignment, and ABAC guardrails. All PHI is encrypted in transit and at rest; audit is WORM.
 
 ### Tenants & Access Model
 - Tenants: Provider Orgs, Lab Orgs, Pharmacy Orgs, Marketing Orgs.

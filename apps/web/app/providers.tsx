@@ -6,11 +6,19 @@ import { AccessibilityProvider } from '../components/AccessibilityProvider'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { OfflineIndicator } from '../lib/offline'
 
-// Ensure consistent values and match the current hostname (localhost vs 127.0.0.1)
+// For deployed Amplify frontend, use relative paths (CORS-friendly)
 export const API_BASE_URL = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_API_BASE_URL || `http://${window.location.hostname}:3001`)
-  : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001')
-export const USE_MOCKS = true // Enable mocks for demo walkthrough
+  ? (process.env.NEXT_PUBLIC_API_BASE_URL || '')
+  : (process.env.NEXT_PUBLIC_API_BASE_URL || '')
+export const USE_MOCKS = false // Use real backend in production
+
+// Production Cognito Configuration
+export const COGNITO_CONFIG = {
+  userPoolId: 'us-east-1_yBMYJzyA1',
+  clientId: 'crsnkji5f4i7f7v739tf6ef0u',
+  region: 'us-east-1',
+  domain: 'telehealth-auth-prod'
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({

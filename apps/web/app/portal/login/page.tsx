@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { EudauraLogo } from '../../../components/EudauraLogo'
 
 export default function PortalLogin() {
   const router = useRouter()
@@ -23,10 +24,26 @@ export default function PortalLogin() {
   }, [params, router])
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="rounded border bg-white p-6 w-full max-w-sm text-center">
-        <h1 className="text-lg font-semibold mb-2">Patient Portal Login</h1>
-        <p className="text-sm text-slate-700">{status || 'Validating token…'}</p>
+    <div className="relative min-h-screen flex items-center justify-center bg-hero-aura">
+      {/* Background Eudaura Logo */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <EudauraLogo size="bg" className="opacity-15 scale-125" />
+      </div>
+
+      {/* Login Form */}
+      <div className="relative z-10 w-full max-w-sm mx-4 fade-up">
+        <div className="card-premium rounded-xl p-6 text-center">
+          <div className="mb-4">
+            <h1 className="text-xl font-bold text-foreground mb-2">Eudaura Patient Portal</h1>
+            <p className="text-sm text-muted">Welcome to your healthcare portal</p>
+          </div>
+
+          <div className="min-h-[60px] flex items-center justify-center">
+            <p className="text-sm text-foreground">
+              {status || 'Validating token…'}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )

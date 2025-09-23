@@ -29,7 +29,14 @@ export default function MedsPage() {
                 <td className="p-2">{m.name}</td>
                 <td className="p-2">{m.dose}</td>
                 <td className="p-2">{m.directions}</td>
-                <td className="p-2"><button className="px-3 py-1 rounded border" onClick={()=>setRefillFor(m)}>Request refill</button></td>
+                <td className="p-2">
+                  <button 
+                    onClick={()=>setRefillFor(m)}
+                    className="bg-brand-600 hover:bg-brand-700 text-white px-3 py-1 rounded-md text-xs font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                  >
+                    Request Refill
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -42,8 +49,18 @@ export default function MedsPage() {
             <p className="text-sm mb-3">{refillFor.name} {refillFor.dose}</p>
             {!submitted ? (
               <div className="flex justify-end gap-2">
-                <button className="px-3 py-2 rounded border" onClick={()=>setRefillFor(null)}>Cancel</button>
-                <button className="px-3 py-2 rounded text-white" style={{ backgroundColor: '#007DB8' }} onClick={()=>setSubmitted(true)}>Submit</button>
+                <button 
+                  onClick={()=>setRefillFor(null)}
+                  className="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={()=>setSubmitted(true)}
+                  className="bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-md text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+                >
+                  Submit Request
+                </button>
               </div>
             ) : (
               <div className="text-sm">Request submitted. You’ll see status updates here.</div>
