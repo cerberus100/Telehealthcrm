@@ -10,7 +10,7 @@ import { OfflineIndicator } from '../lib/offline'
 export const API_BASE_URL = typeof window !== 'undefined'
   ? (process.env.NEXT_PUBLIC_API_BASE_URL || '')
   : (process.env.NEXT_PUBLIC_API_BASE_URL || '')
-export const USE_MOCKS = true // Enabled - for deployed Amplify frontend
+export const USE_MOCKS = false // Use real backend in production
 
 // Production Cognito Configuration
 export const COGNITO_CONFIG = {

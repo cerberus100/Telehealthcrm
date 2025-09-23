@@ -16,8 +16,12 @@ export default function IntakeLinksPage() {
   const { role } = useAuth()
   if (!(role === 'MARKETER' || role === 'MARKETER_ADMIN' || role === 'SUPER_ADMIN')) return <p>Access denied</p>
 
+  const baseUrl = typeof window !== 'undefined'
+    ? (process.env.NEXT_PUBLIC_PORTAL_BASE_URL || window.location.origin)
+    : (process.env.NEXT_PUBLIC_PORTAL_BASE_URL || '')
+
   const [items, setItems] = useState<LinkItem[]>([
-    { id: 'lnk_1', url: 'http://localhost:3000/intake/lnk_1', did: '+18005550111', services: 'BOTH', clients: ['Acme Provider'], campaign: 'Fall-24', triageCategories: ['NEURO','IMMUNE','CGX','PGX'] }
+    { id: 'lnk_1', url: `${baseUrl || ''}/intake/lnk_1`, did: '+18005550111', services: 'BOTH', clients: ['Acme Provider'], campaign: 'Fall-24', triageCategories: ['NEURO','IMMUNE','CGX','PGX'] }
   ])
   const [services, setServices] = useState<'RX'|'LABS'|'BOTH'>('BOTH')
   const [clients, setClients] = useState<string>('Acme Provider')
@@ -27,7 +31,7 @@ export default function IntakeLinksPage() {
   const create = () => {
     const id = `lnk_${items.length + 1}`
     const did = `+18005550${100 + items.length}`
-    const url = `${window.location.origin}/intake/${id}`
+    const url = `${(process.env.NEXT_PUBLIC_PORTAL_BASE_URL || window.location.origin)}/intake/${id}`
     const next = [{ id, url, did, services, clients: clients.split(',').map(s=>s.trim()), campaign, triageCategories: triage }, ...items]
     setItems(next)
     // persist to localStorage for the public form to read in demo mode
