@@ -3,15 +3,15 @@ import { logger } from './logger'
 import { ConfigService } from '@nestjs/config'
 import { NodeSDK } from '@opentelemetry/sdk-node'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-http'
-import { OTLPLogExporter } from '@opentelemetry/exporter-otlp-logs'
-import { OTLPMetricExporter } from '@opentelemetry/exporter-otlp-metrics'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 import { Resource } from '@opentelemetry/resources'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node'
 import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
-import { AWSXRayPropagator } from '@aws-opentelemetry/aws-xray'
+// Note: AWS X-Ray propagator integration will be added when available
 import { propagation } from '@opentelemetry/api'
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api'
 
@@ -38,8 +38,7 @@ export async function initializeTelemetry(config: ConfigService) {
     const apiKey = config.get<string>('OTEL_API_KEY')
 
     // Configure diagnostic logging
-    diag.setLogger(new DiagConsoleLogger())
-    diag.setLogLevel(DiagLogLevel.INFO)
+    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
 
     // Create resource with service information
     const resource = Resource.default().merge(
@@ -71,21 +70,14 @@ export async function initializeTelemetry(config: ConfigService) {
     // Create and configure the SDK
     otelSDK = new NodeSDK({
       resource,
-      traceProvider: {
-        processors: [new BatchSpanProcessor(traceExporter)],
-      },
-      logProvider: {
-        processors: [new BatchLogRecordProcessor(logExporter)],
-      },
-      metricProvider: {
-        readers: [new PeriodicExportingMetricReader({
-          exporter: metricExporter,
-          exportIntervalMillis: 60000, // Export every 60 seconds
-        })],
-      },
+      spanProcessors: [new BatchSpanProcessor(traceExporter)],
+      logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],
+      metricReaders: [new PeriodicExportingMetricReader({
+        exporter: metricExporter,
+        exportIntervalMillis: 60000, // Export every 60 seconds
+      })],
       serviceName,
       serviceVersion,
-      autoDetectResources: true,
       instrumentations: [getNodeAutoInstrumentations({
         // Disable file system instrumentation for performance
         '@opentelemetry/instrumentation-fs': {

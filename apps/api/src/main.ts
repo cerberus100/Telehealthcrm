@@ -103,7 +103,7 @@ async function bootstrap() {
   }
 
   // WebSocket health endpoint
-  app.get('/ws/health', (req, reply) => {
+  app.get('/ws/health', (req: any, reply: any) => {
     const correlationId = req.headers['x-correlation-id'] || req.headers['correlation-id'] || 'unknown'
     const observabilityHealth = getObservabilityHealth()
 

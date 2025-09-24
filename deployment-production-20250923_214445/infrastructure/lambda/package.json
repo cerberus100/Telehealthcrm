@@ -1,0 +1,25 @@
+{
+  "name": "telehealth-connect-handler",
+  "version": "1.0.0",
+  "description": "Amazon Connect Lambda handler for Telehealth CRM",
+  "main": "connect-handler.js",
+  "scripts": {
+    "build": "tsc",
+    "package": "zip -r connect-handler.zip .",
+    "deploy": "aws lambda update-function-code --function-name telehealth-connect-handler --zip-file fileb://connect-handler.zip"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.450.0",
+    "@aws-sdk/lib-dynamodb": "^3.450.0",
+    "@aws-sdk/client-s3": "^3.450.0",
+    "@aws-sdk/client-eventbridge": "^3.450.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.130",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -39,12 +39,12 @@ export class TelemetryService {
 
   async initialize(): Promise<void> {
     // Telemetry is now initialized in main.ts
-    this.logger.info('Telemetry initialization handled in main.ts')
+    this.logger.log('Telemetry initialization handled in main.ts')
   }
 
   async shutdown(): Promise<void> {
     // Telemetry shutdown is handled in main.ts
-    this.logger.info('Telemetry shutdown handled in main.ts')
+    this.logger.log('Telemetry shutdown handled in main.ts')
   }
 
   getObservabilityHealth() {

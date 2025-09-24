@@ -10,7 +10,7 @@ applications:
             - npm install --no-audit --no-fund
         build:
           commands:
-            - npm run build:check
+            - "npm run build:check"
             - echo "✅ Build security check passed"
         postBuild:
           commands:

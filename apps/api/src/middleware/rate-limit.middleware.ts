@@ -50,7 +50,7 @@ export class RateLimitMiddleware implements NestMiddleware {
       }
     }
 
-    this.logger.info({
+    this.logger.log({
       action: 'RATE_LIMIT_MIDDLEWARE_INITIALIZED',
       disabled: this.disabled,
       redis_connected: !!this.redis
