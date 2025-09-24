@@ -55,8 +55,8 @@ interface AuthenticatedSocket extends Socket {
         callback(new Error('Not allowed by CORS'), false)
       }
     },
-    credentials: true,
-    methods: ['GET', 'POST'],
+    credentials: false,
+>>>>>>> b25904558b229d3aae6137224664f8862267b9b0
   },
   namespace: '/', // Use root namespace for standard Socket.IO
   path: '/socket.io', // Standard Socket.IO path
