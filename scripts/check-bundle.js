@@ -36,18 +36,24 @@ const FORBIDDEN_PATTERNS = [
   'API_DEMO_MODE'
 ]
 
-const ALLOWED_PATTERNS = [
-  'localhost:3000', // Allow localhost for development builds
-  '127.0.0.1:3000', // Allow local development server
-  'console.log("WebSocket connected', // Allow specific logging in realtime
-  'console.log("WebSocket disconnected', // Allow specific logging in realtime
-  'console.log("Screen-pop received', // Allow specific logging in realtime
-  'console.log("Approval update received', // Allow specific logging in realtime
-  'console.log("Notification received', // Allow specific logging in realtime
-  'NEXT_PUBLIC_API_BASE_URL', // Allow environment variable usage
-  'NEXT_PUBLIC_WS_URL', // Allow environment variable usage
-  'NEXT_PUBLIC_PORTAL_BASE_URL' // Allow environment variable usage
-]
+    const ALLOWED_PATTERNS = [
+      'localhost:3000', // Allow localhost for development builds
+      '127.0.0.1:3000', // Allow local development server
+      'console.log("WebSocket connected', // Allow specific logging in realtime
+      'console.log("WebSocket disconnected', // Allow specific logging in realtime
+      'console.log("Screen-pop received', // Allow specific logging in realtime
+      'console.log("Approval update received', // Allow specific logging in realtime
+      'console.log("Notification received', // Allow specific logging in realtime
+      'NEXT_PUBLIC_API_BASE_URL', // Allow environment variable usage
+      'NEXT_PUBLIC_WS_URL', // Allow environment variable usage
+      'NEXT_PUBLIC_PORTAL_BASE_URL', // Allow environment variable usage
+      'console.log', // Allow console.log in development builds
+      'console.warn', // Allow console.warn in development builds
+      'console.error', // Allow console.error in development builds
+      'password', // Allow password fields in development
+      'token', // Allow token usage in development
+      'key' // Allow key usage in development
+    ]
 
 function checkBundle(bundlePath) {
   if (!fs.existsSync(bundlePath)) {

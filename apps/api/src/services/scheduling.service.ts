@@ -199,7 +199,8 @@ export class SchedulingService extends BaseService {
       const now = new Date().toISOString()
 
       // Find the availability and slot
-      const availability = await this.getProviderAvailability(providerId, new Date().toISOString().split('T')[0])
+      const today = new Date().toISOString().split('T')[0]
+      const availability = await this.getProviderAvailability(providerId, today)
       if (!availability) {
         throw new NotFoundException('Provider availability not found')
       }
@@ -316,7 +317,7 @@ export class SchedulingService extends BaseService {
         return []
       }
 
-      return response.Items.map(item => unmarshall(item)) as AppointmentBooking[]
+      return response.Items.map((item: any) => unmarshall(item)) as AppointmentBooking[]
     } catch (error) {
       this.logger.error({
         action: 'GET_PROVIDER_APPOINTMENTS_ERROR',
@@ -349,7 +350,7 @@ export class SchedulingService extends BaseService {
         return []
       }
 
-      return response.Items.map(item => unmarshall(item)) as AppointmentBooking[]
+      return response.Items.map((item: any) => unmarshall(item)) as AppointmentBooking[]
     } catch (error) {
       this.logger.error({
         action: 'GET_PATIENT_APPOINTMENTS_ERROR',

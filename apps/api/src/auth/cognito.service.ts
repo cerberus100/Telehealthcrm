@@ -36,7 +36,7 @@ export interface RefreshResponse {
 @Injectable()
 export class CognitoService {
   private readonly cognitoJwtVerifier: any
-  private readonly secretsClient: SecretsManagerClient | null
+  private readonly secretsClient: SecretsManagerClient | null = null
   private readonly userPoolId: string
   private readonly clientId: string
   private readonly demoMode: boolean
