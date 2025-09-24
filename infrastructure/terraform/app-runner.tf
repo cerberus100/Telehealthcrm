@@ -278,6 +278,18 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "LOG_LEVEL"
           value = "info"
+        },
+        {
+          name  = "DEPLOYMENT_ENV"
+          value = "production"
+        },
+        {
+          name  = "CUSTOM_DOMAINS"
+          value = "eudaura.com,app.eudaura.com,www.eudaura.com"
+        },
+        {
+          name  = "AMPLIFY_APP_ID"
+          value = "d1o2jv5ahrim0e"
         }
       ]
       secrets = [

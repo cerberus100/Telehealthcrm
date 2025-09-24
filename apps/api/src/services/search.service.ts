@@ -38,7 +38,7 @@ export class SearchService {
           p.phones.some(phone => phone.includes(query.q.replace(/\D/g, '')))
         )
 
-        return { items: filtered.slice(0, query.limit || 25), next_cursor: null }
+        return { items: filtered.slice(0, query.limit || 25), next_cursor: undefined }
       }
 
       // Parse search tokens: name:"Jane Doe" phone:555-1234 dob:1990
@@ -68,7 +68,7 @@ export class SearchService {
         take: query.limit || 25
       })
 
-      return { items: patients || [], next_cursor: null }
+      return { items: patients || [], next_cursor: undefined }
     } catch (error) {
       logger.error({
         action: 'SEARCH_PATIENTS_FAILED',
@@ -95,7 +95,7 @@ export class SearchService {
             nextAction: 'Review consult'
           }
         ]
-        return { items: mockResults, next_cursor: null }
+        return { items: mockResults, next_cursor: undefined }
       }
 
       const { digits10, digits7 } = getPhoneDigits(normalized)
@@ -127,7 +127,7 @@ export class SearchService {
         orgId: claims.orgId
       })
 
-      return { items: patients || [], next_cursor: null }
+      return { items: patients || [], next_cursor: undefined }
     } catch (error) {
       logger.error({
         action: 'PHONE_SEARCH_FAILED',

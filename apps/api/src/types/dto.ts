@@ -118,7 +118,7 @@ export const PaginationQueryDto = z.object({
 export const PaginatedResponseDto = <T extends z.ZodTypeAny>(schema: T) =>
   z.object({
     items: z.array(schema),
-    next_cursor: z.string().nullable(),
+    next_cursor: z.string().optional(),
   })
 
 // Error DTOs

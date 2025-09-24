@@ -3,6 +3,42 @@ import { Injectable } from '@nestjs/common'
 // Mock Prisma service for testing without database connection
 @Injectable()
 export class MockPrismaService {
+  async executeWithTenant<T>(
+    orgId: string,
+    operation: (tenantContext: any) => Promise<T>
+  ): Promise<T> {
+    const tenantContext = {
+      orgId: orgId || 'mock-org-123',
+      orgType: 'PROVIDER',
+      orgName: 'Mock Organization',
+      isActive: true,
+    }
+
+    return operation(tenantContext)
+  }
+
+  async validateOrganization(orgId: string): Promise<boolean> {
+    return orgId === 'mock-org-123' || orgId === 'demo-org-123'
+  }
+
+  async getUserWithOrg(userId: string, orgId?: string) {
+    return {
+      id: userId || 'user_123',
+      email: 'dr@example.com',
+      role: 'DOCTOR',
+      orgId: orgId || 'mock-org-123',
+      lastLoginAt: new Date(),
+      org: {
+        id: orgId || 'mock-org-123',
+        type: 'PROVIDER',
+        name: 'Mock Organization',
+      },
+    }
+  }
+
+  getOrgScopedQuery(orgId: string, entityName: string) {
+    return this[entityName as keyof MockPrismaService]
+  }
   user = {
     findUnique: async (params: any) => {
       // Mock user data

@@ -1,6 +1,3 @@
-# AWS Amplify Console - Rewrites and Redirects
-# Order matters: specific rules first, then catch-all rules
-
 # Static asset passthrough rules (must be first)
 /next/static/* /next/static/* 200
 /favicon.svg /favicon.svg 200
@@ -13,8 +10,6 @@
 /portal/* /index.html 200
 
 # SPA catch-all rule (regex) - must be above 404 rule
-# Matches any path that doesn't contain a dot or ends with .html/.json
 ^[^.]+$|\.html$|\.json$ /index.html 200
 
-# Default 404 fallback (if no other rules match)
 /* /index.html 404

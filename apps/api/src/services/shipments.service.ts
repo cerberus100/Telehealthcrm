@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
-import { PrismaService } from '../prisma.service'
+import { BaseService } from './base.service'
 import { RequestClaims } from '../types/claims'
 import { ShipmentsQueryDto, ShipmentDto } from '../types/dto'
 
 @Injectable()
-export class ShipmentsService {
-  constructor(private prisma: PrismaService) {}
+export class ShipmentsService extends BaseService {
 
   async getShipments(query: ShipmentsQueryDto, claims: RequestClaims) {
     const where: any = {
@@ -35,10 +34,7 @@ export class ShipmentsService {
       },
     })
 
-    const hasNext = shipments.length > take
-    const items = shipments.slice(0, take)
-
-    const itemsResponse = items.map((shipment: any) => ({
+    const itemsResponse = shipments.map((shipment: any) => ({
       id: shipment.id,
       lab_order_id: shipment.labOrderId,
       carrier: shipment.carrier,
@@ -48,9 +44,10 @@ export class ShipmentsService {
       ship_to: shipment.shipTo as any,
     }))
 
-    return {
-      items: itemsResponse,
-      next_cursor: hasNext && items[items.length - 1] ? items[items.length - 1]?.id : null,
-    }
+    return this.createPaginatedResponse(
+      itemsResponse,
+      take,
+      (item) => item.id
+    )
   }
 }

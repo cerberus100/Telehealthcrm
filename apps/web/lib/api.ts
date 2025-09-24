@@ -14,7 +14,7 @@ const ConsultSummarySchema = z.object({
   created_at: z.string(),
   provider_org_id: z.string()
 })
-export const ConsultListSchema = z.object({ items: z.array(ConsultSummarySchema), next_cursor: z.string().nullable() })
+export const ConsultListSchema = z.object({ items: z.array(ConsultSummarySchema), next_cursor: z.string().optional() })
 export type ConsultList = z.infer<typeof ConsultListSchema>
 
 const RxSchema = z.object({
@@ -25,7 +25,7 @@ const RxSchema = z.object({
   refills_allowed: z.number(),
   refills_used: z.number(),
 })
-export const RxListSchema = z.object({ items: z.array(RxSchema), next_cursor: z.string().nullable() })
+export const RxListSchema = z.object({ items: z.array(RxSchema), next_cursor: z.string().optional() })
 export type RxList = z.infer<typeof RxListSchema>
 
 const ShipmentSchema = z.object({
@@ -37,11 +37,11 @@ const ShipmentSchema = z.object({
   last_event_at: z.string(),
   ship_to: z.object({ name: z.string(), city: z.string(), state: z.string(), zip: z.string() })
 })
-export const ShipmentListSchema = z.object({ items: z.array(ShipmentSchema), next_cursor: z.string().nullable() })
+export const ShipmentListSchema = z.object({ items: z.array(ShipmentSchema), next_cursor: z.string().optional() })
 export type ShipmentList = z.infer<typeof ShipmentListSchema>
 
 const NotificationSchema = z.object({ id: z.string(), type: z.string(), created_at: z.string(), payload: z.record(z.any()).optional() })
-export const NotificationListSchema = z.object({ items: z.array(NotificationSchema), next_cursor: z.string().nullable() })
+export const NotificationListSchema = z.object({ items: z.array(NotificationSchema), next_cursor: z.string().optional() })
 export type NotificationList = z.infer<typeof NotificationListSchema>
 
 const LabOrderSchema = z.object({
@@ -52,7 +52,7 @@ const LabOrderSchema = z.object({
   tests: z.array(z.string()),
   created_at: z.string(),
 })
-export const LabOrderListSchema = z.object({ items: z.array(LabOrderSchema), next_cursor: z.string().nullable() })
+export const LabOrderListSchema = z.object({ items: z.array(LabOrderSchema), next_cursor: z.string().optional() })
 export type LabOrderList = z.infer<typeof LabOrderListSchema>
 
 const LabResultSchema = z.object({
@@ -62,7 +62,7 @@ const LabResultSchema = z.object({
   released_to_provider_at: z.string().nullable(),
   result_blob_encrypted: z.string().optional(), // Only for authorized roles
 })
-export const LabResultListSchema = z.object({ items: z.array(LabResultSchema), next_cursor: z.string().nullable() })
+export const LabResultListSchema = z.object({ items: z.array(LabResultSchema), next_cursor: z.string().optional() })
 export type LabResultList = z.infer<typeof LabResultListSchema>
 
 // Auth
@@ -130,7 +130,7 @@ const ClientSchema = z.object({
   status: z.string(),
   created_at: z.string(),
 })
-export const ClientListSchema = z.object({ items: z.array(ClientSchema), next_cursor: z.string().nullable() })
+export const ClientListSchema = z.object({ items: z.array(ClientSchema), next_cursor: z.string().optional() })
 export type ClientList = z.infer<typeof ClientListSchema>
 
 const RequisitionTemplateSchema = z.object({
@@ -145,7 +145,7 @@ const RequisitionTemplateSchema = z.object({
   created_by_org_id: z.string(),
   published_at: z.string().nullable(),
 })
-export const RequisitionTemplateListSchema = z.object({ items: z.array(RequisitionTemplateSchema), next_cursor: z.string().nullable() })
+export const RequisitionTemplateListSchema = z.object({ items: z.array(RequisitionTemplateSchema), next_cursor: z.string().optional() })
 export type RequisitionTemplateList = z.infer<typeof RequisitionTemplateListSchema>
 
 async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit): Promise<T> {
@@ -164,40 +164,40 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
       return schema.parse(mock)
     }
     if (path.startsWith('/consults')) {
-      const mock = { items: [{ id: 'c_1', status: 'PASSED', created_at: new Date().toISOString(), provider_org_id: 'org_1' }], next_cursor: null }
+      const mock = { items: [{ id: 'c_1', status: 'PASSED', created_at: new Date().toISOString(), provider_org_id: 'org_1' }], next_cursor: undefined }
       return schema.parse(mock)
     }
     if (path.startsWith('/rx')) {
       if (path === '/rx') {
-        const mock = { items: [{ id: 'rx_1', status: 'SUBMITTED', consult_id: 'c_1', pharmacy_org_id: 'ph_1', refills_allowed: 2, refills_used: 0 }], next_cursor: null }
+        const mock = { items: [{ id: 'rx_1', status: 'SUBMITTED', consult_id: 'c_1', pharmacy_org_id: 'ph_1', refills_allowed: 2, refills_used: 0 }], next_cursor: undefined }
         return schema.parse(mock)
       }
       const mock = { id: 'rx_1', status: 'SUBMITTED', consult_id: 'c_1', pharmacy_org_id: 'ph_1', refills_allowed: 2, refills_used: 0 }
       return schema.parse(mock)
     }
     if (path.startsWith('/shipments')) {
-      const mock = { items: [{ id: 'sh_1', lab_order_id: 'lo_1', carrier: 'UPS', tracking_number: '1Z...', status: 'IN_TRANSIT', last_event_at: new Date().toISOString(), ship_to: { name: 'John D', city: 'Austin', state: 'TX', zip: '78701' } }], next_cursor: null }
+      const mock = { items: [{ id: 'sh_1', lab_order_id: 'lo_1', carrier: 'UPS', tracking_number: '1Z...', status: 'IN_TRANSIT', last_event_at: new Date().toISOString(), ship_to: { name: 'John D', city: 'Austin', state: 'TX', zip: '78701' } }], next_cursor: undefined }
       return schema.parse(mock)
     }
     if (path.startsWith('/notifications')) {
-      const mock = { items: [{ id: 'n_1', type: 'LAB_RESULT_READY', created_at: new Date().toISOString(), payload: { lab_order_id: 'lo_1' } }], next_cursor: null }
+      const mock = { items: [{ id: 'n_1', type: 'LAB_RESULT_READY', created_at: new Date().toISOString(), payload: { lab_order_id: 'lo_1' } }], next_cursor: undefined }
       return schema.parse(mock)
     }
     if (path.startsWith('/lab-orders')) {
       if (path === '/lab-orders') {
-        const mock = { items: [{ id: 'lo_1', status: 'SUBMITTED', consult_id: 'c_1', lab_org_id: 'lab_1', tests: ['COVID-19', 'Flu A/B'], created_at: new Date().toISOString() }], next_cursor: null }
+        const mock = { items: [{ id: 'lo_1', status: 'SUBMITTED', consult_id: 'c_1', lab_org_id: 'lab_1', tests: ['COVID-19', 'Flu A/B'], created_at: new Date().toISOString() }], next_cursor: undefined }
         return schema.parse(mock)
       }
       const mock = { id: 'lo_1', status: 'SUBMITTED', consult_id: 'c_1', lab_org_id: 'lab_1', tests: ['COVID-19', 'Flu A/B'], created_at: new Date().toISOString() }
       return schema.parse(mock)
     }
     if (path.startsWith('/lab-results')) {
-      const mock = { items: [{ id: 'lr_1', lab_order_id: 'lo_1', flagged_abnormal: false, released_to_provider_at: new Date().toISOString() }], next_cursor: null }
+      const mock = { items: [{ id: 'lr_1', lab_order_id: 'lo_1', flagged_abnormal: false, released_to_provider_at: new Date().toISOString() }], next_cursor: undefined }
       return schema.parse(mock)
     }
     if (path.startsWith('/clients')) {
       if (path === '/clients') {
-        const mock = { items: [{ id: 'cl_1', name: 'Acme Provider', org_id: 'org_provider', contact_email: 'contact@acme.com', status: 'ACTIVE', created_at: new Date().toISOString() }], next_cursor: null }
+        const mock = { items: [{ id: 'cl_1', name: 'Acme Provider', org_id: 'org_provider', contact_email: 'contact@acme.com', status: 'ACTIVE', created_at: new Date().toISOString() }], next_cursor: undefined }
         return schema.parse(mock)
       }
       const mock = { id: 'cl_1', name: 'Acme Provider', org_id: 'org_provider', contact_email: 'contact@acme.com', status: 'ACTIVE', created_at: new Date().toISOString() }
@@ -215,7 +215,7 @@ async function http<T>(path: string, schema: z.ZodSchema<T>, init?: RequestInit)
         ],
         created_by_org_id: 'org_lab',
         published_at: new Date().toISOString()
-      }], next_cursor: null }
+      }], next_cursor: undefined }
       return schema.parse(mock)
     }
     if (path === '/operational-analytics/metrics') {

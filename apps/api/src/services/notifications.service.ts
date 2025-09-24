@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { PrismaService } from '../prisma.service'
+import { BaseService } from './base.service'
 import { RequestClaims } from '../types/claims'
 import { NotificationsQueryDto, NotificationDto } from '../types/dto'
 import { NotificationGateway } from '../websocket/notification.gateway'
@@ -14,13 +14,14 @@ const CreateNotificationSchema = z.object({
 })
 
 @Injectable()
-export class NotificationsService {
+export class NotificationsService extends BaseService {
   private readonly logger = new Logger(NotificationsService.name)
 
   constructor(
-    private prisma: PrismaService,
     private notificationGateway: NotificationGateway,
-  ) {}
+  ) {
+    super(null as any) // Pass null for now since we don't need Prisma in this service
+  }
 
   async getNotifications(query: NotificationsQueryDto, claims: RequestClaims) {
     const where: any = {
@@ -45,20 +46,18 @@ export class NotificationsService {
       orderBy: { createdAt: 'desc' },
     })
 
-    const hasNext = notifications.length > take
-    const items = notifications.slice(0, take)
-
-    const itemsResponse = items.map((notification: any) => ({
+    const itemsResponse = notifications.map((notification: any) => ({
       id: notification.id,
       type: notification.type,
       created_at: notification.createdAt.toISOString(),
       payload: notification.payload as any,
     }))
 
-    return {
-      items: itemsResponse,
-      next_cursor: hasNext && items[items.length - 1] ? items[items.length - 1]?.id : null,
-    }
+    return this.createPaginatedResponse(
+      itemsResponse,
+      take,
+      (item) => item.id
+    )
   }
 
   async createNotification(data: {

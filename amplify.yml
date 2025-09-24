@@ -7,10 +7,18 @@ applications:
       phases:
         preBuild:
           commands:
-            - npm install --no-audit --no-fund
+            - 'npm install --no-audit --no-fund'
         build:
           commands:
-            - npm run build
+            - 'npm run build:check'
+            - 'echo "✅ Build security check passed"'
+        postBuild:
+          commands:
+            - 'echo "🚀 Production build completed successfully"'
+            - 'echo "📊 Build details:"'
+            - 'echo "  - Environment: ${NODE_ENV}"'
+            - 'echo "  - Build ID: ${AWS_AMPLIFY_BUILD_ID}"'
+            - 'echo "  - Branch: ${AWS_BRANCH}"'
       artifacts:
         baseDirectory: .next
         files:
@@ -18,3 +26,30 @@ applications:
       cache:
         paths:
           - node_modules/**/*
+          - .next/cache/**/*
+  - appRoot: apps/api
+    backend:
+      runtime-versions:
+        nodejs: 20
+      phases:
+        preBuild:
+          commands:
+            - 'npm install --no-audit --no-fund'
+        build:
+          commands:
+            - 'npm run build'
+            - 'npm test'
+            - 'echo "✅ API build and tests passed"'
+      artifacts:
+        baseDirectory: dist
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+
+testSettings:
+  testReporting: true
+  testType: unit
+  testPath: apps/web/tests
+testCommand: 'npx playwright test --reporter=junit'

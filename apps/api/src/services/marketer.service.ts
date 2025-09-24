@@ -47,7 +47,7 @@ export class MarketerService {
           (!query.status || a.status === query.status)
         )
 
-        return { items: filtered.slice(0, query.limit), next_cursor: null }
+        return { items: filtered.slice(0, query.limit), next_cursor: undefined }
       }
 
       // Production: query consults with marketer-safe fields only
@@ -100,7 +100,7 @@ export class MarketerService {
         declinedAt: item.status === 'DECLINED' ? item.createdAt : null
       }))
 
-      return { items: transformed, next_cursor: null }
+      return { items: transformed, next_cursor: undefined }
     } catch (error) {
       logger.error({
         action: 'GET_APPROVALS_FAILED',

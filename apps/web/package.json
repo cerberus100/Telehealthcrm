@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev -p ${PORT:-3000}",
     "build": "next build",
+    "build:check": "npm run build && node ../../scripts/check-bundle.js",
     "start": "next start",
     "lint": "next lint",
     "test:e2e": "playwright test"

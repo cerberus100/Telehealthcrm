@@ -69,7 +69,7 @@ export class IntakeLinksService {
         const items = Array.from(this.memory.values()).filter(
           link => link.marketerOrgId === claims.orgId
         )
-        return { items, next_cursor: null }
+        return { items, next_cursor: undefined }
       }
 
       const items = await (this.prisma as any).intakeLink?.findMany({
@@ -77,7 +77,7 @@ export class IntakeLinksService {
         orderBy: { createdAt: 'desc' }
       })
 
-      return { items: items || [], next_cursor: null }
+      return { items: items || [], next_cursor: undefined }
     } catch (error) {
       logger.error({
         action: 'LIST_INTAKE_LINKS_FAILED',

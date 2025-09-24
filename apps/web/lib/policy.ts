@@ -1,5 +1,5 @@
 export type OrgType = 'PROVIDER' | 'LAB' | 'PHARMACY' | 'MARKETER'
-export type Role = 'SUPER_ADMIN' | 'MARKETER_ADMIN' | 'MARKETER' | 'DOCTOR' | 'PHARMACIST' | 'LAB_TECH' | 'SUPPORT' | 'AUDITOR'
+export type Role = 'SUPER_ADMIN' | 'ADMIN' | 'ORG_ADMIN' | 'DOCTOR' | 'LAB_TECH' | 'PHARMACIST' | 'MARKETER' | 'MARKETER_ADMIN' | 'SUPPORT' | 'AUDITOR'
 
 export interface Claims {
   org_id: string
@@ -42,7 +42,8 @@ export function canAccess(resource: Resource, action: Action, claims: Claims): b
       if (['Patient', 'Consult', 'Rx', 'LabOrder', 'LabResult', 'Shipment'].includes(resource)) return p || isBreakGlassActive(claims)
       return true
     }
-    case 'MARKETER_ADMIN': {
+    case 'ADMIN':
+    case 'ORG_ADMIN': {
       // Admin ≠ PHI unless also clinical purpose-of-use
       if (['Patient', 'Consult', 'Rx', 'LabOrder', 'LabResult'].includes(resource)) return p || isBreakGlassActive(claims)
       return true
@@ -50,6 +51,11 @@ export function canAccess(resource: Resource, action: Action, claims: Claims): b
     case 'SUPER_ADMIN': {
       // No PHI unless break-glass
       if (['Patient', 'Consult', 'Rx', 'LabOrder', 'LabResult'].includes(resource)) return isBreakGlassActive(claims)
+      return true
+    }
+    case 'MARKETER_ADMIN': {
+      // Marketer admin ≠ PHI unless also clinical purpose-of-use
+      if (['Patient', 'Consult', 'Rx', 'LabOrder', 'LabResult'].includes(resource)) return p || isBreakGlassActive(claims)
       return true
     }
     case 'SUPPORT':
@@ -68,7 +74,7 @@ export function breakGlassUntil(minutes: number): number {
 
 // Utility to check if a user needs to enter purpose-of-use for PHI
 export function requiresPurposeOfUse(role: string, resource: string): boolean {
-  return ['DOCTOR', 'PHARMACIST', 'LAB_TECH'].includes(role) && 
+  return ['DOCTOR', 'PHARMACIST', 'LAB_TECH', 'ADMIN', 'ORG_ADMIN', 'MARKETER_ADMIN'].includes(role) &&
          ['patient_details', 'rx_script', 'lab_result_details'].includes(resource)
 }
 

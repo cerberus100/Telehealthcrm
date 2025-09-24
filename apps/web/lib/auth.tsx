@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo, useState, ReactNode, useEffect } fr
 import { Api } from './api'
 import { useRouter } from 'next/navigation'
 
-export type Role = 'SUPER_ADMIN' | 'MARKETER_ADMIN' | 'MARKETER' | 'DOCTOR' | 'LAB_TECH' | 'PHARMACIST' | 'SUPPORT' | 'AUDITOR'
+import type { Role } from './policy'
 
 export interface AuthState {
   token: string | null
@@ -11,6 +11,8 @@ export interface AuthState {
   orgId: string | null
   purposeOfUse?: string | null
   email?: string | null
+  orgType?: string | null
+  userId?: string | null
 }
 
 interface AuthContextValue extends AuthState {
@@ -44,40 +46,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ...state,
     isAuthenticated: !!state.token,
     login: async ({ email, password }) => {
-      const tokens = await Api.authLogin(email || '', password || '')
-      // Set an immediate demo session so UI can proceed without waiting on /auth/me
-      const emailLower = (email || '').toLowerCase()
-      const inferredRole: Role = emailLower.includes('admin')
-        ? 'SUPER_ADMIN'
-        : emailLower.includes('marketer')
-          ? 'MARKETER'
-          : emailLower.includes('lab')
-            ? 'LAB_TECH'
-            : emailLower.includes('pharmacy')
-              ? 'PHARMACIST'
-              : 'DOCTOR'
-      const immediate: AuthState = { token: tokens.access_token, role: inferredRole, orgId: 'mock-org-123', purposeOfUse: null, email: email || '' }
-      setState(immediate)
-      if (typeof window !== 'undefined') window.localStorage.setItem('auth', JSON.stringify(immediate))
+      try {
+        // Authenticate with backend
+        const tokens = await Api.authLogin(email || '', password || '')
 
-      // Fire-and-forget: try to hydrate role/org from /auth/me with a short timeout
-      ;(async () => {
-        const withTimeout = <T,>(p: Promise<T>, ms: number) => new Promise<T>((resolve, reject) => {
-          const id = setTimeout(() => reject(new Error('timeout')), ms)
-          p.then(v => { clearTimeout(id); resolve(v) }).catch(e => { clearTimeout(id); reject(e) })
-        })
-        try {
-          const me = await withTimeout(Api.me(), 3000)
-          const hydrated: AuthState = { token: tokens.access_token, role: me.user.role as Role, orgId: me.user.org_id, purposeOfUse: null, email: me.user.email }
-          setState(hydrated)
-          if (typeof window !== 'undefined') window.localStorage.setItem('auth', JSON.stringify(hydrated))
-        } catch {
-          // keep immediate demo state
+        // Get full user profile and claims from server
+        const me = await Api.me()
+
+        // Build complete auth state from server response
+        const authState: AuthState = {
+          token: tokens.access_token,
+          role: me.user.role as Role,
+          orgId: me.user.org_id,
+          purposeOfUse: null,
+          email: me.user.email,
+          orgType: me.org.type,
+          userId: me.user.id
         }
-      })()
 
-      // Return immediately so caller can navigate based on role
-      return immediate
+        setState(authState)
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('auth', JSON.stringify(authState))
+        }
+
+        return authState
+      } catch (error) {
+        // Clear any existing auth state on login failure
+        setState({ token: null, role: null, orgId: null, purposeOfUse: null, email: null })
+        throw error
+      }
     },
     logout: () => {
       const next: AuthState = { token: null, role: null, orgId: null, purposeOfUse: null, email: null }
@@ -134,7 +131,7 @@ export function RequireRole({ allow, children }: { allow: Role[]; children: Reac
  */
 export function hasAdminAccess(role: Role | null): boolean {
   if (!role) return false
-  return role === 'SUPER_ADMIN' || role === 'MARKETER_ADMIN'
+  return role === 'SUPER_ADMIN' || role === 'ADMIN' || role === 'ORG_ADMIN' || role === 'MARKETER_ADMIN'
 }
 
 /**
@@ -143,5 +140,38 @@ export function hasAdminAccess(role: Role | null): boolean {
  */
 export function canViewOperationalMetrics(role: Role | null): boolean {
   if (!role) return false
-  return role === 'SUPER_ADMIN' || role === 'MARKETER_ADMIN'
+  return role === 'SUPER_ADMIN' || role === 'ADMIN'
+}
+
+/**
+ * Check if user can access PHI data
+ * Requires clinical roles with proper purpose of use
+ */
+export function canAccessPHI(role: Role | null, purposeOfUse?: string | null): boolean {
+  if (!role) return false
+  const clinicalRoles = ['DOCTOR', 'PHARMACIST', 'LAB_TECH', 'ADMIN', 'ORG_ADMIN', 'MARKETER_ADMIN']
+  return clinicalRoles.includes(role) && !!purposeOfUse
+}
+
+/**
+ * Get role hierarchy level for comparison
+ * Higher numbers = more permissions
+ */
+export function getRoleLevel(role: Role | null): number {
+  if (!role) return 0
+
+  const hierarchy: Record<Role, number> = {
+    'SUPER_ADMIN': 10,
+    'ADMIN': 8,
+    'ORG_ADMIN': 7,
+    'MARKETER_ADMIN': 6,
+    'DOCTOR': 5,
+    'PHARMACIST': 4,
+    'LAB_TECH': 3,
+    'MARKETER': 2,
+    'SUPPORT': 1,
+    'AUDITOR': 1,
+  }
+
+  return hierarchy[role] || 0
 }

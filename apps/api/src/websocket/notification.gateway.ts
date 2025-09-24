@@ -11,6 +11,9 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
+import { CognitoService } from '../auth/cognito.service';
+import { logRequest, logError, generateCorrelationId } from '../utils/logger';
+import { CorsConfigService } from '../config/cors.config';
 
 // WebSocket authentication schema
 const WebSocketAuthSchema = z.object({
@@ -41,16 +44,26 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin: [
-      'https://main.*.amplifyapp.com',
-      'http://localhost:3000',
-      'https://app.eudaura.com',
-      'https://www.eudaura.com',
-      'https://eudaura.com',
-    ],
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Use CORS configuration service for validation
+      const corsConfigService = new CorsConfigService(this.configService)
+      const isAllowed = corsConfigService.validateOrigin(origin)
+
+      if (isAllowed) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'), false)
+      }
+    },
     credentials: false,
+>>>>>>> b25904558b229d3aae6137224664f8862267b9b0
   },
-  namespace: '/notifications',
+  namespace: '/', // Use root namespace for standard Socket.IO
+  path: '/socket.io', // Standard Socket.IO path
+  serveClient: false, // Don't serve client library from server
+  pingTimeout: 60000, // 60 seconds
+  pingInterval: 25000, // 25 seconds
+  transports: ['websocket', 'polling'], // Support both WebSocket and polling fallback
 })
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -63,38 +76,148 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly cognitoService: CognitoService,
   ) {
     // Start heartbeat monitoring
     this.startHeartbeatMonitoring();
   }
 
   async handleConnection(client: AuthenticatedSocket) {
+    const correlationId = generateCorrelationId()
+    const startTime = Date.now()
+
     try {
-      this.logger.log(`Client attempting to connect: ${client.id}`);
+      logRequest({ clientId: client.id, ip: client.handshake.address }, 'info', 'WEBSOCKET_CONNECTION_ATTEMPT', {
+        correlationId,
+        userAgent: client.handshake.headers?.['user-agent'],
+        transport: client.conn.transport.name
+      })
 
       // Extract token from handshake auth
       const authData = client.handshake.auth;
       const validationResult = WebSocketAuthSchema.safeParse(authData);
 
       if (!validationResult.success) {
-        this.logger.warn(`Invalid auth data from client ${client.id}:`, validationResult.error);
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_INVALID_AUTH_DATA', {
+          correlationId,
+          error: validationResult.error.message,
+          authData: Object.keys(authData || {})
+        })
         client.emit('error', { message: 'Invalid authentication data' });
         client.disconnect();
         return;
       }
 
-      // Verify JWT token
+      // Verify JWT token using CognitoService
       const token = validationResult.data.token;
-      const payload = await this.verifyToken(token);
+      let payload;
 
-      if (!payload) {
-        this.logger.warn(`Invalid token from client ${client.id}`);
-        client.emit('error', { message: 'Invalid or expired token' });
+      try {
+        // Use the Cognito service to validate the token
+        payload = await this.cognitoService.validateToken(token);
+
+        // Add span attributes for observability
+        const { addSpanAttribute } = await import('../utils/telemetry')
+        addSpanAttribute('websocket.user_id', payload.sub)
+        addSpanAttribute('websocket.org_id', payload.org_id)
+        addSpanAttribute('websocket.role', payload.role)
+
+        // Log successful token validation with enhanced security logging
+        logRequest({ clientId: client.id }, 'info', 'WEBSOCKET_TOKEN_VALIDATED', {
+          correlationId,
+          userId: payload.sub,
+          orgId: payload.org_id,
+          role: payload.role,
+          emailVerified: payload.email_verified,
+          mfaEnabled: payload.mfa_enabled,
+          purposeOfUse: payload.purpose_of_use
+        })
+
+      } catch (error) {
+        // Enhanced error logging for security monitoring
+        logError(error instanceof Error ? error : new Error(String(error)), { clientId: client.id }, {
+          correlationId,
+          action: 'WEBSOCKET_JWT_VERIFICATION_FAILED',
+          tokenPrefix: token.substring(0, 10) + '...', // Log partial token for debugging without exposing
+          tokenLength: token.length
+        })
+
+        // Emit structured error response
+        client.emit('auth_error', {
+          code: 'INVALID_TOKEN',
+          message: 'Authentication failed - invalid or expired token',
+          timestamp: new Date().toISOString()
+        });
         client.disconnect();
         return;
       }
 
-      // Store user information on socket
+      if (!payload) {
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_JWT_VERIFICATION_FAILED', {
+          correlationId,
+          reason: 'Token validation returned null'
+        })
+        client.emit('auth_error', {
+          code: 'VALIDATION_FAILED',
+          message: 'Token validation failed',
+          timestamp: new Date().toISOString()
+        });
+        client.disconnect();
+        return;
+      }
+
+      // Validate required fields for security
+      if (!payload.org_id || !payload.role) {
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_AUTHORIZATION_FAILED', {
+          correlationId,
+          reason: 'Missing required claims',
+          hasOrgId: !!payload.org_id,
+          hasRole: !!payload.role
+        })
+        client.emit('auth_error', {
+          code: 'INSUFFICIENT_CLAIMS',
+          message: 'Insufficient claims in token',
+          timestamp: new Date().toISOString()
+        });
+        client.disconnect();
+        return;
+      }
+
+      // Validate organization access using PrismaService
+      try {
+        const { PrismaService } = await import('../prisma.service')
+        const prismaService = new PrismaService(this.configService)
+
+        const orgValid = await prismaService.validateOrganization(payload.org_id)
+        if (!orgValid) {
+          logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_ORG_ACCESS_DENIED', {
+            correlationId,
+            orgId: payload.org_id,
+            reason: 'Organization not found or inactive'
+          })
+          client.emit('auth_error', {
+            code: 'ORG_ACCESS_DENIED',
+            message: 'Access denied to organization',
+            timestamp: new Date().toISOString()
+          });
+          client.disconnect();
+          return;
+        }
+      } catch (error) {
+        logError(error instanceof Error ? error : new Error(String(error)), { clientId: client.id }, {
+          correlationId,
+          action: 'WEBSOCKET_ORG_VALIDATION_ERROR'
+        })
+        client.emit('auth_error', {
+          code: 'VALIDATION_ERROR',
+          message: 'Organization validation failed',
+          timestamp: new Date().toISOString()
+        });
+        client.disconnect();
+        return;
+      }
+
+      // Store user information on socket with security validation
       client.userId = payload.sub;
       client.orgId = payload.org_id;
       client.role = payload.role;
@@ -108,25 +231,59 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       await client.join(`user:${client.userId}`);
       await client.join(`org:${client.orgId}`);
 
-      this.logger.log(`Client authenticated and connected: ${client.id} (user: ${client.userId}, org: ${client.orgId})`);
+      const connectionTime = Date.now() - startTime
 
-      // Send welcome message
+      // Log successful connection with security context
+      logRequest({ clientId: client.id }, 'info', 'WEBSOCKET_CONNECTION_SUCCESS', {
+        correlationId,
+        userId: client.userId,
+        orgId: client.orgId,
+        role: client.role,
+        emailVerified: payload.email_verified,
+        mfaEnabled: payload.mfa_enabled,
+        connectionTime,
+        transport: client.conn.transport.name,
+        ip: client.handshake.address,
+        userAgent: client.handshake.headers?.['user-agent']?.substring(0, 100) // Limit for security
+      })
+
+      // Send welcome message with security information
       client.emit('connected', {
         message: 'Successfully connected to notification service',
         userId: client.userId,
         orgId: client.orgId,
         role: client.role,
+        emailVerified: payload.email_verified,
+        mfaEnabled: payload.mfa_enabled,
+        purposeOfUse: payload.purpose_of_use,
+        correlationId,
+        timestamp: new Date().toISOString(),
+        allowedTopics: this.getAllowedTopics(client.role || 'SUPPORT')
       });
 
     } catch (error) {
-      this.logger.error(`Error handling connection for client ${client.id}:`, error);
+      const connectionTime = Date.now() - startTime
+      logError(error instanceof Error ? error : new Error(String(error)), { clientId: client.id }, {
+        correlationId,
+        connectionTime,
+        action: 'WEBSOCKET_CONNECTION_ERROR'
+      })
       client.emit('error', { message: 'Authentication failed' });
       client.disconnect();
     }
   }
 
   async handleDisconnect(client: AuthenticatedSocket) {
-    this.logger.log(`Client disconnected: ${client.id}`);
+    const correlationId = generateCorrelationId()
+
+    logRequest({ clientId: client.id }, 'info', 'WEBSOCKET_DISCONNECT', {
+      correlationId,
+      userId: client.userId,
+      orgId: client.orgId,
+      role: client.role,
+      connectedTime: client.lastHeartbeat ? Date.now() - client.lastHeartbeat : undefined
+    })
+
     this.connectedClients.delete(client.id);
   }
 
@@ -168,31 +325,104 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { topics: string[] },
   ) {
+    const correlationId = generateCorrelationId();
+
     try {
+      // Validate input
       if (!Array.isArray(data.topics)) {
-        client.emit('error', { message: 'Topics must be an array' });
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_INVALID_SUBSCRIPTION', {
+          correlationId,
+          reason: 'Topics must be an array',
+          requestedTopics: data.topics
+        })
+        client.emit('subscription_error', {
+          code: 'INVALID_FORMAT',
+          message: 'Topics must be an array',
+          timestamp: new Date().toISOString()
+        });
         return;
       }
 
-      // Validate topics based on user role
+      if (data.topics.length === 0) {
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_EMPTY_SUBSCRIPTION', {
+          correlationId,
+          reason: 'No topics provided'
+        })
+        client.emit('subscription_error', {
+          code: 'EMPTY_TOPICS',
+          message: 'At least one topic required',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      if (data.topics.length > 10) {
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_TOO_MANY_TOPICS', {
+          correlationId,
+          requestedCount: data.topics.length,
+          maxAllowed: 10
+        })
+        client.emit('subscription_error', {
+          code: 'TOO_MANY_TOPICS',
+          message: 'Maximum 10 topics allowed per connection',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      // Get allowed topics based on user role
       const allowedTopics = this.getAllowedTopics(client.role || 'SUPPORT');
       const validTopics = data.topics.filter(topic => allowedTopics.includes(topic));
+      const invalidTopics = data.topics.filter(topic => !allowedTopics.includes(topic));
 
-      // Join topic rooms
+      // Log security event if user tried to subscribe to unauthorized topics
+      if (invalidTopics.length > 0) {
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_UNAUTHORIZED_TOPIC_ACCESS', {
+          correlationId,
+          userRole: client.role,
+          requestedTopics: data.topics,
+          allowedTopics,
+          blockedTopics: invalidTopics
+        })
+      }
+
+      // Join topic rooms for valid topics only
       for (const topic of validTopics) {
         await client.join(`topic:${topic}`);
       }
 
+      // Log successful subscription
+      logRequest({ clientId: client.id }, 'info', 'WEBSOCKET_SUBSCRIPTION_SUCCESS', {
+        correlationId,
+        userId: client.userId,
+        orgId: client.orgId,
+        role: client.role,
+        subscribedTopics: validTopics,
+        blockedTopics: invalidTopics,
+        totalTopics: data.topics.length
+      })
+
       client.emit('subscribed', {
         topics: validTopics,
-        message: `Subscribed to ${validTopics.length} topics`,
+        blockedTopics: invalidTopics,
+        message: `Subscribed to ${validTopics.length} of ${data.topics.length} requested topics`,
+        timestamp: new Date().toISOString()
       });
 
-      this.logger.log(`Client ${client.id} subscribed to topics: ${validTopics.join(', ')}`);
+      this.logger.log(`Client ${client.id} (${client.role}) subscribed to topics: ${validTopics.join(', ')}`);
 
     } catch (error) {
-      this.logger.error(`Error handling subscription from client ${client.id}:`, error);
-      client.emit('error', { message: 'Subscription failed' });
+      logError(error instanceof Error ? error : new Error(String(error)), { clientId: client.id }, {
+        correlationId,
+        action: 'WEBSOCKET_SUBSCRIPTION_ERROR',
+        requestedTopics: data.topics
+      })
+
+      client.emit('subscription_error', {
+        code: 'SUBSCRIPTION_FAILED',
+        message: 'Failed to process subscription request',
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
@@ -201,9 +431,33 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { topics: string[] },
   ) {
+    const correlationId = generateCorrelationId();
+
     try {
+      // Validate input
       if (!Array.isArray(data.topics)) {
-        client.emit('error', { message: 'Topics must be an array' });
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_INVALID_UNSUBSCRIPTION', {
+          correlationId,
+          reason: 'Topics must be an array'
+        })
+        client.emit('unsubscription_error', {
+          code: 'INVALID_FORMAT',
+          message: 'Topics must be an array',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      if (data.topics.length === 0) {
+        logRequest({ clientId: client.id }, 'warn', 'WEBSOCKET_EMPTY_UNSUBSCRIPTION', {
+          correlationId,
+          reason: 'No topics provided'
+        })
+        client.emit('unsubscription_error', {
+          code: 'EMPTY_TOPICS',
+          message: 'At least one topic required',
+          timestamp: new Date().toISOString()
+        });
         return;
       }
 
@@ -212,16 +466,36 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         await client.leave(`topic:${topic}`);
       }
 
+      // Log successful unsubscription
+      logRequest({ clientId: client.id }, 'info', 'WEBSOCKET_UNSUBSCRIPTION_SUCCESS', {
+        correlationId,
+        userId: client.userId,
+        orgId: client.orgId,
+        role: client.role,
+        unsubscribedTopics: data.topics,
+        totalTopics: data.topics.length
+      })
+
       client.emit('unsubscribed', {
         topics: data.topics,
-        message: `Unsubscribed from ${data.topics.length} topics`,
+        message: `Successfully unsubscribed from ${data.topics.length} topics`,
+        timestamp: new Date().toISOString()
       });
 
-      this.logger.log(`Client ${client.id} unsubscribed from topics: ${data.topics.join(', ')}`);
+      this.logger.log(`Client ${client.id} (${client.role}) unsubscribed from topics: ${data.topics.join(', ')}`);
 
     } catch (error) {
-      this.logger.error(`Error handling unsubscription from client ${client.id}:`, error);
-      client.emit('error', { message: 'Unsubscription failed' });
+      logError(error instanceof Error ? error : new Error(String(error)), { clientId: client.id }, {
+        correlationId,
+        action: 'WEBSOCKET_UNSUBSCRIPTION_ERROR',
+        requestedTopics: data.topics
+      })
+
+      client.emit('unsubscription_error', {
+        code: 'UNSUBSCRIPTION_FAILED',
+        message: 'Failed to process unsubscription request',
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
@@ -424,6 +698,8 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       totalConnections: this.connectedClients.size,
       connectionsByOrg: new Map<string, number>(),
       connectionsByRole: new Map<string, number>(),
+      uptime: process.uptime(),
+      lastHeartbeatCheck: Date.now(),
     };
 
     for (const client of this.connectedClients.values()) {
@@ -443,45 +719,44 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     return stats;
   }
 
-  private async verifyToken(token: string): Promise<any> {
-    try {
-      // For development, use mock verification
-      // In production, this would verify against Cognito
-      if (this.configService.get('NODE_ENV') === 'development') {
-        return this.verifyMockToken(token);
-      }
-
-      // TODO: Implement Cognito JWT verification
-      // const verifier = CognitoJwtVerifier.create({
-      //   userPoolId: this.configService.get('COGNITO_USER_POOL_ID'),
-      //   tokenUse: 'access',
-      //   clientId: this.configService.get('COGNITO_CLIENT_ID'),
-      // });
-      // return await verifier.verify(token);
-
-      return this.verifyMockToken(token);
-    } catch (error) {
-      this.logger.error('Token verification failed:', error);
-      return null;
-    }
-  }
-
-  private verifyMockToken(token: string): any {
-    // Mock token verification for development
-    if (token.startsWith('mock_access_')) {
-      const parts = token.split('_');
-      if (parts.length >= 4) {
-        return {
-          sub: parts[2],
-          org_id: 'org_123',
-          role: 'DOCTOR',
-          purpose_of_use: 'TREATMENT',
-          exp: Date.now() / 1000 + 3600, // 1 hour from now
-        };
+  // WebSocket health endpoint
+  @SubscribeMessage('health')
+  async handleHealthCheck(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: unknown,
+  ) {
+    const correlationId = generateCorrelationId()
+    const healthData = {
+      status: 'healthy',
+      correlation_id: correlationId,
+      timestamp: new Date().toISOString(),
+      client: {
+        id: client.id,
+        userId: client.userId,
+        orgId: client.orgId,
+        role: client.role,
+        connectedAt: client.handshake?.time,
+        lastHeartbeat: client.lastHeartbeat,
+      },
+      server: {
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        connections: this.connectedClients.size,
+        environment: this.configService.get<string>('NODE_ENV', 'development'),
       }
     }
-    return null;
+
+    logRequest({ clientId: client.id }, 'info', 'WEBSOCKET_HEALTH_CHECK', {
+      correlationId,
+      userId: client.userId,
+      orgId: client.orgId
+    })
+
+    client.emit('health_response', healthData)
   }
+
+  // Token verification is now handled by CognitoService
+  // This method is kept for backwards compatibility but delegates to CognitoService
 
   private getAllowedTopics(role: string): string[] {
     const topicMap: Record<string, string[]> = {

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common'
+import { Injectable, UnauthorizedException, Inject, forwardRef, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { CognitoService, CognitoUser } from '../auth/cognito.service'
 import { LoginDto, RefreshDto, LogoutDto, MeResponseDto } from '../types/dto'
@@ -12,26 +12,18 @@ export class AuthService {
     private prisma: PrismaService,
     @Inject(forwardRef(() => CognitoService))
     private cognitoService: CognitoService
-  ) {
-    console.log('AuthService constructor called');
-    console.log('PrismaService:', prisma);
-    console.log('CognitoService:', cognitoService);
-  }
+  ) {}
 
   async login(loginDto: LoginDto) {
     try {
-      console.log('Starting login for:', loginDto.email);
-      
       // Use Cognito service for authentication
       const loginResponse = await this.cognitoService.authenticate(
         loginDto.email,
         loginDto.password
       )
-      console.log('Cognito authentication successful, user ID:', loginResponse.user.sub);
 
       // Update user's last login in database
       await this.updateUserLastLogin(loginResponse.user.sub)
-      console.log('Last login update completed');
 
       // Log successful login
       logger.info({
@@ -41,7 +33,6 @@ export class AuthService {
         role: loginResponse.user.role,
       })
 
-      console.log('Returning login response');
       return {
         access_token: loginResponse.access_token,
         refresh_token: loginResponse.refresh_token,
@@ -49,18 +40,10 @@ export class AuthService {
         token_type: loginResponse.token_type,
       }
     } catch (error) {
-      console.error('Login failed with error:', error);
-      console.error('Error details:', {
-        message: (error as Error).message,
-        stack: (error as Error).stack,
-        name: (error as Error).name
-      });
-      
       logger.warn({
         action: 'USER_LOGIN_FAILED',
         email: loginDto.email,
         error: (error as Error).message,
-        stack: (error as Error).stack,
       })
       throw error
     }
@@ -114,33 +97,12 @@ export class AuthService {
 
   async getMe(claims: RequestClaims): Promise<MeResponseDto> {
     try {
-      // Defensive: normalize missing claims in demo mode
-      if (process.env.API_DEMO_MODE === 'true' && (!claims || (!claims.sub && !claims.orgId))) {
-        claims = { sub: 'demo-user-123', orgId: 'mock-org-123', role: 'DOCTOR' } as unknown as RequestClaims
-      }
-      // Demo mode: derive user/org straight from request claims to avoid external deps
-      if (process.env.API_DEMO_MODE === 'true') {
-        const userId = claims.sub || 'demo-user-123'
-        const orgId = claims.orgId || 'mock-org-123'
-        const role = (claims.role as any) || 'DOCTOR'
-        return {
-          user: {
-            id: userId,
-            email: 'doctor@example.com',
-            role,
-            org_id: orgId,
-            last_login_at: new Date().toISOString(),
-          },
-          org: {
-            id: orgId,
-            type: 'PROVIDER' as any,
-            name: 'Demo Organization',
-          },
-        }
+      if (!claims || !claims.sub || !claims.orgId) {
+        throw new UnauthorizedException('Invalid or missing claims')
       }
 
       // Get user profile from Cognito
-      const cognitoUser = await this.cognitoService.getUserProfile(claims.sub || '')
+      const cognitoUser = await this.cognitoService.getUserProfile(claims.sub)
 
       // Get organization details from database
       const org = await this.prisma.organization.findUnique({
@@ -227,15 +189,12 @@ export class AuthService {
    */
   private async updateUserLastLogin(userId: string): Promise<void> {
     try {
-      console.log('Updating last login for user:', userId);
-      const result = await this.prisma.user.update({
+      await this.prisma.user.update({
         where: { id: userId },
         data: { lastLoginAt: new Date() },
       });
-      console.log('Last login updated successfully:', result.id);
     } catch (error) {
       // Log but don't fail the login if database update fails
-      console.error('Failed to update last login:', error);
       logger.warn({
         action: 'UPDATE_LAST_LOGIN_FAILED',
         user_id: userId,

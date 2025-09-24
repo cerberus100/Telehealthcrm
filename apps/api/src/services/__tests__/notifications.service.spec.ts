@@ -51,7 +51,7 @@ describe('NotificationsService', () => {
           created_at: n.createdAt.toISOString(),
           payload: n.payload,
         })),
-        next_cursor: null,
+        next_cursor: undefined,
       });
     });
   });

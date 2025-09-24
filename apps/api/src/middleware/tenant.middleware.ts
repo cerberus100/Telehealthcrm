@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware, HttpException, HttpStatus } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
@@ -22,7 +22,7 @@ export class TenantMiddleware implements NestMiddleware {
 
   constructor(private prisma: PrismaService) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: FastifyRequest, res: FastifyReply, next: (err?: unknown) => void) {
     try {
       // Extract org_id from claims
       const claims = (req as any).claims;
@@ -38,10 +38,10 @@ export class TenantMiddleware implements NestMiddleware {
           compliance: { hipaaCompliant: false, baaSigned: false },
         }
         ;(req as any).tenant = tenantContext
-        res.setHeader('X-Tenant-ID', tenantContext.orgId)
-        res.setHeader('X-Tenant-Type', tenantContext.orgType)
-        res.setHeader('X-Tenant-Name', tenantContext.orgName)
-        this.logger.debug({ action: 'TENANT_ACCESS_DEMO', orgId: tenantContext.orgId, path: req.path, method: req.method })
+        res.header('X-Tenant-ID', tenantContext.orgId)
+        res.header('X-Tenant-Type', tenantContext.orgType)
+        res.header('X-Tenant-Name', tenantContext.orgName)
+        this.logger.debug({ action: 'TENANT_ACCESS_DEMO', orgId: tenantContext.orgId, path: req.routeOptions.url, method: req.method })
         next()
         return
       }
@@ -95,9 +95,9 @@ export class TenantMiddleware implements NestMiddleware {
       (req as any).tenant = tenantContext;
 
       // Add tenant headers for debugging
-      res.setHeader('X-Tenant-ID', tenantContext.orgId);
-      res.setHeader('X-Tenant-Type', tenantContext.orgType);
-      res.setHeader('X-Tenant-Name', tenantContext.orgName);
+      res.header('X-Tenant-ID', tenantContext.orgId);
+      res.header('X-Tenant-Type', tenantContext.orgType);
+      res.header('X-Tenant-Name', tenantContext.orgName);
 
       // Log tenant access
       this.logger.debug({
@@ -105,7 +105,7 @@ export class TenantMiddleware implements NestMiddleware {
         orgId: tenantContext.orgId,
         orgType: tenantContext.orgType,
         userId: claims.sub,
-        path: req.path,
+        path: req.routeOptions.url,
         method: req.method,
       });
 
@@ -137,36 +137,16 @@ export class TenantMiddleware implements NestMiddleware {
         return cached;
       }
 
-      // Fetch from database
-      const organization = await this.prisma.organization.findUnique({
-        where: { id: orgId },
-        select: {
-          id: true,
-          name: true,
-          type: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
+      // Use the unified PrismaService method
+      const tenantContext = await this.prisma.getTenantContext(orgId);
 
-      if (!organization) {
+      if (!tenantContext) {
         return null;
       }
 
-      const tenantContext: TenantContext = {
-        orgId: organization.id,
-        orgType: organization.type,
-        orgName: organization.name,
-        isActive: true, // Default to active for now
-        compliance: {
-          hipaaCompliant: false, // Default values
-          baaSigned: false,
-        },
-      };
-
       // Cache the result
       this.tenantCache.set(orgId, tenantContext);
-      
+
       // Set cache expiry
       setTimeout(() => {
         this.tenantCache.delete(orgId);
