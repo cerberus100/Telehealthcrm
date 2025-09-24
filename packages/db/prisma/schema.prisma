@@ -71,14 +71,16 @@ model User {
 }
 
 enum UserRole {
+  SUPER_ADMIN
   ADMIN
   DOCTOR
   LAB_TECH
   PHARMACIST
   MARKETER
+  MARKETER_ADMIN
   SUPPORT
+  AUDITOR
   ORG_ADMIN
-  ORG_MANAGER
 }
 
 model Patient {

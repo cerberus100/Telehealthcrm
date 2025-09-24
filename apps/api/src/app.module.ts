@@ -17,10 +17,8 @@ import { NotificationsController } from './controllers/notifications.controller'
 import { BusinessMetricsController } from './controllers/business-metrics.controller'
 import { ComplianceController } from './controllers/compliance.controller'
 import { PrismaService } from './prisma.service'
-import { MockPrismaService } from './mock-prisma.service'
 import { AuthService } from './services/auth.service'
 import { CognitoService } from './auth/cognito.service'
-import { MockCognitoService } from './auth/mock-cognito.service'
 import { ConsultsService } from './services/consults.service'
 import { ShipmentsService } from './services/shipments.service'
 import { RxService } from './services/rx.service'
@@ -30,8 +28,6 @@ import { SecurityAuditService } from './services/security-audit.service'
 import { HIPAAComplianceService } from './services/hipaa-compliance.service'
 import { SOC2ComplianceService } from './services/soc2-compliance.service'
 import { AuditService } from './audit/audit.service'
-import { TelemetryService } from './utils/telemetry.service'
-import { TelemetryInterceptor } from './interceptors/telemetry.interceptor'
 import { ShipmentsModule } from './modules/shipments/shipments.module'
 import { UpsModule } from './integrations/ups/ups.module'
 import { WebSocketModule } from './websocket/websocket.module'
@@ -59,6 +55,8 @@ import { MarketerController } from './controllers/marketer.controller'
 import { MarketerService } from './services/marketer.service'
 import { DuplicateCheckController } from './controllers/duplicate-check.controller'
 import { DuplicateCheckService } from './services/duplicate-check.service'
+import { CorsConfigService } from './config/cors.config'
+import { RateLimitConfigService } from './config/rate-limit.config'
 
 @Module({
   imports: [
@@ -98,22 +96,8 @@ import { DuplicateCheckService } from './services/duplicate-check.service'
     DuplicateCheckController
   ],
   providers: [
-    {
-      provide: PrismaService,
-      useFactory: () => {
-        const demoMode = process.env.API_DEMO_MODE === 'true';
-        console.log('Creating PrismaService, demo mode:', demoMode);
-        return demoMode ? new MockPrismaService() : new PrismaService();
-      },
-    },
-    {
-      provide: CognitoService,
-      useFactory: () => {
-        const demoMode = process.env.API_DEMO_MODE === 'true';
-        console.log('Creating CognitoService, demo mode:', demoMode);
-        return demoMode ? new MockCognitoService() : new CognitoService(new ConfigService());
-      },
-    },
+    PrismaService,
+    CognitoService,
     ConsultsService,
     ShipmentsService,
     RxService,
@@ -123,7 +107,6 @@ import { DuplicateCheckService } from './services/duplicate-check.service'
     HIPAAComplianceService,
     SOC2ComplianceService,
     AuditService,
-    TelemetryService,
     AuthService,
     RequisitionsService,
     OnboardingService,
@@ -135,6 +118,8 @@ import { DuplicateCheckService } from './services/duplicate-check.service'
     EventsService,
     MarketerService,
     DuplicateCheckService,
+    CorsConfigService,
+    RateLimitConfigService,
     JwtMiddleware,
     RbacMiddleware,
     TenantMiddleware,
@@ -143,10 +128,6 @@ import { DuplicateCheckService } from './services/duplicate-check.service'
     // {
     //   provide: APP_GUARD,
     //   useClass: AbacGuard,
-    // },
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: TelemetryInterceptor,
     // },
   ],
 })

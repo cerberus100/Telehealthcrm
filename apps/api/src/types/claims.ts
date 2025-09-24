@@ -1,11 +1,12 @@
 export type Role =
+  | 'SUPER_ADMIN'
   | 'ADMIN'
   | 'ORG_ADMIN'
-  | 'MASTER_ADMIN'
   | 'DOCTOR'
   | 'LAB_TECH'
   | 'PHARMACIST'
   | 'MARKETER'
+  | 'MARKETER_ADMIN'
   | 'SUPPORT'
   | 'AUDITOR'
 

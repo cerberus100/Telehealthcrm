@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
-import { PrismaService } from '../prisma.service'
+import { BaseService } from './base.service'
 import { RequestClaims } from '../types/claims'
-import { 
-  ConsultsQueryDto, 
-  ConsultSummaryDto, 
-  ConsultDetailDto, 
+import {
+  ConsultsQueryDto,
+  ConsultSummaryDto,
+  ConsultDetailDto,
   UpdateConsultStatusDto,
   ShipmentsQueryDto,
   ShipmentDto,
@@ -16,57 +16,59 @@ import {
 } from '../types/dto'
 
 @Injectable()
-export class ConsultsService {
-  constructor(private prisma: PrismaService) {}
+export class ConsultsService extends BaseService {
 
-  async getConsults(query: ConsultsQueryDto, claims: RequestClaims) {
-    const where: any = {
-      orgId: claims.orgId,
-    }
+  async getConsults(query: ConsultsQueryDto, claims: RequestClaims): Promise<{ items: ConsultSummaryDto[]; nextCursor?: string }> {
+    return this.withTenant(claims.orgId, async (tenantContext) => {
+      this.logOperation('GET_CONSULTS', claims.orgId, { query })
 
-    if (query.status) {
-      where.status = query.status
-    }
+      const where: any = {
+        orgId: claims.orgId,
+      }
 
-    const take = query.limit || 50
-    const skip = query.cursor ? 1 : 0
+      if (query.status) {
+        where.status = query.status
+      }
 
-    const consults = await this.prisma.consult.findMany({
-      where,
-      take: take + 1,
-      skip: query.cursor ? 1 : 0,
-      cursor: query.cursor ? { id: query.cursor } : undefined,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        patient: true,
-        org: true,
-      },
+      const take = query.limit || 50
+
+      const consults = await this.prisma.consult.findMany({
+        where,
+        take: take + 1,
+        cursor: query.cursor ? { id: query.cursor } : undefined,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          patient: true,
+          org: true,
+        },
+      })
+
+      const itemsResponse = consults.map((consult: any) => ({
+        id: consult.id,
+        status: consult.status,
+        created_at: consult.createdAt.toISOString(),
+        provider_org_id: consult.providerOrgId,
+      }))
+
+      return this.createPaginatedResponse(
+        itemsResponse,
+        take,
+        (item) => item.id
+      )
     })
-
-    const hasNext = consults.length > take
-    const items = consults.slice(0, take)
-
-    const itemsResponse = items.map((consult: any) => ({
-      id: consult.id,
-      status: consult.status,
-      created_at: consult.createdAt.toISOString(),
-      provider_org_id: consult.providerOrgId,
-    }))
-
-    return {
-      items: itemsResponse,
-      next_cursor: hasNext && items[items.length - 1] ? items[items.length - 1]?.id : null,
-    }
   }
 
   async getConsult(id: string, claims: RequestClaims): Promise<ConsultDetailDto> {
-    const consult = await this.prisma.consult.findUnique({
-      where: { id },
-      include: {
-        patient: true,
-        org: true,
-      },
-    })
+    return this.withTenant(claims.orgId, async (tenantContext) => {
+      this.logOperation('GET_CONSULT', claims.orgId, { consultId: id })
+
+      const consult = await this.prisma.consult.findUnique({
+        where: { id },
+        include: {
+          patient: true,
+          org: true,
+        },
+      })
 
     if (!consult) {
       throw new NotFoundException('Consult not found')
@@ -95,20 +97,21 @@ export class ConsultsService {
       }
     }
 
-    return {
-      id: consult.id,
-      status: consult.status,
-      created_at: consult.createdAt.toISOString(),
-      provider_org_id: consult.providerOrgId,
-      patient: {
-        id: consult.patient.id,
-        legal_name: consult.patient.legalName,
-        dob: consult.patient.dob.toISOString(),
-        address: consult.patient.address as any,
-      },
-      reason_codes: consult.reasonCodes,
-      created_from: consult.createdFrom,
-    }
+      return {
+        id: consult.id,
+        status: consult.status,
+        created_at: consult.createdAt.toISOString(),
+        provider_org_id: consult.providerOrgId,
+        patient: {
+          id: consult.patient.id,
+          legal_name: consult.patient.legalName,
+          dob: consult.patient.dob.toISOString(),
+          address: consult.patient.address as any,
+        },
+        reason_codes: consult.reasonCodes,
+        created_from: consult.createdFrom,
+      }
+    })
   }
 
   async updateConsultStatus(id: string, updateDto: UpdateConsultStatusDto, claims: RequestClaims) {

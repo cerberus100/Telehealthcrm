@@ -139,7 +139,7 @@ const auditLogger = pino({
   // Audit logs should be structured and immutable; emit as JSON without transport
 })
 
-// Utility functions for common logging patterns
+// Enhanced logging utilities with correlation ID and structured logging
 export const logAuditEvent = (event: {
   action: string
   actor_user_id?: string
@@ -152,12 +152,20 @@ export const logAuditEvent = (event: {
   before?: any
   after?: any
   correlation_id?: string
+  metadata?: any
 }) => {
+  const correlationId = event.correlation_id || generateCorrelationId()
+  const timestamp = new Date().toISOString()
+
   auditLogger.info({
     ...event,
+    correlation_id: correlationId,
+    timestamp,
+    audit_event: true,
     // Ensure no PHI in audit logs
     before: event.before ? redactPHI(event.before) : undefined,
     after: event.after ? redactPHI(event.after) : undefined,
+    metadata: event.metadata ? redactPHI(event.metadata) : undefined,
   })
 }
 
@@ -169,11 +177,18 @@ export const logSecurityEvent = (event: {
   user_agent?: string
   details?: any
   correlation_id?: string
+  metadata?: any
 }) => {
+  const correlationId = event.correlation_id || generateCorrelationId()
+  const timestamp = new Date().toISOString()
+
   logger.warn({
-    security_event: true,
     ...event,
+    correlation_id: correlationId,
+    timestamp,
+    security_event: true,
     details: event.details ? redactPHI(event.details) : undefined,
+    metadata: event.metadata ? redactPHI(event.metadata) : undefined,
   })
 }
 
@@ -183,11 +198,130 @@ export const logPerformanceMetric = (metric: {
   status: 'success' | 'error'
   correlation_id?: string
   metadata?: any
+  user_id?: string
+  org_id?: string
+  endpoint?: string
+  method?: string
 }) => {
+  const correlationId = metric.correlation_id || generateCorrelationId()
+  const timestamp = new Date().toISOString()
+
   logger.info({
-    performance_metric: true,
     ...metric,
+    correlation_id: correlationId,
+    timestamp,
+    performance_metric: true,
     metadata: metric.metadata ? redactPHI(metric.metadata) : undefined,
+  })
+}
+
+export const logBusinessMetric = (metric: {
+  name: string
+  value: number
+  unit?: string
+  correlation_id?: string
+  metadata?: any
+  user_id?: string
+  org_id?: string
+  entity?: string
+  entity_id?: string
+}) => {
+  const correlationId = metric.correlation_id || generateCorrelationId()
+  const timestamp = new Date().toISOString()
+
+  logger.info({
+    ...metric,
+    correlation_id: correlationId,
+    timestamp,
+    business_metric: true,
+    metadata: metric.metadata ? redactPHI(metric.metadata) : undefined,
+  })
+}
+
+// Enhanced logging with correlation ID management
+export const generateCorrelationId = (): string => {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
+
+export const getCorrelationId = (req: any): string => {
+  return req.headers?.['x-correlation-id'] ||
+         req.headers?.['correlation-id'] ||
+         req.correlationId ||
+         generateCorrelationId()
+}
+
+// Structured logging helper with automatic correlation ID
+export const logRequest = (req: any, level: 'info' | 'warn' | 'error' = 'info', message: string, data?: any) => {
+  const correlationId = getCorrelationId(req)
+  const logData = {
+    ...data,
+    correlation_id: correlationId,
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    user_agent: req.headers?.['user-agent'],
+    timestamp: new Date().toISOString(),
+  }
+
+  if (level === 'error') {
+    logger.error({ ...logData, message })
+  } else if (level === 'warn') {
+    logger.warn({ ...logData, message })
+  } else {
+    logger.info({ ...logData, message })
+  }
+}
+
+// Request lifecycle logging
+export const logRequestStart = (req: any) => {
+  const correlationId = getCorrelationId(req)
+  // Add correlation ID to request object for downstream use
+  req.correlationId = correlationId
+
+  logger.info({
+    correlation_id: correlationId,
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    user_agent: req.headers?.['user-agent'],
+    timestamp: new Date().toISOString(),
+    request_start: true,
+  })
+}
+
+export const logRequestEnd = (req: any, statusCode: number, duration: number) => {
+  const correlationId = req.correlationId || getCorrelationId(req)
+
+  logger.info({
+    correlation_id: correlationId,
+    method: req.method,
+    url: req.url,
+    status_code: statusCode,
+    duration_ms: duration,
+    timestamp: new Date().toISOString(),
+    request_end: true,
+  })
+}
+
+export const logError = (error: Error, req?: any, context?: any) => {
+  const correlationId = req ? getCorrelationId(req) : generateCorrelationId()
+  const timestamp = new Date().toISOString()
+
+  logger.error({
+    correlation_id: correlationId,
+    timestamp,
+    error: {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    },
+    context: context ? redactPHI(context) : undefined,
+    req: req ? {
+      method: req.method,
+      url: req.url,
+      ip: req.ip,
+      user_agent: req.headers?.['user-agent'],
+    } : undefined,
   })
 }
 

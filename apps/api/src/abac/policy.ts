@@ -25,8 +25,8 @@ export function evaluatePolicy(req: AccessRequest): AccessDecision {
   // Deny cross-org by default
   if (!sameOrg) return { allow: false, reason: 'cross-tenant access denied' }
 
-  // Treat org/master admin as admin-equivalent
-  const role = subject.role === 'ORG_ADMIN' || subject.role === 'MASTER_ADMIN' ? 'ADMIN' : subject.role
+  // Treat org/marketer admin as admin-equivalent
+  const role = subject.role === 'ORG_ADMIN' || subject.role === 'MARKETER_ADMIN' ? 'ADMIN' : subject.role
 
   switch (role) {
     case 'MARKETER': {
@@ -61,20 +61,22 @@ export function evaluatePolicy(req: AccessRequest): AccessDecision {
       if (resource === 'OperationalMetrics') return { allow: false, reason: 'lab tech cannot view operational metrics' }
       return { allow: true }
     }
-    case 'DOCTOR':
+    case 'SUPER_ADMIN':
     case 'ADMIN':
+    case 'ORG_ADMIN':
+    case 'DOCTOR':
     case 'SUPPORT':
     case 'AUDITOR': {
       if (role === 'AUDITOR' && action !== 'read' && action !== 'list') return { allow: false, reason: 'auditor read-only' }
-      
-      // Only ADMIN and MASTER_ADMIN can access operational metrics
+
+      // Only SUPER_ADMIN and ADMIN can access operational metrics
       if (resource === 'OperationalMetrics') {
-        if (role === 'ADMIN' || subject.role === 'MASTER_ADMIN') {
+        if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
           return { allow: true }
         }
         return { allow: false, reason: 'only admins can view operational metrics' }
       }
-      
+
       return { allow: true }
     }
     default:

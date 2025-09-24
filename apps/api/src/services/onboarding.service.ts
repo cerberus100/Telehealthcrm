@@ -105,10 +105,10 @@ export class OnboardingService {
 
   async adminList() {
     if (this.demo) {
-      return { items: Array.from(this.memory.values()), next_cursor: null }
+      return { items: Array.from(this.memory.values()), next_cursor: undefined }
     }
     const items = await (this.prisma as any).providerOnboarding.findMany?.({ orderBy: { createdAt: 'desc' } })
-    return { items: items ?? [], next_cursor: null }
+    return { items: items ?? [], next_cursor: undefined }
   }
 
   async adminAction(body: { id: string; action: 'APPROVE'|'REJECT'|'REQUEST_INFO'; notes?: string; request_fields?: string[] }) {

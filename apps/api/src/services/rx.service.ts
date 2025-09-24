@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
-import { PrismaService } from '../prisma.service'
+import { BaseService } from './base.service'
 import { RequestClaims } from '../types/claims'
 import { RxQueryDto, RxSummaryDto, RxDetailDto } from '../types/dto'
 
 @Injectable()
-export class RxService {
-  constructor(private prisma: PrismaService) {}
+export class RxService extends BaseService {
 
   async getRxList(query: RxQueryDto, claims: RequestClaims) {
     // Only providers and pharmacists can access Rx data
@@ -34,10 +33,7 @@ export class RxService {
       },
     })
 
-    const hasNext = rxs.length > take
-    const items = rxs.slice(0, take)
-
-    const itemsResponse = items.map((rx: any) => ({
+    const itemsResponse = rxs.map((rx: any) => ({
       id: rx.id,
       status: rx.status,
       created_at: rx.createdAt.toISOString(),
@@ -45,10 +41,11 @@ export class RxService {
       pharmacy_org_id: rx.pharmacyOrgId,
     }))
 
-    return {
-      items: itemsResponse,
-      next_cursor: hasNext && items[items.length - 1] ? items[items.length - 1]?.id : null,
-    }
+    return this.createPaginatedResponse(
+      itemsResponse,
+      take,
+      (item) => item.id
+    )
   }
 
   async getRx(id: string, claims: RequestClaims): Promise<RxDetailDto> {

@@ -85,7 +85,7 @@ export class LabOrdersService {
           (!query.patientId || order.patientId === query.patientId) &&
           (!query.status || order.status === query.status)
         )
-        return { items: items.slice(0, query.limit), next_cursor: null }
+        return { items: items.slice(0, query.limit), next_cursor: undefined }
       }
 
       const items = await (this.prisma as any).labOrder?.findMany({
@@ -98,7 +98,7 @@ export class LabOrdersService {
         take: query.limit
       })
 
-      return { items: items || [], next_cursor: null }
+      return { items: items || [], next_cursor: undefined }
     } catch (error) {
       logger.error({
         action: 'LIST_LAB_ORDERS_FAILED',

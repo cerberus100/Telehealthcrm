@@ -1,66 +1,89 @@
-import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common'
+import { Injectable, NestMiddleware, UnauthorizedException, Inject, forwardRef } from '@nestjs/common'
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import type { RequestClaims } from '../types/claims'
+import { CognitoService, CognitoUser } from '../auth/cognito.service'
+import { logger } from '../utils/logger'
 
 @Injectable()
 export class ClaimsMiddleware implements NestMiddleware<FastifyRequest, FastifyReply> {
-  use(req: FastifyRequest, _res: FastifyReply, next: (err?: unknown) => void) {
-    const auth = req.headers['authorization']
-    
-    if (!auth || !auth.startsWith('Bearer ')) {
-      // For now, fall back to header-based auth for development
-      const orgId = (req.headers['x-org-id'] as string | undefined) ?? ''
-      const role = (req.headers['x-role'] as string | undefined) ?? 'SUPPORT'
-      const purposeOfUse = req.headers['x-purpose'] as string | undefined
-      const sub = (req.headers['x-user-id'] as string | undefined) ?? ''
+  constructor(
+    @Inject(forwardRef(() => CognitoService))
+    private readonly cognitoService: CognitoService
+  ) {}
 
-      const claims: RequestClaims = { 
-        orgId, 
-        role: role as RequestClaims['role'], 
-        purposeOfUse,
-        sub
+  async use(req: FastifyRequest, _res: FastifyReply, next: (err?: unknown) => void) {
+    try {
+      const auth = req.headers['authorization']
+
+      if (!auth || !auth.startsWith('Bearer ')) {
+        // Only allow missing auth for specific public routes in development
+        const publicRoutes = ['health', 'auth/login', 'auth/refresh', 'auth/logout', 'auth/verify-email']
+        const isPublicRoute = publicRoutes.some(route => req.routeOptions.url?.includes(route))
+
+        if (process.env.NODE_ENV === 'development' && isPublicRoute) {
+          // Set default claims for public routes in development
+          const claims: RequestClaims = {
+            orgId: 'demo-org',
+            role: 'SUPPORT',
+            purposeOfUse: undefined,
+            sub: 'anonymous'
+          }
+          ;(req as any).claims = claims
+          req.headers['x-rls-org-id'] = claims.orgId
+          next()
+          return
+        }
+
+        logger.warn({
+          action: 'MISSING_AUTH_HEADER',
+          path: req.routeOptions.url,
+          method: req.method,
+        })
+        throw new UnauthorizedException('Authorization header required')
       }
-      ;(req as any).claims = claims
 
-      // These headers can be forwarded to the DB proxy to SET Postgres settings for RLS, if applicable.
-      req.headers['x-rls-org-id'] = orgId
-      if (purposeOfUse) req.headers['x-rls-purpose'] = purposeOfUse
-      req.headers['x-rls-role'] = role
+      // Validate JWT token
+      const token = auth.replace('Bearer ', '')
+      const user = await this.cognitoService.validateToken(token)
+
+      // Convert to claims format
+      const claims: RequestClaims = {
+        orgId: user.org_id,
+        role: user.role as RequestClaims['role'],
+        purposeOfUse: user.purpose_of_use,
+        sub: user.sub
+      }
+
+      // Attach claims to request
+      ;(req as any).claims = claims
+      ;(req as any).user = user
+
+      // Set RLS headers for database
+      req.headers['x-rls-org-id'] = user.org_id
+      if (user.purpose_of_use) req.headers['x-rls-purpose'] = user.purpose_of_use
+      req.headers['x-rls-role'] = user.role
+
+      logger.info({
+        action: 'CLAIMS_EXTRACTED',
+        user_id: user.sub,
+        org_id: user.org_id,
+        role: user.role,
+        path: req.routeOptions.url,
+        method: req.method,
+      })
 
       next()
-      return
-    }
-
-    // TODO: Replace with Cognito JWT validation
-    // For now, parse mock tokens
-    const token = auth.replace('Bearer ', '')
-    
-    if (token.startsWith('mock_access_')) {
-      const tokenParts = token.split('_')
-      if (tokenParts.length >= 3) {
-        const userId = tokenParts[2]
-        const orgId = (req.headers['x-org-id'] as string | undefined) ?? ''
-        const role = (req.headers['x-role'] as string | undefined) ?? 'SUPPORT'
-        const purposeOfUse = req.headers['x-purpose'] as string | undefined
-
-        const claims: RequestClaims = { 
-          orgId, 
-          role: role as RequestClaims['role'], 
-          purposeOfUse,
-          sub: userId
+    } catch (error) {
+      logger.warn({
+        action: 'CLAIMS_EXTRACTION_FAILED',
+        error: (error as Error).message,
+        path: req.routeOptions.url,
+        method: req.method,
+        headers: {
+          has_auth: !!req.headers['authorization'],
         }
-        ;(req as any).claims = claims
-
-        // These headers can be forwarded to the DB proxy to SET Postgres settings for RLS, if applicable.
-        req.headers['x-rls-org-id'] = orgId
-        if (purposeOfUse) req.headers['x-rls-purpose'] = purposeOfUse
-        req.headers['x-rls-role'] = role
-
-        next()
-        return
-      }
+      })
+      throw error
     }
-
-    throw new UnauthorizedException('Invalid authorization token')
   }
 }

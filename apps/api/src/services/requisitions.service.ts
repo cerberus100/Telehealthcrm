@@ -32,10 +32,10 @@ export class RequisitionsService {
         createdAt: v.meta.createdAt,
       }))
       items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-      return { items, next_cursor: null }
+      return { items, next_cursor: undefined }
     }
     const items = await (this.prisma as any).requisitionTemplate.findMany?.({ orderBy: { createdAt: 'desc' } })
-    return { items: items ?? [], next_cursor: null }
+    return { items: items ?? [], next_cursor: undefined }
   }
 
   async uploadTemplate(params: { file: any; labName: string; title: string }) {

@@ -29,43 +29,91 @@ export function useRealtime(): RealtimeHook {
   const [notification, setNotification] = useState<RealtimeEvent | null>(null)
   const socketRef = useRef<Socket | null>(null)
 
+  // Extend Socket interface to include our custom properties
+  interface ExtendedSocket extends Socket {
+    heartbeatInterval?: NodeJS.Timeout
+  }
+
   useEffect(() => {
     // Only connect if authenticated
     if (!token || !orgId) return
-    
-    // Prefer an explicit env var; otherwise default to the production ALB over TLS.
-    // Using HTTPS here ensures the client upgrades to WSS for socket.io and avoids mixed-content blocks.
-    const wsUrl = (process.env.NEXT_PUBLIC_WS_URL || 'https://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com')
-    
-    const socket = io(`${wsUrl}/realtime`, {
-      transports: ['websocket'],
-      timeout: 10000,
+
+    // Use environment variable for WebSocket URL, fallback to API base URL
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telehealth-alb-prod-422934810.us-east-1.elb.amazonaws.com'
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || apiBaseUrl.replace(/^https?:\/\//, '')
+
+    console.log('Connecting to WebSocket:', `https://${wsUrl}`)
+
+    const socket = io(`https://${wsUrl}`, {
+      path: '/socket.io',
+      transports: ['websocket', 'polling'], // Support both WebSocket and polling fallback
+      timeout: 20000,
+      forceNew: true,
       auth: {
-        token: `${token.split('_')[2] || 'demo'}|${orgId}|${role}` // Demo token format
+        token: token // Send the actual JWT token from server
+      },
+      query: {
+        orgId: orgId || 'unknown',
+        role: role || 'SUPPORT'
       }
     })
 
     socket.on('connect', () => {
       console.log('WebSocket connected to realtime gateway')
       setConnected(true)
-      
-      // Auto-subscribe to relevant channels based on role
+
+      // Send initial health check
+      socket.emit('health', {})
+
+      // Auto-subscribe to relevant topics based on role
       if (role === 'DOCTOR') {
-        socket.emit('subscribe', { room: 'calls' })
-        socket.emit('subscribe', { room: 'lab-results' })
+        socket.emit('subscribe', { topics: ['CONSULT_STATUS_CHANGE', 'RX_STATUS_CHANGE'] })
       } else if (role === 'MARKETER') {
-        socket.emit('subscribe', { room: 'approvals' })
-        socket.emit('subscribe', { room: 'intake-submissions' })
+        socket.emit('subscribe', { topics: ['CONSULT_STATUS_CHANGE', 'SHIPMENT_UPDATE'] })
+      } else if (role === 'PHARMACIST') {
+        socket.emit('subscribe', { topics: ['RX_STATUS_CHANGE'] })
+      } else if (role === 'LAB_TECH') {
+        socket.emit('subscribe', { topics: ['SHIPMENT_UPDATE'] })
+      } else {
+        // Default subscription for other roles
+        socket.emit('subscribe', { topics: ['SYSTEM_ALERT'] })
       }
+
+      // Start heartbeat
+      const heartbeatInterval = setInterval(() => {
+        socket.emit('heartbeat', { timestamp: Date.now() })
+      }, 30000) // Send heartbeat every 30 seconds
+
+      // Store interval for cleanup
+      socketRef.current = socket as ExtendedSocket
+      ;(socket as ExtendedSocket).heartbeatInterval = heartbeatInterval
     })
 
-    socket.on('disconnect', () => {
-      console.log('WebSocket disconnected')
+    socket.on('disconnect', (reason) => {
+      console.log('WebSocket disconnected:', reason)
+      setConnected(false)
+      setLastEvent(null)
+      setScreenPop(null)
+      setApprovalUpdate(null)
+      setNotification(null)
+    })
+
+    socket.on('connect_error', (error) => {
+      console.error('WebSocket connection error:', error)
       setConnected(false)
     })
 
     socket.on('error', (error) => {
       console.error('WebSocket error:', error)
+    })
+
+    socket.on('health_response', (data) => {
+      console.log('WebSocket health response:', data)
+    })
+
+    socket.on('heartbeat_ack', (data) => {
+      // Heartbeat acknowledged, connection is healthy
+      console.log('Heartbeat acknowledged:', data)
     })
 
     // Listen for specific event types
@@ -107,19 +155,26 @@ export function useRealtime(): RealtimeHook {
     socketRef.current = socket
 
     return () => {
-      socket.disconnect()
+      if (socketRef.current) {
+        const extendedSocket = socketRef.current as ExtendedSocket
+        if (extendedSocket.heartbeatInterval) {
+          clearInterval(extendedSocket.heartbeatInterval)
+        }
+        socket.disconnect()
+        socketRef.current = null
+      }
     }
   }, [token, role, orgId])
 
   const subscribe = (topic: string) => {
     if (socketRef.current?.connected) {
-      socketRef.current.emit('subscribe', { room: topic })
+      (socketRef.current as ExtendedSocket).emit('subscribe', { topics: [topic] })
     }
   }
 
   const unsubscribe = (topic: string) => {
     if (socketRef.current?.connected) {
-      socketRef.current.emit('unsubscribe', { room: topic })
+      (socketRef.current as ExtendedSocket).emit('unsubscribe', { topics: [topic] })
     }
   }
 

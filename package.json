@@ -8,10 +8,13 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "build:check": "turbo run build && node scripts/check-bundle.js",
     "dev": "turbo run dev --parallel",
     "start:dev": "cd apps/api && npm run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "test:e2e": "cd apps/web && npx playwright test",
+    "test:load": "k6 run scripts/load-test.js",
     "format": "prettier --write ."
   },
   "devDependencies": {

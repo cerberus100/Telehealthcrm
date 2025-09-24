@@ -159,21 +159,21 @@ export class RbacMiddleware implements NestMiddleware<FastifyRequest, FastifyRep
       'Auth': {
         resource: 'Auth',
         action,
-        requiredRoles: ['SUPER_ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR', 'PHARMACIST', 'LAB_TECH'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR', 'PHARMACIST', 'LAB_TECH'],
       },
 
       // Health endpoints
       'Health': {
         resource: 'Health',
         action,
-        requiredRoles: ['SUPER_ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR', 'PHARMACIST', 'LAB_TECH'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR', 'PHARMACIST', 'LAB_TECH'],
       },
 
       // Consult endpoints
       'Consult': {
         resource: 'Consult',
         action,
-        requiredRoles: ['SUPER_ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR'],
         requirePurposeOfUse: action === 'read' || action === 'update',
       },
 
@@ -181,14 +181,14 @@ export class RbacMiddleware implements NestMiddleware<FastifyRequest, FastifyRep
       'Shipment': {
         resource: 'Shipment',
         action,
-        requiredRoles: ['SUPER_ADMIN', 'MARKETER_ADMIN', 'MARKETER'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN', 'MARKETER_ADMIN', 'MARKETER'],
       },
 
       // Rx endpoints (provider/pharmacy only)
       'Rx': {
         resource: 'Rx',
         action,
-        requiredRoles: ['SUPER_ADMIN', 'DOCTOR', 'PHARMACIST'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
         requirePurposeOfUse: true,
       },
 
@@ -196,28 +196,28 @@ export class RbacMiddleware implements NestMiddleware<FastifyRequest, FastifyRep
       'Notification': {
         resource: 'Notification',
         action,
-        requiredRoles: ['SUPER_ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR', 'PHARMACIST', 'LAB_TECH'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN', 'MARKETER_ADMIN', 'MARKETER', 'DOCTOR', 'PHARMACIST', 'LAB_TECH'],
       },
 
       // Admin endpoints
       'User': {
         resource: 'User',
         action,
-        requiredRoles: ['SUPER_ADMIN', 'MARKETER_ADMIN'],
-        allowCrossOrg: resource === 'User' && action === 'read' && ['SUPER_ADMIN'].includes('SUPER_ADMIN'),
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN', 'MARKETER_ADMIN'],
+        allowCrossOrg: true, // Allow cross-org for user management
       },
 
       'Organization': {
         resource: 'Organization',
         action,
-        requiredRoles: ['SUPER_ADMIN'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN'],
         allowCrossOrg: true,
       },
 
       'Admin': {
         resource: 'Admin',
         action,
-        requiredRoles: ['SUPER_ADMIN'],
+        requiredRoles: ['SUPER_ADMIN', 'ADMIN'],
         allowCrossOrg: true,
       },
     }
@@ -225,7 +225,7 @@ export class RbacMiddleware implements NestMiddleware<FastifyRequest, FastifyRep
     return rules[resource] || {
       resource,
       action,
-      requiredRoles: ['SUPER_ADMIN'],
+      requiredRoles: ['SUPER_ADMIN', 'ADMIN'],
     }
   }
 
@@ -236,7 +236,7 @@ export class RbacMiddleware implements NestMiddleware<FastifyRequest, FastifyRep
     // For GET requests, ensure org_id is set from user claims
     if (req.method === 'GET') {
       const query = req.query as any
-      if (query.org_id && query.org_id !== user.org_id && !this.cognitoService.isSuperAdmin(user)) {
+      if (query.org_id && query.org_id !== user.org_id && !this.cognitoService.isSuperAdmin(user) && !this.cognitoService.hasRole(user, 'ADMIN')) {
         logger.warn({
           action: 'CROSS_ORG_ACCESS_ATTEMPT',
           user_id: user.sub,
@@ -251,7 +251,7 @@ export class RbacMiddleware implements NestMiddleware<FastifyRequest, FastifyRep
     // For POST/PUT/PATCH requests, ensure org_id is set from user claims
     if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
       const body = req.body as any
-      if (body.org_id && body.org_id !== user.org_id && !this.cognitoService.isSuperAdmin(user)) {
+      if (body.org_id && body.org_id !== user.org_id && !this.cognitoService.isSuperAdmin(user) && !this.cognitoService.hasRole(user, 'ADMIN')) {
         logger.warn({
           action: 'CROSS_ORG_MODIFICATION_ATTEMPT',
           user_id: user.sub,
