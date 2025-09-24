@@ -44,6 +44,9 @@ interface AuthenticatedSocket extends Socket {
     origin: [
       'https://main.*.amplifyapp.com',
       'http://localhost:3000',
+      'https://app.eudaura.com',
+      'https://www.eudaura.com',
+      'https://eudaura.com',
     ],
     credentials: false,
   },

@@ -44,6 +44,9 @@ async function bootstrap() {
     'http://127.0.0.1:3000',
     'http://localhost:3000',
     'https://main.*.amplifyapp.com',
+    'https://app.eudaura.com',
+    'https://www.eudaura.com',
+    'https://eudaura.com',
   ])
 
   await app.register(cors as any, {
