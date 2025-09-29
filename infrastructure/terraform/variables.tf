@@ -176,3 +176,16 @@ variable "api_image_identifier" {
   type        = string
   default     = ""
 }
+
+# SES Email Configuration
+variable "ses_from_email" {
+  description = "SES from email address for sending OTP and notifications"
+  type        = string
+  default     = "noreply@eudaura.com"
+}
+
+variable "admin_email" {
+  description = "Admin email address for seeding and notifications"
+  type        = string
+  default     = "admin@eudaura.com"
+}

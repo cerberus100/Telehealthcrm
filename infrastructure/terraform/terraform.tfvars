@@ -50,3 +50,7 @@ certificate_arn = ""
 
 # API Configuration
 api_image_identifier = "337909762852.dkr.ecr.us-east-1.amazonaws.com/telehealth-api:latest"
+
+# SES Email Configuration
+ses_from_email = "noreply@eudaura.com"
+admin_email = "admin@eudaura.com"
