@@ -78,12 +78,16 @@ resource "aws_iam_role_policy" "app_runner_instance_policy" {
       {
         Effect = "Allow"
         Action = [
-          "kms:Decrypt"
+          "kms:Decrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey"
         ]
         Resource = [
           aws_kms_key.rds.arn,
           aws_kms_key.redis.arn,
-          aws_kms_key.s3.arn
+          aws_kms_key.s3.arn,
+          aws_kms_key.dynamodb.arn,
+          aws_kms_key.sns.arn
         ]
       },
       {
@@ -124,6 +128,40 @@ resource "aws_iam_role_policy" "app_runner_instance_policy" {
           "elasticache:DescribeCacheClusters"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem"
+        ]
+        Resource = [
+          aws_dynamodb_table.patient_provisional.arn,
+          "${aws_dynamodb_table.patient_provisional.arn}/index/*",
+          aws_dynamodb_table.clinician_applications.arn,
+          "${aws_dynamodb_table.clinician_applications.arn}/index/*",
+          aws_dynamodb_table.audit_logs.arn,
+          "${aws_dynamodb_table.audit_logs.arn}/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail",
+          "ses:SendTemplatedEmail"
+        ]
+        Resource = [
+          aws_ses_email_identity.noreply.arn,
+          aws_ses_email_identity.admin.arn,
+          aws_ses_configuration_set.main.arn
+        ]
       }
     ]
   })
@@ -290,6 +328,34 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "AMPLIFY_APP_ID"
           value = "d1o2jv5ahrim0e"
+        },
+        {
+          name  = "AWS_DYNAMO_TABLE"
+          value = aws_dynamodb_table.patient_provisional.name
+        },
+        {
+          name  = "AWS_AUDIT_TABLE"
+          value = aws_dynamodb_table.audit_logs.name
+        },
+        {
+          name  = "AWS_CLINICIAN_TABLE"
+          value = aws_dynamodb_table.clinician_applications.name
+        },
+        {
+          name  = "AWS_S3_UPLOAD_BUCKET"
+          value = aws_s3_bucket.documents.bucket
+        },
+        {
+          name  = "SES_FROM_EMAIL"
+          value = var.ses_from_email
+        },
+        {
+          name  = "SES_CONFIGURATION_SET"
+          value = aws_ses_configuration_set.main.name
+        },
+        {
+          name  = "SEED_ADMIN_EMAIL"
+          value = var.admin_email
         }
       ]
       secrets = [

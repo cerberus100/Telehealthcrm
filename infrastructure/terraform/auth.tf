@@ -5,12 +5,12 @@
 # Cognito User Pool (existing - not managed by Terraform)
 # This resource exists in AWS but is not managed by Terraform to avoid breaking existing users
 data "aws_cognito_user_pool" "main" {
-  user_pool_id = "us-east-1_iN4LMb5az"
+  user_pool_id = "us-east-1_yBMYJzyA1"
 }
 
 # Cognito User Pool Client (existing - not managed by Terraform)
 data "aws_cognito_user_pool_client" "main" {
-  client_id   = "6oftnb8tps7982js5t00dtdf90"
+  client_id    = "crsnkji5f4i7f7v739tf6ef0u"
   user_pool_id = data.aws_cognito_user_pool.main.id
 }
 
