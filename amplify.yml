@@ -7,13 +7,13 @@ applications:
       phases:
         preBuild:
           commands:
-            - echo "Starting preBuild phase"
-            - npm ci --prefer-offline
+            - echo "Starting preBuild phase in apps/web directory"
         build:
           commands:
-            - echo "Starting build phase"
-            - cd apps/web
-            - echo "Building Next.js app from $(pwd)"
+            - echo "Starting Next.js build in $(pwd)"
+            - echo "Current directory contents:"
+            - ls -la
+            - echo "Running Next.js build..."
             - npm run build
         postBuild:
           commands:
@@ -24,4 +24,4 @@ applications:
           - "**/*"
       cache:
         paths:
-          - node_modules/**/*
+          - ../node_modules/**/*
