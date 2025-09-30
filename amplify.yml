@@ -14,13 +14,13 @@ applications:
           commands:
             - echo "Starting build phase"
             - cd ../..
-            - echo "Current directory: $(pwd)"
-            - echo "Node version: $(node --version)"
-            - echo "NPM version: $(npm --version)"
+            - 'echo "Current directory: $(pwd)"'
+            - 'echo "Node version: $(node --version)"'
+            - 'echo "NPM version: $(npm --version)"'
             - echo "Available scripts:"
             - npm run
             - echo "Running turbo build..."
-            - npx turbo run build --filter=web --verbose
+            - npx turbo run build --filter=web
         postBuild:
           commands:
             - echo "Build completed successfully"
