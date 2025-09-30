@@ -7,12 +7,14 @@ applications:
       phases:
         preBuild:
           commands:
-            - echo "Installing dependencies"
-            - npm ci --prefer-offline
+            - echo "Enabling pnpm via corepack"
+            - corepack enable
+            - echo "Installing dependencies with pnpm"
+            - pnpm install --frozen-lockfile
         build:
           commands:
-            - echo "Running Next.js build..."
-            - npm run build
+            - echo "Building Next.js web workspace via pnpm"
+            - pnpm --filter web run build
         postBuild:
           commands:
             - echo "Build completed successfully"
