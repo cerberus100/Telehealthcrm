@@ -356,6 +356,22 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "SEED_ADMIN_EMAIL"
           value = var.admin_email
+        },
+        {
+          name  = "VIDEO_RECORDINGS_BUCKET"
+          value = aws_s3_bucket.video_recordings.bucket
+        },
+        {
+          name  = "VIDEO_JWT_KMS_KEY_ID"
+          value = aws_kms_key.video_jwt_signing.id
+        },
+        {
+          name  = "VIDEO_RECORDINGS_KMS_KEY_ARN"
+          value = aws_kms_key.video_recordings.arn
+        },
+        {
+          name  = "CHIME_SDK_ENABLED"
+          value = "true"
         }
       ]
       secrets = [
@@ -586,6 +602,85 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
           "cognito-idp:ListUsers"
         ]
         Resource = data.aws_cognito_user_pool.main.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = [
+          aws_dynamodb_table.patient_provisional.arn,
+          "${aws_dynamodb_table.patient_provisional.arn}/index/*",
+          aws_dynamodb_table.audit_logs.arn,
+          "${aws_dynamodb_table.audit_logs.arn}/index/*",
+          aws_dynamodb_table.clinician_applications.arn,
+          "${aws_dynamodb_table.clinician_applications.arn}/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "${aws_s3_bucket.documents.arn}/*",
+          aws_s3_bucket.documents.arn,
+          "${aws_s3_bucket.video_recordings.arn}/*",
+          aws_s3_bucket.video_recordings.arn
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey",
+          "kms:DescribeKey",
+          "kms:Sign",
+          "kms:Verify"
+        ]
+        Resource = [
+          aws_kms_key.dynamodb.arn,
+          aws_kms_key.video_jwt_signing.arn,
+          aws_kms_key.video_recordings.arn
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "chime:CreateMeeting",
+          "chime:DeleteMeeting",
+          "chime:GetMeeting",
+          "chime:ListMeetings",
+          "chime:CreateAttendee",
+          "chime:DeleteAttendee",
+          "chime:GetAttendee",
+          "chime:ListAttendees"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = aws_sns_topic.ses_notifications.arn
       }
     ]
   })
