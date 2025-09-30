@@ -8,27 +8,22 @@ applications:
         preBuild:
           commands:
             - echo "Starting preBuild phase"
-            - cd ../..
-            - npm ci --prefer-offline
         build:
           commands:
-            - echo "Starting build phase"
-            - cd ../..
-            - 'echo "Current directory: $(pwd)"'
-            - 'echo "Node version: $(node --version)"'
-            - 'echo "NPM version: $(npm --version)"'
-            - echo "Available scripts:"
-            - npm run
-            - echo "Running turbo build..."
-            - npx turbo run build --filter=web
+            - echo "Starting build phase - checking if we can run next build directly"
+            - cd apps/web
+            - echo "Current directory: $(pwd)"
+            - echo "Node version: $(node --version)"
+            - echo "NPM version: $(npm --version)"
+            - ls -la
+            - npm run build
         postBuild:
           commands:
             - echo "Build completed successfully"
       artifacts:
-        baseDirectory: apps/web/.next
+        baseDirectory: .next
         files:
           - "**/*"
       cache:
         paths:
           - node_modules/**/*
-          - apps/web/node_modules/**/*
