@@ -14,7 +14,7 @@ applications:
           commands:
             - echo "Starting build phase"
             - cd ../..
-            - npm run build --workspace=apps/web
+            - npx turbo run build --filter=web
         postBuild:
           commands:
             - echo "Build completed successfully"
