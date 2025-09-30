@@ -12,9 +12,9 @@ applications:
           commands:
             - echo "Starting build phase - checking if we can run next build directly"
             - cd apps/web
-            - echo "Current directory: $(pwd)"
-            - echo "Node version: $(node --version)"
-            - echo "NPM version: $(npm --version)"
+            - 'echo "Current directory: $(pwd)"'
+            - 'echo "Node version: $(node --version)"'
+            - 'echo "NPM version: $(npm --version)"'
             - ls -la
             - npm run build
         postBuild:
