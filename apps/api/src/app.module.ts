@@ -57,6 +57,10 @@ import { DuplicateCheckController } from './controllers/duplicate-check.controll
 import { DuplicateCheckService } from './services/duplicate-check.service'
 import { CorsConfigService } from './config/cors.config'
 import { RateLimitConfigService } from './config/rate-limit.config'
+import { VideoVisitsController } from './controllers/video-visits.controller'
+import { VideoVisitService } from './services/video-visit.service'
+import { VideoTokenService } from './services/video-token.service'
+import { VideoNotificationService } from './services/video-notification.service'
 
 @Module({
   imports: [
@@ -93,7 +97,8 @@ import { RateLimitConfigService } from './config/rate-limit.config'
     LabOrdersController,
     EventsController,
     MarketerController,
-    DuplicateCheckController
+    DuplicateCheckController,
+    VideoVisitsController
   ],
   providers: [
     PrismaService,
@@ -120,6 +125,9 @@ import { RateLimitConfigService } from './config/rate-limit.config'
     DuplicateCheckService,
     CorsConfigService,
     RateLimitConfigService,
+    VideoVisitService,
+    VideoTokenService,
+    VideoNotificationService,
     JwtMiddleware,
     RbacMiddleware,
     TenantMiddleware,
@@ -151,7 +159,9 @@ export class AppModule {
         'connect/call-notes',
         'intake/:linkId',
         'intake/:linkId/form',
-        'duplicate-check/medicare'
+        'duplicate-check/medicare',
+        'api/token/redeem',
+        'api/visits/:id/start'
       )
       .forRoutes('*')
       .apply(ClaimsMiddleware)
@@ -169,7 +179,9 @@ export class AppModule {
         'connect/call-notes',
         'intake/:linkId',
         'intake/:linkId/form',
-        'duplicate-check/medicare'
+        'duplicate-check/medicare',
+        'api/token/redeem',
+        'api/visits/:id/start'
       )
   }
 }

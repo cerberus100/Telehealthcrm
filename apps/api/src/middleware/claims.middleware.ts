@@ -1,8 +1,9 @@
 import { Injectable, NestMiddleware, UnauthorizedException, Inject, forwardRef } from '@nestjs/common'
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import type { RequestClaims } from '../types/claims'
-import { CognitoService, CognitoUser } from '../auth/cognito.service'
+import { CognitoService } from '../auth/cognito.service'
 import { logger } from '../utils/logger'
+import { bootstrapServiceLocator } from '../utils/service-locator'
 
 @Injectable()
 export class ClaimsMiddleware implements NestMiddleware<FastifyRequest, FastifyReply> {

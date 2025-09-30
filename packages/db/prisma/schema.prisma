@@ -64,6 +64,9 @@ model User {
   statesLicensed Json?   @map("states_licensed") // Array of state codes
   availability  Json?    @map("availability_schedule") // Days/hours schedule
   
+  // Video visits as clinician
+  videoVisitsAsClinician VideoVisit[] @relation("videoVisitsAsClinician")
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([orgId])
@@ -98,6 +101,7 @@ model Patient {
   piiTokenId        String?  @db.VarChar(128)
   consults          Consult[]
   duplicateLinks    PatientDuplicateLink[]
+  videoVisits       VideoVisit[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   @@index([orgId])
@@ -570,4 +574,194 @@ model ProviderOnboarding {
   @@index([email])
   @@index([status, createdAt])
   @@map("provider_onboarding")
+}
+
+// ============================================
+// VIDEO VISIT SYSTEM (HIPAA/SOC2 Compliant)
+// ============================================
+
+enum VideoVisitStatus {
+  SCHEDULED    // Visit created, not yet started
+  ACTIVE       // Visit in progress
+  COMPLETED    // Visit ended normally
+  CANCELLED    // Cancelled before start
+  NO_SHOW      // Patient didn't join
+  TECHNICAL    // Ended due to technical issues
+}
+
+model VideoVisit {
+  id                String           @id @default(uuid())
+  
+  // Participants
+  patientId         String           @map("patient_id")
+  patient           Patient          @relation(fields: [patientId], references: [id])
+  clinicianId       String           @map("clinician_id")
+  clinician         User             @relation("videoVisitsAsClinician", fields: [clinicianId], references: [id])
+  
+  // Scheduling
+  scheduledAt       DateTime         @map("scheduled_at")
+  duration          Int              @default(30) // Minutes
+  timezone          String           @default("America/New_York")
+  
+  // Status tracking
+  status            VideoVisitStatus @default(SCHEDULED)
+  startedAt         DateTime?        @map("started_at")
+  endedAt           DateTime?        @map("ended_at")
+  actualDuration    Int?             @map("actual_duration") // Actual minutes
+  
+  // Connect integration
+  connectContactId  String?          @unique @map("connect_contact_id")
+  connectInstanceId String?          @map("connect_instance_id")
+  meetingId         String?          @unique @map("meeting_id") // Chime meeting ID
+  
+  // Notification tracking (HIPAA: delivery confirmation)
+  notificationChannel String?        @map("notification_channel") // sms|email|both
+  smsMessageId      String?          @map("sms_message_id")
+  smsDeliveredAt    DateTime?        @map("sms_delivered_at")
+  emailMessageId    String?          @map("email_message_id")
+  emailDeliveredAt  DateTime?        @map("email_delivered_at")
+  emailOpenedAt     DateTime?        @map("email_opened_at")
+  
+  // Visit metadata (encrypted at rest via KMS)
+  visitType         String?          @map("visit_type") // initial|follow-up|urgent
+  chiefComplaint    String?          @map("chief_complaint") @db.Text // Encrypted
+  clinicalNotes     String?          @map("clinical_notes") @db.Text // Encrypted
+  
+  // Participant join tracking
+  patientJoinedAt   DateTime?        @map("patient_joined_at")
+  clinicianJoinedAt DateTime?        @map("clinician_joined_at")
+  participants      Json?            @map("participants") // Array of {role, joinedAt, leftAt}
+  
+  // Recording (opt-in only, WORM compliance)
+  recordingEnabled  Boolean          @default(false) @map("recording_enabled")
+  recordingS3Key    String?          @map("recording_s3_key")
+  recordingKmsKeyId String?          @map("recording_kms_key_id")
+  
+  // Quality metrics
+  networkQuality    Json?            @map("network_quality") // {patient, clinician}
+  deviceInfo        Json?            @map("device_info") // Browser, OS, camera/mic
+  
+  // Audit trail
+  createdBy         String?          @map("created_by")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  
+  // Relations
+  tokens            OneTimeToken[]
+  auditLogs         VideoAuditLog[]
+  
+  // Indexes for performance
+  @@index([patientId, scheduledAt])
+  @@index([clinicianId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@index([scheduledAt]) // For cleanup jobs
+  @@map("video_visits")
+}
+
+enum TokenStatus {
+  ACTIVE      // Token is valid and unused
+  REDEEMED    // Token has been used
+  EXPIRED     // Token expired (TTL passed)
+  REVOKED     // Manually revoked (e.g., visit cancelled)
+}
+
+model OneTimeToken {
+  id                String       @id @default(uuid()) // This is the JWT jti claim
+  
+  // Associated visit
+  visitId           String       @map("visit_id")
+  visit             VideoVisit   @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  
+  // Token metadata
+  role              String       @map("role") // patient|clinician
+  status            TokenStatus  @default(ACTIVE)
+  nonce             String       @map("nonce") @db.VarChar(64) // Random 32-byte hex
+  
+  // Lifecycle timestamps
+  issuedAt          DateTime     @map("issued_at")
+  expiresAt         DateTime     @map("expires_at") // 20-30 min TTL
+  redeemedAt        DateTime?    @map("redeemed_at")
+  
+  // Single-use enforcement (HIPAA: access control)
+  usageCount        Int          @default(0) @map("usage_count")
+  maxUsageCount     Int          @default(1) @map("max_usage_count")
+  
+  // Security: bind to first redemption context
+  redemptionIP      String?      @map("redemption_ip") @db.VarChar(45) // IPv6-compatible
+  redemptionUA      String?      @map("redemption_ua") @db.Text // User agent
+  issuedToIP        String?      @map("issued_to_ip") @db.VarChar(45)
+  issuedToUA        String?      @map("issued_to_ua") @db.Text
+  
+  // Short link mapping
+  shortCode         String?      @unique @map("short_code") @db.VarChar(8)
+  
+  // Audit trail
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  
+  // Indexes
+  @@index([visitId, role])
+  @@index([status, expiresAt]) // For cleanup jobs
+  @@index([expiresAt]) // TTL queries
+  @@map("one_time_tokens")
+}
+
+enum VideoAuditEventType {
+  VISIT_SCHEDULED           // Visit created
+  TOKEN_ISSUED              // Join link generated
+  TOKEN_REDEEMED            // Token used to join
+  TOKEN_EXPIRED             // Token expired unused
+  TOKEN_REVOKED             // Token manually revoked
+  NOTIFICATION_SENT         // SMS/Email sent
+  NOTIFICATION_DELIVERED    // Delivery confirmed
+  NOTIFICATION_FAILED       // Delivery failed
+  VISIT_STARTED             // Connect session started
+  PARTICIPANT_JOINED        // Patient/clinician joined
+  PARTICIPANT_LEFT          // Participant left
+  VISIT_ENDED               // Visit ended
+  LINK_RESENT               // New link requested
+  RECORDING_STARTED         // Recording started (if enabled)
+  RECORDING_STOPPED         // Recording stopped
+  TECHNICAL_ISSUE           // Technical problem logged
+}
+
+model VideoAuditLog {
+  id                String               @id @default(uuid())
+  
+  // Event details
+  eventType         VideoAuditEventType  @map("event_type")
+  timestamp         DateTime             @default(now()) @map("timestamp")
+  
+  // Context (HIPAA: who/what/when/where)
+  visitId           String?              @map("visit_id")
+  visit             VideoVisit?          @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  tokenId           String?              @map("token_id")
+  actorId           String?              @map("actor_id") // userId or 'system'
+  actorRole         String?              @map("actor_role") // patient|clinician|system
+  
+  // Technical context
+  ipAddress         String?              @map("ip_address") @db.VarChar(45)
+  userAgent         String?              @map("user_agent") @db.Text
+  
+  // Event metadata (JSON, no PHI)
+  metadata          Json?                @map("metadata")
+  
+  // Error tracking
+  success           Boolean              @default(true)
+  errorCode         String?              @map("error_code")
+  errorMessage      String?              @map("error_message") @db.Text
+  
+  // Compliance: 7-year retention (HIPAA)
+  expiresAt         DateTime             @map("expires_at") // timestamp + 7 years
+  
+  // Immutability: cannot be updated
+  createdAt         DateTime             @default(now()) @map("created_at")
+  
+  // Indexes for audit queries
+  @@index([visitId, timestamp])
+  @@index([tokenId, timestamp])
+  @@index([eventType, timestamp])
+  @@index([actorId, timestamp])
+  @@index([expiresAt]) // For TTL cleanup
+  @@map("video_audit_logs")
 }
