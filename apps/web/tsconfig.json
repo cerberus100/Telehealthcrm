@@ -10,6 +10,10 @@
     "allowJs": true,
     "incremental": true,
     "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"
