@@ -31,4 +31,6 @@ pnpm-debug.log*
 .terraform/
 *.tfstate
 *.tfstate.backup
+*.tfplan*
+tfplan-*
 .terraform.lock.hcl
