@@ -52,7 +52,7 @@ resource "aws_kms_alias" "video_recordings" {
 
 # Video recordings bucket (opt-in, WORM compliance)
 resource "aws_s3_bucket" "video_recordings" {
-  bucket = "telehealth-video-recordings-${var.environment}-${random_id.bucket_suffix.hex}"
+  bucket = "telehealth-video-recordings-${var.environment}-${random_id.suffix.hex}"
   
   tags = {
     Name        = "Video Recordings"
@@ -168,13 +168,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "video_recordings" {
     id     = "archive-old-recordings"
     status = "Enabled"
 
+    filter {
+      prefix = ""
+    }
+
     transition {
       days          = 90
       storage_class = "GLACIER"
     }
 
     expiration {
-      days = 2555  # 7 years
+      days = 2557  # 7 years
     }
   }
 }
@@ -321,13 +325,10 @@ resource "aws_ses_email_identity" "video_sender" {
 # Configuration set for tracking
 resource "aws_ses_configuration_set" "video_notifications" {
   name = "video-visit-notifications-${var.environment}"
+  reputation_metrics_enabled = true
 
   delivery_options {
     tls_policy = "Require"  # TLS 1.2+ only
-  }
-
-  reputation_options {
-    reputation_metrics_enabled = true
   }
 }
 
@@ -336,15 +337,12 @@ resource "aws_ses_event_destination" "video_notifications_cloudwatch" {
   name                   = "cloudwatch-logs"
   configuration_set_name = aws_ses_configuration_set.video_notifications.name
   enabled                = true
-  matching_types         = ["send", "delivery", "bounce", "complaint", "open", "click"]
+  matching_types         = ["send", "delivery", "bounce", "complaint"]
 
   cloudwatch_destination {
-    default_dimension_value = "video-notifications"
-    dimension_configuration {
-      dimension_name          = "ses:configuration-set"
-      dimension_value_source  = "messageTag"
-      default_dimension_value = aws_ses_configuration_set.video_notifications.name
-    }
+    default_value  = "video-notifications"
+    dimension_name = "ses:configuration-set"
+    value_source   = "messageTag"
   }
 }
 
@@ -355,25 +353,27 @@ resource "aws_ses_event_destination" "video_notifications_cloudwatch" {
 # 5. SSM Parameters (App Configuration)
 # --------------------------------------------
 
-resource "aws_ssm_parameter" "connect_instance_id" {
-  name  = "/telehealth/${var.environment}/connect/instance-id"
-  type  = "String"
-  value = aws_connect_instance.main.id  # Reference existing or new instance
+# Connect Instance ID - Set manually after creating Connect instance via Console
+# resource "aws_ssm_parameter" "connect_instance_id" {
+#   name  = "/telehealth/${var.environment}/connect/instance-id"
+#   type  = "String"
+#   value = "PLACEHOLDER"  # Update after creating Connect instance
+#
+#   tags = {
+#     Environment = var.environment
+#   }
+# }
 
-  tags = {
-    Environment = var.environment
-  }
-}
-
-resource "aws_ssm_parameter" "video_flow_id" {
-  name  = "/telehealth/${var.environment}/connect/video-flow-id"
-  type  = "String"
-  value = aws_connect_contact_flow.video_visit.id
-
-  tags = {
-    Environment = var.environment
-  }
-}
+# Video Contact Flow ID - Set manually after importing contact flow via Console
+# resource "aws_ssm_parameter" "video_flow_id" {
+#   name  = "/telehealth/${var.environment}/connect/video-flow-id"
+#   type  = "String"
+#   value = "PLACEHOLDER"  # Update after importing contact flow
+#
+#   tags = {
+#     Environment = var.environment
+#   }
+# }
 
 resource "aws_ssm_parameter" "jwt_kms_key_id" {
   name  = "/telehealth/${var.environment}/security/jwt-key-id"
@@ -402,7 +402,7 @@ resource "aws_ssm_parameter" "recordings_kms_key_arn" {
 # Log group for video visit audit events
 resource "aws_cloudwatch_log_group" "video_audit" {
   name              = "/aws/video-visits/audit-${var.environment}"
-  retention_in_days = 2555  # 7 years
+  retention_in_days = 2557  # 7 years (closest valid value)
 
   kms_key_id = aws_kms_key.video_recordings.arn
 
@@ -521,41 +521,26 @@ output "video_audit_log_group" {
   value       = aws_cloudwatch_log_group.video_audit.name
 }
 
-output "connect_instance_id_ssm" {
-  description = "SSM parameter for Connect instance ID"
-  value       = aws_ssm_parameter.connect_instance_id.name
-}
+# Outputs for Connect instance (commented out until Connect is created)
+# output "connect_instance_id_ssm" {
+#   description = "SSM parameter for Connect instance ID"
+#   value       = aws_ssm_parameter.connect_instance_id.name
+# }
 
-output "video_flow_id_ssm" {
-  description = "SSM parameter for video contact flow ID"
-  value       = aws_ssm_parameter.video_flow_id.name
-}
-
-# --------------------------------------------
-# 9. Data Sources
-# --------------------------------------------
-
-data "aws_caller_identity" "current" {}
-
-resource "random_id" "bucket_suffix" {
-  byte_length = 4
-}
+# output "video_flow_id_ssm" {
+#   description = "SSM parameter for video contact flow ID"
+#   value       = aws_ssm_parameter.video_flow_id.name
+# }
 
 # --------------------------------------------
-# 10. Variables
+# 9. Data Sources & Variables
 # --------------------------------------------
 
-variable "environment" {
-  description = "Environment name (dev/staging/prod)"
-  type        = string
-  default     = "prod"
-}
+# Note: aws_caller_identity and environment/aws_region variables
+# are already defined in main.tf and variables.tf
 
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-east-1"
-}
+# Use random_id from existing infrastructure
+# resource "random_id" "bucket_suffix" already exists as random_id.suffix
 
 variable "ses_sender_email" {
   description = "SES verified sender email"
