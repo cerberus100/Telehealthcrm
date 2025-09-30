@@ -14,14 +14,13 @@ applications:
           commands:
             - cd ../..
             - pnpm --filter=web build
-            - echo "✅ Build completed successfully"
+            - echo "Build completed successfully"
         postBuild:
           commands:
-            - echo "🚀 Production build completed successfully"
-            - echo "📊 Build details:"
-            - echo "  - Environment: ${NODE_ENV}"
-            - echo "  - Build ID: ${AWS_AMPLIFY_BUILD_ID}"
-            - echo "  - Branch: ${AWS_BRANCH}"
+            - echo "Production build completed successfully"
+            - echo "Build details - Environment ${NODE_ENV}"
+            - echo "Build ID ${AWS_AMPLIFY_BUILD_ID}"
+            - echo "Branch ${AWS_BRANCH}"
       artifacts:
         baseDirectory: apps/web/.next
         files:
