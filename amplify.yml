@@ -9,6 +9,9 @@ applications:
           commands:
             - echo "Enabling pnpm via corepack"
             - corepack enable
+            - echo "Preparing pnpm 9.6.0 for non-interactive CI"
+            - corepack prepare pnpm@9.6.0 --activate
+            - export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
             - echo "Installing dependencies with pnpm"
             - pnpm install --frozen-lockfile
         build:
