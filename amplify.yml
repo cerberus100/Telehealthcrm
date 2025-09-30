@@ -7,26 +7,22 @@ applications:
       phases:
         preBuild:
           commands:
-            - npm install -g pnpm@9.6.0
+            - echo "Starting preBuild phase"
             - cd ../..
-            - pnpm install --frozen-lockfile
+            - npm ci --prefer-offline
         build:
           commands:
+            - echo "Starting build phase"
             - cd ../..
-            - pnpm --filter=web build
-            - echo "Build completed successfully"
+            - npm run build --workspace=apps/web
         postBuild:
           commands:
-            - echo "Production build completed successfully"
-            - echo "Build details - Environment ${NODE_ENV}"
-            - echo "Build ID ${AWS_AMPLIFY_BUILD_ID}"
-            - echo "Branch ${AWS_BRANCH}"
+            - echo "Build completed successfully"
       artifacts:
         baseDirectory: apps/web/.next
         files:
-          - '**/*'
+          - "**/*"
       cache:
         paths:
           - node_modules/**/*
           - apps/web/node_modules/**/*
-          - apps/web/.next/cache/**/*
