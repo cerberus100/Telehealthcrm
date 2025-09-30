@@ -8,14 +8,12 @@ applications:
         preBuild:
           commands:
             - echo "Starting preBuild phase"
+            - npm ci --prefer-offline
         build:
           commands:
-            - echo "Starting build phase - checking if we can run next build directly"
+            - echo "Starting build phase"
             - cd apps/web
-            - 'echo "Current directory: $(pwd)"'
-            - 'echo "Node version: $(node --version)"'
-            - 'echo "NPM version: $(npm --version)"'
-            - ls -la
+            - echo "Building Next.js app from $(pwd)"
             - npm run build
         postBuild:
           commands:
