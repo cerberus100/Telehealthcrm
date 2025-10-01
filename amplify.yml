@@ -1,6 +1,7 @@
 version: 1
 applications:
-  - frontend:
+  - appRoot: apps/web
+    frontend:
       runtime-versions:
         nodejs: 20
       phases:
@@ -9,21 +10,23 @@ applications:
             - echo "Installing pnpm globally"
             - npm install -g pnpm@9.6.0
             - echo "Installing dependencies from repo root"
+            - cd ../..
             - pnpm install --frozen-lockfile --prefer-offline --no-optional
         build:
           commands:
-            - echo "Building Next.js web workspace via pnpm"
+            - echo "Building Next.js web workspace"
+            - cd ../..
             - cd apps/web
             - pnpm run build
         postBuild:
           commands:
             - echo "Build completed successfully"
       artifacts:
-        baseDirectory: apps/web/.next
+        baseDirectory: .next
         files:
           - "**/*"
       cache:
         paths:
+          - ../../node_modules/**/*
           - node_modules/**/*
-          - apps/web/node_modules/**/*
-          - apps/web/.next/cache/**/*
+          - .next/cache/**/*
