@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { getEnv } from '../../lib/server/env'
+import { getEnv } from '../../../lib/server/env'
 
 function resolveAllowedOrigins(): string[] {
   const env = getEnv()

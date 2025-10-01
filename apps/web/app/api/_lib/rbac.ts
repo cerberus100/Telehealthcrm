@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { verifyAccessToken } from '../../lib/server/auth'
+import { verifyAccessToken } from '../../../lib/server/auth'
 
 export type Role = 'ADMIN' | 'CLINICIAN' | 'PATIENT'
 
