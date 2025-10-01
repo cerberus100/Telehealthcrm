@@ -129,7 +129,7 @@ export function VideoDevicePreview({ videoClient, onReady, onDevicesSelected }: 
         })
 
         const newVideoTrack = newStream.getVideoTracks()[0]
-        if (newVideoTrack) {
+        if (newVideoTrack && videoTrack) {
           stream.removeTrack(videoTrack)
           stream.addTrack(newVideoTrack)
         }

@@ -6,7 +6,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb'
     },
-    serverComponentsExternalPackages: ['@aws-sdk']
+    serverComponentsExternalPackages: ['@aws-sdk', '@aws-sdk/*', 'jose', 'jsonwebtoken']
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

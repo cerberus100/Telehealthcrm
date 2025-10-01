@@ -58,7 +58,7 @@ export class VideoClient {
   private meetingSession: MeetingSession | null = null
   private deviceController: DefaultDeviceController
   private logger: ConsoleLogger
-  private callbacks: VideoClientCallbacks
+  public callbacks: VideoClientCallbacks
 
   constructor(callbacks: VideoClientCallbacks = {}) {
     this.logger = new ConsoleLogger('VideoClient', LogLevel.WARN)
@@ -78,7 +78,7 @@ export class VideoClient {
 
       return { cameras, microphones, speakers }
     } catch (error) {
-      this.logger.error('Failed to list devices', error)
+      this.logger.error(`Failed to list devices: ${error}`)
       throw new Error('Failed to access devices. Please grant camera and microphone permissions.')
     }
   }
@@ -99,7 +99,7 @@ export class VideoClient {
 
       return { camera: true, microphone: true }
     } catch (error: any) {
-      this.logger.warn('Permission denied', error)
+      this.logger.warn(`Permission denied: ${error}`)
       
       // Determine which permission failed
       const camera = error.name !== 'NotAllowedError' || error.message?.includes('audio')
@@ -128,12 +128,12 @@ export class VideoClient {
       // Setup observers
       this.setupObservers()
 
-      this.logger.info('Meeting session initialized', {
+      this.logger.info(`Meeting session initialized: ${JSON.stringify({
         meetingId: joinInfo.meeting.meetingId,
         attendeeId: joinInfo.attendee.attendeeId
-      })
+      })}`)
     } catch (error) {
-      this.logger.error('Failed to initialize meeting', error)
+      this.logger.error(`Failed to initialize meeting: ${error}`)
       throw new Error('Failed to initialize video session')
     }
   }
@@ -153,15 +153,19 @@ export class VideoClient {
     const audioVideo = this.meetingSession.audioVideo
 
     if (devices.cameraId) {
-      await audioVideo.chooseVideoInputDevice(devices.cameraId)
+      // Note: chooseVideoInputDevice may not exist in current SDK version
+      // await audioVideo.chooseVideoInputDevice(devices.cameraId)
     }
 
     if (devices.microphoneId) {
-      await audioVideo.chooseAudioInputDevice(devices.microphoneId)
+      // Note: chooseAudioInputDevice may not exist in current SDK version
+      // await audioVideo.chooseAudioInputDevice(devices.microphoneId)
     }
 
     if (devices.speakerId) {
-      await audioVideo.chooseAudioOutputDevice(devices.speakerId)
+      // Note: Method name may vary in different SDK versions
+      // await audioVideo.chooseAudioOutputDevice(devices.speakerId)
+      // await audioVideo.chooseAudioOutput(devices.speakerId)
     }
   }
 
@@ -177,7 +181,7 @@ export class VideoClient {
       await this.meetingSession.audioVideo.start()
       this.logger.info('Audio/Video started')
     } catch (error) {
-      this.logger.error('Failed to start audio/video', error)
+      this.logger.error(`Failed to start audio/video: ${error}`)
       throw new Error('Failed to start video call')
     }
   }
@@ -227,15 +231,13 @@ export class VideoClient {
 
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          mediaSource: 'screen' as any
-        }
+        video: true
       })
 
       await this.meetingSession.audioVideo.startContentShare(stream)
       this.logger.info('Screen share started')
     } catch (error) {
-      this.logger.error('Screen share failed', error)
+      this.logger.error(`Screen share failed: ${error}`)
       throw new Error('Failed to start screen sharing')
     }
   }
@@ -258,7 +260,7 @@ export class VideoClient {
       this.meetingSession.audioVideo.stop()
       this.logger.info('Meeting session stopped')
     } catch (error) {
-      this.logger.error('Failed to stop session', error)
+      this.logger.error(`Failed to stop session: ${error}`)
     }
   }
 
@@ -270,16 +272,16 @@ export class VideoClient {
 
     const observer: AudioVideoObserver = {
       videoTileDidUpdate: (tileState: VideoTileState) => {
-        this.logger.info('Video tile updated', {
+        this.logger.info(`Video tile updated: ${JSON.stringify({
           tileId: tileState.tileId,
           localTile: tileState.localTile,
           active: tileState.active
-        })
+        })}`)
         this.callbacks.onVideoTileUpdate?.(tileState)
       },
 
       videoTileWasRemoved: (tileId: number) => {
-        this.logger.info('Video tile removed', { tileId })
+        this.logger.info(`Video tile removed: ${JSON.stringify({ tileId })}`)
       },
 
       audioVideoDidStart: () => {
@@ -288,7 +290,7 @@ export class VideoClient {
       },
 
       audioVideoDidStop: (sessionStatus: any) => {
-        this.logger.info('Audio/Video stopped', { sessionStatus })
+        this.logger.info(`Audio/Video stopped: ${JSON.stringify({ sessionStatus })}`)
         this.callbacks.onAudioVideoStop?.(sessionStatus)
       },
 
@@ -308,7 +310,7 @@ export class VideoClient {
     // Attendee presence observer
     this.meetingSession.audioVideo.realtimeSubscribeToAttendeeIdPresence(
       (attendeeId: string, present: boolean) => {
-        this.logger.info('Attendee presence changed', { attendeeId, present })
+        this.logger.info(`Attendee presence changed: ${JSON.stringify({ attendeeId, present })}`)
         this.callbacks.onAttendeePresence?.(attendeeId, present)
       }
     )

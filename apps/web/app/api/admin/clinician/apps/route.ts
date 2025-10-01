@@ -1,16 +1,18 @@
+export const runtime = 'nodejs'
+
 import { NextRequest } from 'next/server'
-import { withCORS, handleOptions } from '../../../_lib/cors'
-import { json, badRequest, internalError } from '../../../_lib/responses'
-import { requireAuth, AuthError } from '../../../_lib/rbac'
-import { listClinicianApplications, toListView, ClinicianAppStatus } from '../../../../lib/server/clinician-apps'
-import { ensureBootstrap } from '../../../_lib/bootstrap'
-import { serverLogger } from '../../../../lib/server/logger'
+import { withCORS, handleOptions } from '@/app/api/_lib/cors'
+import { json, badRequest, internalError } from '@/app/api/_lib/responses'
+import { requireAuth, AuthError, Role } from '@/app/api/_lib/rbac'
+import { listClinicianApplications, toListView, ClinicianAppStatus } from '@/lib/server/clinician-apps'
+import { ensureBootstrap } from '@/app/api/_lib/bootstrap'
+import { serverLogger } from '@/lib/server/logger'
 
 export function OPTIONS(req: NextRequest) {
   return handleOptions(req)
 }
 
-const allowedRoles = ['ADMIN']
+const allowedRoles: Role[] = ['ADMIN']
 
 export const GET = withCORS(async (req: NextRequest) => {
   await ensureBootstrap()
