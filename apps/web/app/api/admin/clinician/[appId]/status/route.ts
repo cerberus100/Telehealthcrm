@@ -9,8 +9,6 @@ import { sendEmail } from '../../../../../lib/server/ses'
 import { ensureBootstrap } from '../../../../_lib/bootstrap'
 import { serverLogger } from '../../../../../lib/server/logger'
 
-export const runtime = 'edge'
-
 export function OPTIONS(req: NextRequest) {
   return handleOptions(req)
 }

@@ -22,8 +22,6 @@ function getS3(): S3Client {
   return s3Client
 }
 
-export const runtime = 'edge'
-
 export function OPTIONS(req: NextRequest) {
   return handleOptions(req)
 }

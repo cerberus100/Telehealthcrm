@@ -6,8 +6,6 @@ import { updateUserState, userIdFromContact } from '../../../lib/server/users'
 import { serverLogger } from '../../../lib/server/logger'
 import { ensureBootstrap } from '../../_lib/bootstrap'
 
-export const runtime = 'edge'
-
 export function OPTIONS(req: NextRequest) {
   return handleOptions(req)
 }
