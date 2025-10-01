@@ -11,7 +11,7 @@ applications:
             - npm install -g pnpm@9.6.0
             - echo "Installing dependencies from repo root"
             - cd ../..
-            - pnpm install --frozen-lockfile --prefer-offline --no-optional
+            - pnpm install --frozen-lockfile
         build:
           commands:
             - echo "Building Next.js web workspace"
