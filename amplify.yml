@@ -15,8 +15,6 @@ applications:
         build:
           commands:
             - echo "Building Next.js web workspace"
-            - cd ../..
-            - cd apps/web
             - pnpm run build
         postBuild:
           commands:
