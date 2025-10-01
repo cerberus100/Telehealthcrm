@@ -43,7 +43,7 @@ export async function getUser(id: string): Promise<TeleUserRecord | null> {
   const env = getEnv()
   const client = getDynamoClient()
   const res = await client.send(new GetCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Key: {
       pk: indexKey(id),
       sk: 'PROFILE',
@@ -65,7 +65,7 @@ export async function putUser(id: string, record: Omit<TeleUserRecord, 'pk' | 's
   } as TeleUserRecord
 
   await client.send(new PutCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Item: item,
     ConditionExpression: 'attribute_not_exists(pk)',
   }))
@@ -99,7 +99,7 @@ export async function updateUserState(id: string, state: Partial<Pick<PatientUse
   names['#updatedAt'] = 'updatedAt'
 
   await client.send(new UpdateCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Key: { pk: indexKey(id), sk: 'PROFILE' },
     UpdateExpression: `SET ${updates.join(', ')}`,
     ExpressionAttributeNames: names,
@@ -121,7 +121,7 @@ export async function upsertClinicianUser(input: ClinicianUserUpsertInput): Prom
   const now = new Date().toISOString()
 
   await client.send(new UpdateCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Key: { pk: indexKey(input.id), sk: 'PROFILE' },
     UpdateExpression: 'SET #role = :role, #clinicianState = :clinicianState, #allowedStates = :allowedStates, #contact = :contact, #profile = :profile, #updatedAt = :updatedAt, #createdAt = if_not_exists(#createdAt, :createdAt)',
     ExpressionAttributeNames: {
@@ -152,7 +152,7 @@ export async function ensureSeedAdmin(email: string): Promise<void> {
   const adminId = `admin-${email}`
   const pk = indexKey(adminId)
   const existing = await client.send(new GetCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Key: { pk, sk: 'PROFILE' },
   }))
 
@@ -160,7 +160,7 @@ export async function ensureSeedAdmin(email: string): Promise<void> {
 
   const now = new Date().toISOString()
   await client.send(new PutCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Item: {
       pk,
       sk: 'PROFILE',

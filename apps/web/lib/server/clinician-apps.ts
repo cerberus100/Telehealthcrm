@@ -94,7 +94,7 @@ export async function putClinicianApplication(payload: Omit<ClinicianApplication
   }
 
   await client.send(new PutCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Item: item,
     ConditionExpression: 'attribute_not_exists(pk)',
   }))
@@ -106,8 +106,8 @@ export async function listClinicianApplications(status: ClinicianAppStatus): Pro
   const env = getEnv()
   const client = getDynamoClient()
   const res = await client.send(new QueryCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
-    IndexName: env.AWS_DYNAMO_GSI1,
+    TableName: env.DYNAMO_TABLE_NAME,
+    IndexName: env.DYNAMO_GSI1_NAME,
     KeyConditionExpression: '#status = :status',
     ExpressionAttributeNames: { '#status': 'status' },
     ExpressionAttributeValues: { ':status': status },
@@ -119,7 +119,7 @@ export async function getClinicianApplication(appId: string): Promise<ClinicianA
   const env = getEnv()
   const client = getDynamoClient()
   const res = await client.send(new GetCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Key: { pk: keyFor(appId), sk: 'META' },
   }))
   return (res.Item as ClinicianApplication | undefined) ?? null
@@ -130,7 +130,7 @@ export async function updateClinicianApplicationStatus(appId: string, status: Cl
   const client = getDynamoClient()
   const now = new Date().toISOString()
   await client.send(new UpdateCommand({
-    TableName: env.AWS_DYNAMO_TABLE,
+    TableName: env.DYNAMO_TABLE_NAME,
     Key: { pk: keyFor(appId), sk: 'META' },
     UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt, #adminNotes = list_append(if_not_exists(#adminNotes, :emptyList), :note)',
     ExpressionAttributeNames: {

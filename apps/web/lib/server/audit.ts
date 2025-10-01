@@ -38,7 +38,7 @@ export async function writeAudit(entry: AuditEntry): Promise<void> {
 
   try {
     await dynamo.send(new PutCommand({
-      TableName: env.AWS_AUDIT_TABLE,
+      TableName: env.AUDIT_TABLE_NAME,
       Item: item,
     }))
   } catch (error) {
