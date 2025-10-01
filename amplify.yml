@@ -5,8 +5,10 @@ applications:
       phases:
         preBuild:
           commands:
-            - echo "Installing dependencies"
+            - echo "Installing dependencies from root"
+            - cd ../..
             - npm install
+            - cd apps/web
         build:
           commands:
             - echo "Building Next.js application"
