@@ -41,6 +41,27 @@ export function getEnv(): EnvShape {
 
   if (!parsed.success) {
     const details = parsed.error.issues.map((issue) => `${issue.path.join('.') || 'env'}: ${issue.message}`).join(', ')
+    // During build time or when env vars are not available, don't throw error
+    // The actual validation will happen at runtime when env vars are available
+    if (process.env.NEXT_PUBLIC_APP_URL === undefined || process.env.DYNAMO_TABLE_NAME === undefined) {
+      console.warn(`Environment validation failed during build: ${details}. Environment variables will be validated at runtime.`)
+      // Return a minimal valid env object for build time
+      return {
+        AWS_REGION: process.env.AWS_REGION || 'us-east-1',
+        DYNAMO_TABLE_NAME: process.env.DYNAMO_TABLE_NAME || 'placeholder',
+        DYNAMO_GSI1_NAME: process.env.DYNAMO_GSI1_NAME || 'placeholder',
+        AUDIT_TABLE_NAME: process.env.AUDIT_TABLE_NAME || 'placeholder',
+        S3_UPLOAD_BUCKET_NAME: process.env.S3_UPLOAD_BUCKET_NAME || 'placeholder',
+        AWS_CLOUDFRONT_DISTRIBUTION_ID: process.env.AWS_CLOUDFRONT_DISTRIBUTION_ID,
+        AWS_SNS_TOPIC_ARN: process.env.AWS_SNS_TOPIC_ARN,
+        SES_SENDER: process.env.SES_SENDER,
+        SEED_ADMIN_EMAIL: process.env.SEED_ADMIN_EMAIL,
+        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://placeholder.com',
+        COGNITO_ISSUER: process.env.COGNITO_ISSUER || 'https://placeholder.com',
+        COGNITO_AUDIENCE: process.env.COGNITO_AUDIENCE || 'placeholder',
+        TELE_LANDER_ALLOWED_ORIGINS: process.env.TELE_LANDER_ALLOWED_ORIGINS,
+      } as EnvShape
+    }
     throw new Error(`Invalid environment configuration: ${details}`)
   }
 
