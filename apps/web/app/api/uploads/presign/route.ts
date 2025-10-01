@@ -1,16 +1,18 @@
+export const runtime = 'nodejs'
+
 import { NextRequest } from 'next/server'
-import { withCORS, handleOptions } from '../../_lib/cors'
-import { json, badRequest, internalError } from '../../_lib/responses'
-import { PresignUploadSchema } from '../../_lib/validation'
-import { requireAuth, AuthError } from '../../_lib/rbac'
-import { ensureBootstrap } from '../../_lib/bootstrap'
-import { getEnv } from '../../../lib/server/env'
+import { withCORS, handleOptions } from '@/app/api/_lib/cors'
+import { json, badRequest, internalError } from '@/app/api/_lib/responses'
+import { PresignUploadSchema } from '@/app/api/_lib/validation'
+import { requireAuth, AuthError, Role } from '@/app/api/_lib/rbac'
+import { ensureBootstrap } from '@/app/api/_lib/bootstrap'
+import { getEnv } from '@/lib/server/env'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { randomUUID } from 'crypto'
-import { serverLogger } from '../../../lib/server/logger'
+import { serverLogger } from '@/lib/server/logger'
 
-const allowedRoles = ['ADMIN', 'CLINICIAN']
+const allowedRoles: Role[] = ['ADMIN', 'CLINICIAN']
 
 let s3Client: S3Client | null = null
 

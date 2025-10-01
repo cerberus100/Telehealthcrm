@@ -1,21 +1,24 @@
+export const runtime = 'nodejs'
+
 import { NextRequest } from 'next/server'
-import { withCORS, handleOptions } from '../../../../_lib/cors'
-import { json, badRequest, internalError, audit } from '../../../../_lib/responses'
-import { ClinicianStatusUpdateSchema } from '../../../../_lib/validation'
-import { requireAuth, AuthError } from '../../../../_lib/rbac'
-import { getClinicianApplication, updateClinicianApplicationStatus } from '../../../../../lib/server/clinician-apps'
-import { upsertClinicianUser, userIdFromContact } from '../../../../../lib/server/users'
-import { sendEmail } from '../../../../../lib/server/ses'
-import { ensureBootstrap } from '../../../../_lib/bootstrap'
-import { serverLogger } from '../../../../../lib/server/logger'
+import { withCORS, handleOptions } from '@/app/api/_lib/cors'
+import { json, badRequest, internalError, audit } from '@/app/api/_lib/responses'
+import { ClinicianStatusUpdateSchema } from '@/app/api/_lib/validation'
+import { requireAuth, AuthError, Role } from '@/app/api/_lib/rbac'
+import { getClinicianApplication, updateClinicianApplicationStatus } from '@/lib/server/clinician-apps'
+import { upsertClinicianUser, userIdFromContact, ClinicianUserUpsertInput } from '@/lib/server/users'
+import { sendEmail } from '@/lib/server/ses'
+import { ensureBootstrap } from '@/app/api/_lib/bootstrap'
+import { serverLogger } from '@/lib/server/logger'
 
 export function OPTIONS(req: NextRequest) {
   return handleOptions(req)
 }
 
-const allowedRoles = ['ADMIN']
+const allowedRoles: Role[] = ['ADMIN']
 
-export const POST = withCORS(async (req: NextRequest, { params }: { params: { appId: string } }) => {
+export const POST = withCORS(async (req: NextRequest, context: Record<string, unknown>) => {
+  const { params } = context as { params: { appId: string } }
   await ensureBootstrap()
 
   try {

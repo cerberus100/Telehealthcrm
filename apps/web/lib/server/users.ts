@@ -56,13 +56,13 @@ export async function putUser(id: string, record: Omit<TeleUserRecord, 'pk' | 's
   const env = getEnv()
   const client = getDynamoClient()
   const now = new Date().toISOString()
-  const item: TeleUserRecord = {
+  const item = {
     pk: indexKey(id),
     sk: 'PROFILE',
     ...record,
     createdAt: now,
     updatedAt: now,
-  }
+  } as TeleUserRecord
 
   await client.send(new PutCommand({
     TableName: env.AWS_DYNAMO_TABLE,

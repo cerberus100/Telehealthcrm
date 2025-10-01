@@ -1,12 +1,14 @@
+export const runtime = 'nodejs'
+
 import { NextRequest } from 'next/server'
-import { withCORS, handleOptions } from '../../_lib/cors'
-import { json, badRequest, internalError, audit } from '../../_lib/responses'
-import { PatientProvisionalSchema } from '../../_lib/validation'
-import { putUser, userIdFromContact } from '../../../lib/server/users'
-import { getEnv } from '../../../lib/server/env'
-import { serverLogger } from '../../../lib/server/logger'
-import { sendEmail } from '../../../lib/server/ses'
-import { ensureBootstrap } from '../../_lib/bootstrap'
+import { withCORS, handleOptions } from '@/app/api/_lib/cors'
+import { json, badRequest, internalError, audit } from '@/app/api/_lib/responses'
+import { PatientProvisionalSchema } from '@/app/api/_lib/validation'
+import { putUser, userIdFromContact, PatientUserRecord } from '@/lib/server/users'
+import { getEnv } from '@/lib/server/env'
+import { serverLogger } from '@/lib/server/logger'
+import { sendEmail } from '@/lib/server/ses'
+import { ensureBootstrap } from '@/app/api/_lib/bootstrap'
 
 export function OPTIONS(req: NextRequest) {
   return handleOptions(req)
@@ -47,7 +49,7 @@ export const POST = withCORS(async (req: NextRequest) => {
         consent: parsed.data.consent,
         provisionalRequestedAt: now,
       },
-    })
+    } as Omit<PatientUserRecord, 'pk' | 'sk' | 'createdAt' | 'updatedAt'>)
 
     await audit(undefined, {
       action: 'PATIENT_PROVISIONAL_SUBMITTED',

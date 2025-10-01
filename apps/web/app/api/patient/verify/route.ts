@@ -1,10 +1,12 @@
+export const runtime = 'nodejs'
+
 import { NextRequest } from 'next/server'
-import { withCORS, handleOptions } from '../../_lib/cors'
-import { json, badRequest, internalError, audit } from '../../_lib/responses'
-import { PatientVerifySchema } from '../../_lib/validation'
-import { updateUserState, userIdFromContact } from '../../../lib/server/users'
-import { serverLogger } from '../../../lib/server/logger'
-import { ensureBootstrap } from '../../_lib/bootstrap'
+import { withCORS, handleOptions } from '@/app/api/_lib/cors'
+import { json, badRequest, internalError, audit } from '@/app/api/_lib/responses'
+import { PatientVerifySchema } from '@/app/api/_lib/validation'
+import { updateUserState, userIdFromContact } from '@/lib/server/users'
+import { serverLogger } from '@/lib/server/logger'
+import { ensureBootstrap } from '@/app/api/_lib/bootstrap'
 
 export function OPTIONS(req: NextRequest) {
   return handleOptions(req)
