@@ -9,13 +9,12 @@ applications:
           commands:
             - echo "Installing pnpm globally"
             - npm install -g pnpm@9.6.0
-            - echo "Installing dependencies from repo root"
-            - cd ../..
-            - pnpm install --frozen-lockfile
+            - echo "Installing dependencies in apps/web"
+            - npm install
         build:
           commands:
             - echo "Building Next.js web workspace"
-            - pnpm run build
+            - npm run build
         postBuild:
           commands:
             - echo "Build completed successfully"
