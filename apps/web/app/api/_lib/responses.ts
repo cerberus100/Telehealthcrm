@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { writeAudit } from '../../lib/server/audit'
-import type { Claims } from '../../lib/server/auth'
+import { writeAudit } from '../../../lib/server/audit'
+import type { Claims } from '../../../lib/server/auth'
 
 export function json<T>(data: T, init: number | ResponseInit = 200): NextResponse<T> {
   return NextResponse.json<T>(data, typeof init === 'number' ? { status: init } : init)

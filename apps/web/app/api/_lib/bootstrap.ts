@@ -1,6 +1,6 @@
-import { ensureSeedAdmin } from '../../lib/server/users'
-import { getEnv } from '../../lib/server/env'
-import { serverLogger } from '../../lib/server/logger'
+import { ensureSeedAdmin } from '../../../lib/server/users'
+import { getEnv } from '../../../lib/server/env'
+import { serverLogger } from '../../../lib/server/logger'
 
 let bootstrapped = false
 let bootPromise: Promise<void> | null = null
