@@ -1,10 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: [],
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb'
+    },
+    serverComponentsExternalPackages: ['@aws-sdk']
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Ensure server-side modules are bundled correctly
+      config.resolve.alias = {
+        ...config.resolve.alias,
+      }
     }
+    return config
   },
   async headers() {
     const csp = [
