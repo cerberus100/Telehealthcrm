@@ -10,7 +10,7 @@ applications:
             - echo "Installing pnpm globally"
             - npm install -g pnpm@9.6.0
             - echo "Installing dependencies in apps/web"
-            - npm install
+            - timeout 60 npm install
         build:
           commands:
             - echo "Building Next.js web workspace"
