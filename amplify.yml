@@ -10,7 +10,7 @@ applications:
             - echo "Installing pnpm globally"
             - npm install -g pnpm@9.6.0
             - echo "Installing dependencies"
-            - pnpm install --frozen-lockfile
+            - pnpm install --frozen-lockfile --prefer-offline --no-optional
         build:
           commands:
             - echo "Building Next.js web workspace via pnpm"
