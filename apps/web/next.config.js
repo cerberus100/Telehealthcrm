@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [],
+  output: 'standalone', // Enable Docker deployment
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb'

@@ -1,0 +1,1 @@
+src/websocket/notification.gateway.ts(59,1): error TS1185: Merge conflict marker encountered.

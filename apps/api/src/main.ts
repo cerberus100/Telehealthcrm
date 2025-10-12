@@ -43,8 +43,8 @@ async function bootstrap() {
   const corsSummary = corsConfigService.getConfigurationSummary()
   const rateLimitSummary = rateLimitConfigService.getConfigurationSummary()
 
-  logger.info('CORS Configuration loaded', corsSummary)
-  logger.info('Rate Limit Configuration loaded', rateLimitSummary)
+  logger.info({ msg: 'CORS Configuration loaded', ...corsSummary })
+  logger.info({ msg: 'Rate Limit Configuration loaded', ...rateLimitSummary })
 
   await app.register(helmet as any, {
     contentSecurityPolicy: {
@@ -103,7 +103,8 @@ async function bootstrap() {
   }
 
   // WebSocket health endpoint
-  app.get('/ws/health', (req: any, reply: any) => {
+  const fastifyInstance = app.getHttpAdapter().getInstance()
+  fastifyInstance.get('/ws/health', (req: any, reply: any) => {
     const correlationId = req.headers['x-correlation-id'] || req.headers['correlation-id'] || 'unknown'
     const observabilityHealth = getObservabilityHealth()
 
@@ -164,7 +165,7 @@ async function bootstrap() {
 
     // Log observability health
     const observabilityHealth = getObservabilityHealth()
-    logger.info('Observability health check', observabilityHealth)
+    logger.info({ msg: 'Observability health check', ...observabilityHealth })
 
     // Log server startup with comprehensive information
     logger.info({
@@ -184,7 +185,7 @@ async function bootstrap() {
       action: 'SERVER_START',
       entity: 'system',
       entity_id: 'api-server',
-      details: {
+      metadata: {
         port,
         host,
         environment: process.env.NODE_ENV || 'development',

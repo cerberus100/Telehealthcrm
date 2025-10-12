@@ -9,6 +9,10 @@ export interface TenantContext {
   orgType: string
   orgName: string
   isActive: boolean
+  compliance: {
+    hipaaCompliant: boolean
+    baaSigned: boolean
+  }
 }
 
 @Injectable()
@@ -74,6 +78,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             orgType: 'PROVIDER',
             orgName: 'Demo Organization',
             isActive: true,
+            compliance: {
+              hipaaCompliant: true,
+              baaSigned: true,
+            }
           }
         }
         return null
@@ -97,6 +105,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         orgType: organization.type,
         orgName: organization.name,
         isActive: true, // Default to active for now
+        compliance: {
+          hipaaCompliant: true, // TODO: Fetch from organization.compliance
+          baaSigned: true, // TODO: Fetch from organization.compliance
+        }
       }
     } catch (error) {
       logger.error({

@@ -422,7 +422,7 @@ export class RxPadService extends BaseService {
         Key: template.s3Key
       })
 
-      const signedUrl = await getSignedUrl(this.s3, command, { expiresIn: 3600 }) // 1 hour
+      const signedUrl = await getSignedUrl(this.s3 as any, command, { expiresIn: 3600 }) // 1 hour
 
       this.logger.debug({
         action: 'RX_PAD_SIGNED_URL_GENERATED',
@@ -530,8 +530,12 @@ export class RxPadService extends BaseService {
               const orgId = keyParts[1]
               const providerId = keyParts[2]
 
-              stats.templatesByOrg[orgId] = (stats.templatesByOrg[orgId] || 0) + 1
-              stats.templatesByProvider[providerId] = (stats.templatesByProvider[providerId] || 0) + 1
+              if (orgId) {
+                stats.templatesByOrg[orgId] = (stats.templatesByOrg[orgId] || 0) + 1
+              }
+              if (providerId) {
+                stats.templatesByProvider[providerId] = (stats.templatesByProvider[providerId] || 0) + 1
+              }
             }
           }
         }

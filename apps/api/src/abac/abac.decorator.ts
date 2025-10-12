@@ -1,7 +1,7 @@
 import { SetMetadata } from '@nestjs/common';
 
 export interface AbacRequirement {
-  resource: 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification' | 'Organization' | 'Metrics' | 'Compliance';
+  resource: 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification' | 'Organization' | 'Metrics' | 'Compliance' | 'VideoVisit';
   action: 'read' | 'write' | 'list' | 'update' | 'logout' | 'create' | 'delete';
 }
 

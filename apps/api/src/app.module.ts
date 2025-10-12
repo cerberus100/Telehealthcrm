@@ -61,6 +61,10 @@ import { VideoVisitsController } from './controllers/video-visits.controller'
 import { VideoVisitService } from './services/video-visit.service'
 import { VideoTokenService } from './services/video-token.service'
 import { VideoNotificationService } from './services/video-notification.service'
+import { OutboundCallsController } from './controllers/outbound-calls.controller'
+import { OutboundCallService } from './services/outbound-call.service'
+import { TurnConfigService } from './services/turn-config.service'
+import { WebRTCConfigController } from './controllers/webrtc-config.controller'
 
 @Module({
   imports: [
@@ -98,7 +102,9 @@ import { VideoNotificationService } from './services/video-notification.service'
     EventsController,
     MarketerController,
     DuplicateCheckController,
-    VideoVisitsController
+    VideoVisitsController,
+    OutboundCallsController,
+    WebRTCConfigController
   ],
   providers: [
     PrismaService,
@@ -128,6 +134,8 @@ import { VideoNotificationService } from './services/video-notification.service'
     VideoVisitService,
     VideoTokenService,
     VideoNotificationService,
+    OutboundCallService,
+    TurnConfigService,
     JwtMiddleware,
     RbacMiddleware,
     TenantMiddleware,

@@ -1,0 +1,217 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  AWS_REGION: us-east-1
+  ECR_API_REPOSITORY: telehealth-api
+  ECR_WEB_REPOSITORY: telehealth-web
+
+jobs:
+  # Build and push API Docker image
+  build-api:
+    name: Build & Push API Image
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push API image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd apps/api
+          docker build -t $ECR_REGISTRY/$ECR_API_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_API_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_API_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_API_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_API_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_API_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    outputs:
+      image: ${{ steps.build-api.outputs.image }}
+
+  # Build and push Web Docker image
+  build-web:
+    name: Build & Push Web Image
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push Web image
+        id: build-web
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd apps/web
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.eudaura.com \
+            --build-arg NEXT_PUBLIC_WS_URL=wss://api.eudaura.com \
+            --build-arg NEXT_PUBLIC_APP_URL=https://app.eudaura.com \
+            -t $ECR_REGISTRY/$ECR_WEB_REPOSITORY:$IMAGE_TAG \
+            -f Dockerfile .
+          docker tag $ECR_REGISTRY/$ECR_WEB_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_WEB_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_WEB_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_WEB_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_WEB_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    outputs:
+      image: ${{ steps.build-web.outputs.image }}
+
+  # Deploy to ECS
+  deploy-ecs:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    needs: [build-api, build-web]
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download API task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition telehealth-api-${ENVIRONMENT} \
+            --query taskDefinition > api-task-definition.json
+
+      - name: Download Web task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition telehealth-web-${ENVIRONMENT} \
+            --query taskDefinition > web-task-definition.json
+
+      - name: Update API task definition with new image
+        id: api-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: api-task-definition.json
+          container-name: api
+          image: ${{ needs.build-api.outputs.image }}
+
+      - name: Update Web task definition with new image
+        id: web-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: web-task-definition.json
+          container-name: web
+          image: ${{ needs.build-web.outputs.image }}
+
+      - name: Deploy API to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.api-task-def.outputs.task-definition }}
+          service: telehealth-api-${ENVIRONMENT}
+          cluster: telehealth-cluster-${ENVIRONMENT}
+          wait-for-service-stability: true
+
+      - name: Deploy Web to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.web-task-def.outputs.task-definition }}
+          service: telehealth-web-${ENVIRONMENT}
+          cluster: telehealth-cluster-${ENVIRONMENT}
+          wait-for-service-stability: true
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} \
+            --paths "/*"
+
+  # Post-deployment verification
+  verify-deployment:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-ecs]
+
+    steps:
+      - name: Health check - API
+        run: |
+          response=$(curl -f https://api.eudaura.com/health || echo "FAIL")
+          if [ "$response" == "FAIL" ]; then
+            echo "❌ API health check failed"
+            exit 1
+          fi
+          echo "✅ API health check passed"
+
+      - name: Health check - Web
+        run: |
+          response=$(curl -f https://app.eudaura.com/api/health || echo "FAIL")
+          if [ "$response" == "FAIL" ]; then
+            echo "❌ Web health check failed"
+            exit 1
+          fi
+          echo "✅ Web health check passed"
+
+      - name: Run smoke tests
+        run: |
+          # Test critical user flows
+          echo "Testing login page..."
+          curl -f https://app.eudaura.com/login || exit 1
+          
+          echo "Testing portal..."
+          curl -f https://app.eudaura.com/portal || exit 1
+          
+          echo "✅ Smoke tests passed"
+
+# Notification on failure
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [build-api, build-web, deploy-ecs, verify-deployment]
+    if: failure()
+
+    steps:
+      - name: Send failure notification
+        run: |
+          echo "🚨 Deployment failed! Check logs for details."
+          # TODO: Add SNS notification or Slack webhook
+

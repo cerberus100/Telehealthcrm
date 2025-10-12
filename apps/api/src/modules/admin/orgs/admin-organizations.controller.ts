@@ -95,7 +95,7 @@ const SignBAADto = z.object({
 
 const AssignAdminDto = z.object({
   userId: z.string().uuid(),
-  role: z.enum(['ORG_ADMIN', 'ORG_MANAGER']),
+  role: z.enum(['ORG_ADMIN', 'ADMIN']),
 });
 
 @Controller('admin/organizations')

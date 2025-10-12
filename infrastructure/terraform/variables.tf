@@ -105,6 +105,18 @@ variable "enable_shield" {
   default     = false
 }
 
+variable "force_turn_relay" {
+  description = "Force all WebRTC traffic through TURN servers (relay mode) for maximum privacy"
+  type        = bool
+  default     = false
+}
+
+variable "alert_email" {
+  description = "Email address for CloudWatch alerts"
+  type        = string
+  default     = "ops@example.com"
+}
+
 # Monitoring and Compliance
 variable "enable_guardduty" {
   description = "Enable GuardDuty"

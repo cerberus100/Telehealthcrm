@@ -22,7 +22,8 @@ export class HealthController {
     }
 
     // Log health check
-    logger.info('Health check requested', {
+    logger.info({
+      msg: 'Health check requested',
       correlationId,
       ip: req.ip,
       userAgent: req.headers['user-agent'],
@@ -65,7 +66,8 @@ export class HealthController {
     }
 
     // Log observability health check
-    logger.info('Observability health check requested', {
+    logger.info({
+      msg: 'Observability health check requested',
       correlationId,
       ip: req.ip,
       userAgent: req.headers['user-agent'],
@@ -95,7 +97,8 @@ export class HealthController {
     }
 
     // Log readiness check
-    logger.info('Readiness check requested', {
+    logger.info({
+      msg: 'Readiness check requested',
       correlationId,
       ip: req.ip,
       userAgent: req.headers['user-agent'],
@@ -120,7 +123,8 @@ export class HealthController {
     }
 
     // Log liveness check
-    logger.info('Liveness check requested', {
+    logger.info({
+      msg: 'Liveness check requested',
       correlationId,
       ip: req.ip,
       userAgent: req.headers['user-agent'],

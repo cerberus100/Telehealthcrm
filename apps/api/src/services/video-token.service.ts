@@ -16,7 +16,7 @@ import { KMSClient, SignCommand, GetPublicKeyCommand } from '@aws-sdk/client-kms
 import { randomBytes, createHash } from 'crypto'
 import { PrismaService } from '../prisma.service'
 import { logger } from '../utils/logger'
-import { trace, addSpanAttribute } from '@opentelemetry/api'
+import { trace } from '@opentelemetry/api'
 
 const tracer = trace.getTracer('video-token-service')
 
@@ -73,8 +73,8 @@ export class VideoTokenService {
   }): Promise<{ token: string; tokenId: string; expiresAt: Date; shortCode: string }> {
     return tracer.startActiveSpan('issueToken', async (span) => {
       try {
-        addSpanAttribute(span, 'visit.id', params.visitId)
-        addSpanAttribute(span, 'token.role', params.role)
+        span.setAttribute('visit.id', params.visitId)
+        span.setAttribute('token.role', params.role)
 
         const ttl = params.ttlMinutes ?? 20 // Default 20 minutes
         const now = Math.floor(Date.now() / 1000)
@@ -146,7 +146,7 @@ export class VideoTokenService {
         
       } catch (error) {
         span.recordException(error as Error)
-        logger.error('Failed to issue token', { error, visitId: params.visitId })
+        logger.error({ msg: 'Failed to issue token', error, visitId: params.visitId })
         throw error
       } finally {
         span.end()
@@ -159,11 +159,11 @@ export class VideoTokenService {
    * Does NOT mark as redeemed (read-only check for pre-join page)
    */
   async validateToken(token: string, options?: { requireUnused?: boolean }): Promise<TokenValidationResult> {
-    return tracer.startActiveSpan('validateToken', async (span) => {
+    return tracer.startActiveSpan('validateToken', async (span): Promise<TokenValidationResult> => {
       try {
         // Decode JWT (without verification first, to get jti)
         const parts = token.split('.')
-        if (parts.length !== 3) {
+        if (parts.length !== 3 || !parts[1]) {
           return { valid: false, error: 'Malformed token' }
         }
 
@@ -171,8 +171,8 @@ export class VideoTokenService {
         const payloadJson = Buffer.from(payloadBase64, 'base64url').toString('utf8')
         const payload = JSON.parse(payloadJson) as TokenPayload
 
-        addSpanAttribute(span, 'token.jti', payload.jti)
-        addSpanAttribute(span, 'token.visit_id', payload.visit_id)
+        span.setAttribute('token.jti', payload.jti)
+        span.setAttribute('token.visit_id', payload.visit_id)
 
         // Verify signature with KMS public key
         const signatureValid = await this.verifyJWT(token)
@@ -231,7 +231,7 @@ export class VideoTokenService {
         
       } catch (error) {
         span.recordException(error as Error)
-        logger.error('Token validation failed', { error })
+        logger.error({ msg: 'Token validation failed', error })
         return { valid: false, error: 'Validation error' }
       } finally {
         span.end()
@@ -250,7 +250,7 @@ export class VideoTokenService {
   }): Promise<{ success: boolean; error?: string; action?: string }> {
     return tracer.startActiveSpan('redeemToken', async (span) => {
       try {
-        addSpanAttribute(span, 'token.id', params.tokenId)
+        span.setAttribute('token.id', params.tokenId)
 
         // Atomic single-use enforcement via Prisma (maps to SQL with WHERE clause)
         const updated = await this.prisma.oneTimeToken.updateMany({
@@ -334,7 +334,7 @@ export class VideoTokenService {
         
       } catch (error) {
         span.recordException(error as Error)
-        logger.error('Token redemption failed', { error, tokenId: params.tokenId })
+        logger.error({ msg: 'Token redemption failed', error, tokenId: params.tokenId })
         return { success: false, error: 'Redemption failed', action: 'CONTACT_SUPPORT' }
       } finally {
         span.end()
@@ -424,7 +424,7 @@ export class VideoTokenService {
   private async verifyJWT(token: string): Promise<boolean> {
     try {
       const parts = token.split('.')
-      if (parts.length !== 3) return false
+      if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) return false
 
       const [headerB64, payloadB64, signatureB64] = parts
       const message = `${headerB64}.${payloadB64}`
@@ -458,7 +458,7 @@ export class VideoTokenService {
       }, signature)
       
     } catch (error) {
-      logger.error('JWT verification failed', { error })
+      logger.error({ msg: 'JWT verification failed', error })
       return false
     }
   }

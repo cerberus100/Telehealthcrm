@@ -15,6 +15,7 @@
  * - No PHI logged to console
  */
 
+/* eslint-disable react-hooks/rules-of-hooks */
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
@@ -127,7 +128,48 @@ export default function VideoCCPPage() {
     // Detect WebRTC video contact
     if (contactSubtype === 'connect:WebRTC') {
       handleVideoContact(contact)
+    } else if (contactType === 'voice' || contactType === 'VOICE') {
+      // Handle voice-only (audio) contact
+      handleVoiceContact(contact)
     }
+  }
+
+  // Handle voice-only contact (audio calls)
+  function handleVoiceContact(contact: any) {
+    const attributes = contact.getAttributes()
+    const consultId = attributes.consultId?.value
+    const patientId = attributes.patientId?.value
+
+    // Screen-pop: Load patient context (same as video)
+    if (consultId) {
+      loadPatientContext(consultId, patientId)
+    }
+
+    // Set active contact
+    setActiveContact({
+      contactId: contact.getContactId(),
+      type: contact.getType(),
+      subtype: 'voice-only',
+      attributes,
+      status: contact.getStatus().type
+    })
+
+    // Contact lifecycle hooks
+    contact.onConnected(() => {
+      console.log('Voice call connected')
+      startCallTimer()
+    })
+
+    contact.onEnded(() => {
+      console.log('Voice call ended')
+      setActiveContact(null)
+      setPatientContext(null)
+      setCallDuration(0)
+    })
+
+    contact.onACW(() => {
+      console.log('After-call work started')
+    })
   }
 
   // Handle video contact

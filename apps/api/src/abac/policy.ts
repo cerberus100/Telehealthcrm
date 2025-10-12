@@ -1,6 +1,6 @@
 import type { RequestClaims } from '../types/claims'
 
-type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification' | 'Organization' | 'Analytics' | 'OperationalMetrics'
+type Resource = 'Consult' | 'Rx' | 'LabOrder' | 'LabResult' | 'Shipment' | 'Patient' | 'User' | 'Auth' | 'Health' | 'Notification' | 'Organization' | 'Analytics' | 'OperationalMetrics' | 'VideoVisit'
 
 type Action = 'read' | 'write' | 'list' | 'update' | 'logout' | 'create'
 
@@ -63,7 +63,6 @@ export function evaluatePolicy(req: AccessRequest): AccessDecision {
     }
     case 'SUPER_ADMIN':
     case 'ADMIN':
-    case 'ORG_ADMIN':
     case 'DOCTOR':
     case 'SUPPORT':
     case 'AUDITOR': {

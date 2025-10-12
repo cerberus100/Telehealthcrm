@@ -1,0 +1,47 @@
+
+> eudaura@ lint /Users/alexsiegel/teleplatform
+> turbo run lint
+
+turbo 2.5.6
+
+• Packages in scope: @teleplatform/db, api, web
+• Running lint in 3 packages
+• Remote caching disabled
+web:lint: cache bypass, force executing bbd1ad43bb66306d
+api:lint: cache bypass, force executing c7dd7e8835d31c34
+@teleplatform/db:lint: cache bypass, force executing d527e92ae1381bfe
+@teleplatform/db:lint: 
+@teleplatform/db:lint: > @teleplatform/db@0.1.0 lint /Users/alexsiegel/teleplatform/packages/db
+@teleplatform/db:lint: > eslint . || true
+@teleplatform/db:lint: 
+web:lint: 
+web:lint: > web@0.1.0 lint /Users/alexsiegel/teleplatform/apps/web
+web:lint: > next lint
+web:lint: 
+api:lint: 
+api:lint: > api@0.1.0 lint /Users/alexsiegel/teleplatform/apps/api
+api:lint: > eslint .
+api:lint: 
+@teleplatform/db:lint: 
+@teleplatform/db:lint: Oops! Something went wrong! :(
+@teleplatform/db:lint: 
+@teleplatform/db:lint: ESLint: 8.57.1
+@teleplatform/db:lint: 
+@teleplatform/db:lint: No files matching the pattern "." were found.
+@teleplatform/db:lint: Please check for typing mistakes in the pattern.
+@teleplatform/db:lint: 
+web:lint: ? How would you like to configure ESLint? https://nextjs.org/docs/basic-features/eslint
+web:lint: [?25l❯  Strict (recommended)
+web:lint:    Base
+web:lint:  ⚠ If you set up ESLint yourself, we recommend adding the Next.js ESLint plugin. See https://nextjs.org/docs/basic-features/eslint#migrating-existing-config
+web:lint:    Cancel ELIFECYCLE  Command failed with exit code 1.
+web:lint: ERROR: command finished with error: command (/Users/alexsiegel/teleplatform/apps/web) /Users/alexsiegel/Library/pnpm/.tools/pnpm/9.6.0/bin/pnpm run lint exited (1)
+web#lint: command (/Users/alexsiegel/teleplatform/apps/web) /Users/alexsiegel/Library/pnpm/.tools/pnpm/9.6.0/bin/pnpm run lint exited (1)
+
+ Tasks:    1 successful, 3 total
+Cached:    0 cached, 3 total
+  Time:    620ms 
+Failed:    web#lint
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

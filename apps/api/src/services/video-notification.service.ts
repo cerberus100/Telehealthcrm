@@ -19,7 +19,7 @@ import { SNSClient, PublishCommand } from '@aws-sdk/client-sns'
 import { PrismaService } from '../prisma.service'
 import { VideoTokenService } from './video-token.service'
 import { logger } from '../utils/logger'
-import { trace, addSpanAttribute } from '@opentelemetry/api'
+import { trace } from '@opentelemetry/api'
 
 const tracer = trace.getTracer('video-notification-service')
 
@@ -58,8 +58,8 @@ export class VideoNotificationService {
   async sendNotifications(input: SendNotificationInput): Promise<any> {
     return tracer.startActiveSpan('sendNotifications', async (span) => {
       try {
-        addSpanAttribute(span, 'visit.id', input.visitId)
-        addSpanAttribute(span, 'channel', input.channel)
+        span.setAttribute('visit.id', input.visitId)
+        span.setAttribute('channel', input.channel)
 
         // Get visit details
         const visit = await this.prisma.videoVisit.findUnique({
@@ -88,22 +88,24 @@ export class VideoNotificationService {
           const patientEmail = visit.patient.emails[0]
           const patientPhone = visit.patient.phones[0]
 
-          if (input.channel === 'email' || input.channel === 'both') {
+          if ((input.channel === 'email' || input.channel === 'both') && patientEmail) {
+            const clinicianName: string = visit.clinician.firstName || 'your clinician'
             results.sent.email = await this.sendEmail({
               to: patientEmail,
               visitId: visit.id,
-              clinicianFirstName: visit.clinician.firstName || 'your clinician',
+              clinicianFirstName: clinicianName,
               scheduledAt: visit.scheduledAt,
               joinLink: patientLink,
               expiresIn: 20
             })
           }
 
-          if (input.channel === 'sms' || input.channel === 'both') {
+          if ((input.channel === 'sms' || input.channel === 'both') && patientPhone) {
+            const clinicianName: string = visit.clinician.firstName || 'your clinician'
             results.sent.sms = await this.sendSMS({
               to: patientPhone,
               visitId: visit.id,
-              clinicianFirstName: visit.clinician.firstName || 'your clinician',
+              clinicianFirstName: clinicianName,
               scheduledAt: visit.scheduledAt,
               shortLink: `visit.eudaura.com/j/${patientToken.shortCode}`,
               expiresIn: 20
@@ -145,7 +147,7 @@ export class VideoNotificationService {
         
       } catch (error) {
         span.recordException(error as Error)
-        logger.error('Failed to send notifications', { error, visitId: input.visitId })
+        logger.error({ msg: 'Failed to send notifications', error, visitId: input.visitId })
         throw error
       } finally {
         span.end()
@@ -220,7 +222,7 @@ export class VideoNotificationService {
       }
       
     } catch (error) {
-      logger.error('SES send failed', { error, to: this.maskEmail(params.to) })
+      logger.error({ msg: 'SES send failed', error, to: this.maskEmail(params.to) })
       
       // Audit log: failure
       await this.createAuditLog({
@@ -257,7 +259,7 @@ export class VideoNotificationService {
 
     // Verify length (SMS limit: 160 chars)
     if (message.length > 160) {
-      logger.warn('SMS message exceeds 160 characters', { length: message.length })
+      logger.warn({ msg: 'SMS message exceeds 160 characters', length: message.length })
     }
 
     try {
@@ -290,7 +292,7 @@ export class VideoNotificationService {
       }
       
     } catch (error) {
-      logger.error('SMS send failed', { error, to: this.maskPhone(params.to) })
+      logger.error({ msg: 'SMS send failed', error, to: this.maskPhone(params.to) })
       
       // Audit log: failure
       await this.createAuditLog({
@@ -416,6 +418,7 @@ export class VideoNotificationService {
    */
   private maskEmail(email: string): string {
     const [local, domain] = email.split('@')
+    if (!local || !domain) return '***@***'
     const masked = local.length > 2 ? local[0] + '***' : '***'
     return `${masked}@${domain}`
   }

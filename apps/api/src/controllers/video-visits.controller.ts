@@ -29,6 +29,7 @@ const CreateVisitSchema = z.object({
   scheduledAt: z.string().datetime(),
   duration: z.number().int().min(15).max(120).optional(),
   visitType: z.enum(['initial', 'follow-up', 'urgent']).optional(),
+  modality: z.enum(['video', 'audio', 'phone']).optional(),  // NEW: Visit modality
   chiefComplaint: z.string().max(1000).optional(),
   channel: z.enum(['sms', 'email', 'both'])
 })
@@ -77,7 +78,8 @@ export class VideoVisitsController {
   constructor(
     private readonly visitService: VideoVisitService,
     private readonly tokenService: VideoTokenService,
-    private readonly notificationService: VideoNotificationService
+    private readonly notificationService: VideoNotificationService,
+    private readonly prisma: any  // PrismaService
   ) {}
 
   /**
@@ -215,6 +217,7 @@ export class VideoVisitsController {
 
     // Extract token ID from JWT
     const parts = parsed.token.split('.')
+    if (!parts[1]) throw new Error('Invalid token format')
     const payloadJson = Buffer.from(parts[1], 'base64url').toString('utf8')
     const payload = JSON.parse(payloadJson)
 
@@ -445,7 +448,7 @@ export class VideoVisitsController {
     })
 
     if (resendCount >= 5) {
-      logger.warn('Too many resend requests', { visitId, role: parsed.role })
+      logger.warn({ msg: 'Too many resend requests', visitId, role: parsed.role })
       throw new Error('Too many resend requests')
     }
 
@@ -481,15 +484,4 @@ export class VideoVisitsController {
     }
   }
 
-  // Inject PrismaService for direct access (needed for token/redeem)
-  constructor(
-    visitService: VideoVisitService,
-    tokenService: VideoTokenService,
-    notificationService: VideoNotificationService,
-    private readonly prisma: PrismaService
-  ) {
-    this.visitService = visitService
-    this.tokenService = tokenService
-    this.notificationService = notificationService
-  }
 }

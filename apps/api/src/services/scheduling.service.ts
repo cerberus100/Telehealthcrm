@@ -199,7 +199,7 @@ export class SchedulingService extends BaseService {
       const now = new Date().toISOString()
 
       // Find the availability and slot
-      const today = new Date().toISOString().split('T')[0]
+      const today: string = new Date().toISOString().split('T')[0] as string
       const availability = await this.getProviderAvailability(providerId, today)
       if (!availability) {
         throw new NotFoundException('Provider availability not found')
@@ -461,7 +461,7 @@ export class SchedulingService extends BaseService {
         ? new GetObjectCommand({ Bucket: this.bucketName, Key: key })
         : new PutObjectCommand({ Bucket: this.bucketName, Key: key })
 
-      const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+      const signedUrl = await getSignedUrl(this.s3 as any, command, { expiresIn })
 
       this.logger.debug({
         action: 'SIGNED_URL_GENERATED',

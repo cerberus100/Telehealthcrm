@@ -11,13 +11,13 @@
  * - Audit logging for all state transitions
  */
 
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common'
+import { Injectable, BadRequestException, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { ConnectClient, StartWebRTCContactCommand, StopContactCommand } from '@aws-sdk/client-connect'
 import { PrismaService } from '../prisma.service'
 import { VideoTokenService } from './video-token.service'
 import { logger } from '../utils/logger'
-import { trace, addSpanAttribute } from '@opentelemetry/api'
+import { trace } from '@opentelemetry/api'
 
 const tracer = trace.getTracer('video-visit-service')
 
@@ -27,6 +27,7 @@ interface CreateVisitInput {
   scheduledAt: Date
   duration?: number
   visitType?: string
+  modality?: 'video' | 'audio' | 'phone'  // NEW: Visit modality
   chiefComplaint?: string
   channel: 'sms' | 'email' | 'both'
   createdBy?: string
@@ -77,8 +78,8 @@ export class VideoVisitService {
   async createVisit(input: CreateVisitInput): Promise<any> {
     return tracer.startActiveSpan('createVisit', async (span) => {
       try {
-        addSpanAttribute(span, 'patient.id', input.patientId)
-        addSpanAttribute(span, 'clinician.id', input.clinicianId)
+        span.setAttribute('patient.id', input.patientId)
+        span.setAttribute('clinician.id', input.clinicianId)
 
         // Verify patient exists and get their state
         const patient = await this.prisma.patient.findUnique({
@@ -98,14 +99,14 @@ export class VideoVisitService {
         // Verify clinician exists and is licensed in patient's state
         const clinician = await this.prisma.user.findUnique({
           where: { id: input.clinicianId },
-          select: { id: true, firstName: true, lastName: true, statesLicensed: true, isAvailable: true }
+          select: { id: true, firstName: true, lastName: true, isAvailable: true }
         })
 
         if (!clinician) {
           throw new NotFoundException('Clinician not found')
         }
 
-        const licensedStates = (clinician.statesLicensed as string[]) || []
+        const licensedStates: string[] = [] // TODO: Fetch from user metadata or separate table
         if (!licensedStates.includes(patientState)) {
           throw new BadRequestException(`Clinician not licensed in ${patientState}`)
         }
@@ -131,6 +132,7 @@ export class VideoVisitService {
             scheduledAt: input.scheduledAt,
             duration: input.duration ?? 30,
             visitType: input.visitType,
+            modality: input.modality ?? 'video',  // NEW: Default to video
             chiefComplaint: input.chiefComplaint, // TODO: Encrypt with KMS before storing
             status: 'SCHEDULED',
             notificationChannel: input.channel,
@@ -183,8 +185,8 @@ export class VideoVisitService {
   async startVisit(input: StartVisitInput, ip: string, userAgent: string): Promise<ConnectWebRTCResponse & { sessionToken: string }> {
     return tracer.startActiveSpan('startVisit', async (span) => {
       try {
-        addSpanAttribute(span, 'visit.id', input.visitId)
-        addSpanAttribute(span, 'token.id', input.tokenId)
+        span.setAttribute('visit.id', input.visitId)
+        span.setAttribute('token.id', input.tokenId)
 
         // Redeem token (atomic single-use check)
         const redemption = await this.tokenService.redeemToken({
@@ -236,9 +238,10 @@ export class VideoVisitService {
           ClientToken: `${visit.id}-${token.role}-${Date.now()}` // Idempotency
         }))
 
-        const contactId = connectResponse.ContactResponse?.ContactId
-        const participantId = connectResponse.ConnectionData?.Participant?.ParticipantId
-        const participantToken = connectResponse.ConnectionData?.Participant?.ParticipantToken
+        // Extract connection details from SDK response
+        const contactId = (connectResponse as any).ContactId || (connectResponse as any).ContactResponse?.ContactId
+        const participantId = (connectResponse as any).ParticipantId || (connectResponse as any).ConnectionData?.ParticipantId
+        const participantToken = (connectResponse as any).ParticipantToken || (connectResponse as any).ConnectionData?.ParticipantToken
 
         if (!contactId || !participantId || !participantToken) {
           throw new Error('Connect WebRTC session creation failed')
@@ -268,7 +271,7 @@ export class VideoVisitService {
         const sessionToken = await this.tokenService.issueToken({
           visitId: visit.id,
           userId: token.role === 'patient' ? visit.patientId : visit.clinicianId,
-          role: token.role,
+          role: token.role as 'patient' | 'clinician',
           ttlMinutes: 60,
           issuedToIP: ip,
           issuedToUA: userAgent
@@ -305,7 +308,7 @@ export class VideoVisitService {
         
       } catch (error) {
         span.recordException(error as Error)
-        logger.error('Failed to start visit', { error, visitId: input.visitId })
+        logger.error({ msg: 'Failed to start visit', error, visitId: input.visitId })
         throw error
       } finally {
         span.end()
@@ -325,7 +328,7 @@ export class VideoVisitService {
   }): Promise<void> {
     return tracer.startActiveSpan('endVisit', async (span) => {
       try {
-        addSpanAttribute(span, 'visit.id', params.visitId)
+        span.setAttribute('visit.id', params.visitId)
 
         const visit = await this.prisma.videoVisit.findUnique({
           where: { id: params.visitId }
@@ -366,7 +369,7 @@ export class VideoVisitService {
               ContactId: visit.connectContactId
             }))
           } catch (error) {
-            logger.warn('Failed to stop Connect contact', { error, contactId: visit.connectContactId })
+            logger.warn({ msg: 'Failed to stop Connect contact', error, contactId: visit.connectContactId })
           }
         }
 
@@ -476,7 +479,8 @@ export class VideoVisitService {
 
     const hasMore = visits.length > limit
     const items = hasMore ? visits.slice(0, limit) : visits
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined
+    const lastItem = items[items.length - 1]
+    const nextCursor = hasMore && lastItem ? lastItem.id : undefined
 
     return { items, nextCursor }
   }

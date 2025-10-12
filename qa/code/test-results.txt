@@ -1,0 +1,261 @@
+
+> eudaura@ test /Users/alexsiegel/teleplatform
+> turbo run test
+
+turbo 2.5.6
+
+• Packages in scope: @teleplatform/db, api, web
+• Running test in 3 packages
+• Remote caching disabled
+@teleplatform/db:test: cache miss, executing ab7490770748ccb4
+api:test: cache miss, executing 3ca9e84c83fecf0b
+@teleplatform/db:test: 
+@teleplatform/db:test: > @teleplatform/db@0.1.0 test /Users/alexsiegel/teleplatform/packages/db
+@teleplatform/db:test: > echo 'no tests yet'
+@teleplatform/db:test: 
+api:test: 
+api:test: > api@0.1.0 test /Users/alexsiegel/teleplatform/apps/api
+api:test: > jest
+api:test: 
+@teleplatform/db:test: no tests yet
+api:test: FAIL src/test/aws-verification.test.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/__tests__/integration.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/middleware/claims.middleware.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/test/basic.test.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/services/__tests__/consults.service.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/test/phase3-verification.test.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/utils/telemetry.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/prisma.service.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/services/__tests__/auth.service.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/services/__tests__/notifications.service.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/auth/auth.service.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/websocket/notification.gateway.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/__tests__/performance.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/middleware/middleware.integration.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/modules/admin/users/__tests__/admin-users.service.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: FAIL src/auth/cognito.service.spec.ts
+api:test:   ● Test suite failed to run
+api:test: 
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m203[0m:[93m75[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+api:test:       Type 'undefined' is not assignable to type 'string'.
+api:test: 
+api:test:     [7m203[0m       const availability = await this.getProviderAvailability(providerId, today)
+api:test:     [7m   [0m [91m                                                                          ~~~~~[0m
+api:test:     [96msrc/services/scheduling.service.ts[0m:[93m464[0m:[93m44[0m - [91merror[0m[90m TS2345: [0mArgument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+api:test:       Types have separate declarations of a private property 'handlers'.
+api:test: 
+api:test:     [7m464[0m       const signedUrl = await getSignedUrl(this.s3, command, { expiresIn })
+api:test:     [7m   [0m [91m                                           ~~~~~~~[0m
+api:test: 
+api:test: Test Suites: 16 failed, 16 total
+api:test: Tests:       0 total
+api:test: Snapshots:   0 total
+api:test: Time:        10.574 s
+api:test: Ran all test suites.
+api:test:  ELIFECYCLE  Test failed. See above for more details.
+api:test: ERROR: command finished with error: command (/Users/alexsiegel/teleplatform/apps/api) /Users/alexsiegel/Library/pnpm/.tools/pnpm/9.6.0/bin/pnpm run test exited (1)
+api#test: command (/Users/alexsiegel/teleplatform/apps/api) /Users/alexsiegel/Library/pnpm/.tools/pnpm/9.6.0/bin/pnpm run test exited (1)
+
+ Tasks:    1 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    11.275s 
+Failed:    api#test
+
+ WARNING  no output files found for task @teleplatform/db#test. Please check your `outputs` key in `turbo.json`
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Test failed. See above for more details.

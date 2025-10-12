@@ -75,7 +75,7 @@ const OrganizationsQuerySchema = z.object({
 
 const AssignAdminSchema = z.object({
   userId: z.string().uuid(),
-  role: z.enum(['ORG_ADMIN', 'ORG_MANAGER']),
+  role: z.enum(['ORG_ADMIN', 'ADMIN']),
 });
 
 @Injectable()

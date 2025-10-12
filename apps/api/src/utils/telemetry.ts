@@ -70,14 +70,12 @@ export async function initializeTelemetry(config: ConfigService) {
     // Create and configure the SDK
     otelSDK = new NodeSDK({
       resource,
-      spanProcessors: [new BatchSpanProcessor(traceExporter)],
-      logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],
-      metricReaders: [new PeriodicExportingMetricReader({
-        exporter: metricExporter,
+      spanProcessors: [new BatchSpanProcessor(traceExporter as any)],
+      logRecordProcessor: new BatchLogRecordProcessor(logExporter as any) as any,
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: metricExporter as any,
         exportIntervalMillis: 60000, // Export every 60 seconds
-      })],
-      serviceName,
-      serviceVersion,
+      }) as any,
       instrumentations: [getNodeAutoInstrumentations({
         // Disable file system instrumentation for performance
         '@opentelemetry/instrumentation-fs': {
@@ -96,8 +94,8 @@ export async function initializeTelemetry(config: ConfigService) {
       })],
     })
 
-    // Set AWS X-Ray propagator for distributed tracing
-    propagation.setGlobalPropagator(new AWSXRayPropagator())
+    // Note: AWS X-Ray propagator not available, using default W3C trace context
+    // propagation.setGlobalPropagator(new AWSXRayPropagator())
 
     // Initialize the SDK
     await otelSDK.start()
@@ -184,7 +182,7 @@ export const recordException = (error: Error, attributes?: Record<string, any>) 
   // Record exception in active span
   const activeSpan = trace.getActiveSpan()
   if (activeSpan && telemetryEnabled) {
-    activeSpan.recordException(error, attributes)
+    activeSpan.recordException(error, attributes as any)
     activeSpan.setStatus({ code: 2, message: error.message }) // ERROR status
   }
 

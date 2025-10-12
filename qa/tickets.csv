@@ -1,0 +1,24 @@
+Severity,Area,Title,Steps/Proof,Suggested Fix,Owner
+P0,Code,TypeScript compilation errors in scheduling.service.ts,"Line 203: providerId type error, Line 464: S3Client type mismatch",Fix type annotations and update AWS SDK imports,Backend Dev
+P0,Code,Merge conflict in notification.gateway.ts,Line 59 contains merge conflict marker >>>>>>>>,Resolve merge conflict and test WebSocket functionality,Backend Dev
+P0,Security,Critical Next.js authorization bypass vulnerability,Next.js 14.2.5 has CVE with auth bypass (GHSA-f82v-jwr5-mffw),Update to Next.js >=14.2.32,Frontend Dev
+P0,Video,No explicit TURN server configuration,"Video calls rely on AWS defaults, no geographic diversity",Configure multiple TURN servers in different regions,Backend Dev
+P0,Infrastructure,Terraform using local state,terraform.tfstate stored locally - risk of data loss,Migrate to S3 backend with DynamoDB locking,DevOps
+P0,Database,No automated migration system,SQL files require manual execution,Implement Prisma Migrate with rollback scripts,Backend Dev
+P1,Code,No ESLint configuration,No .eslintrc files found in project,Create ESLint config with strict rules,Full Stack Dev
+P1,Code,100% test failure rate,All 16 test suites fail due to compilation errors,Fix TypeScript errors then update tests,QA Team
+P1,Security,11 dependency vulnerabilities,"1 critical, 2 high, 5 moderate in Next.js",Run npm audit fix and update dependencies,Full Stack Dev
+P1,Security,MFA not enforced,Schema supports MFA but not required,Enable Cognito MFA requirement,Backend Dev
+P1,Video,No reconnection logic for video calls,Calls drop permanently on network interruption,Implement ICE restart and reconnection,Backend Dev
+P1,Accessibility,Gold color fails WCAG contrast,#C7A867 on #F7F5EF = 2.3:1 ratio (fails AA),Change to #B8964A or restrict to decorative use,Frontend Dev
+P1,Performance,No caching strategy,Redis configured but not used,Implement query and response caching,Backend Dev
+P1,Performance,No Web Vitals monitoring,LCP/CLS/INP not measured,Add Core Web Vitals tracking,Frontend Dev
+P1,Operations,No monitoring or alerting configured,CloudWatch not set up,Configure dashboards and alerts,DevOps
+P2,Auth,No SSO support,SAML/OIDC not implemented,Add enterprise SSO integration,Backend Dev
+P2,Services,No payment processing,No Stripe/Square integration,Implement payment gateway,Full Stack Dev
+P2,Services,No push notifications,Mobile push not supported,Add FCM/APNS support,Backend Dev
+P2,Video,No pre-call device testing,Users can't verify devices before joining,Add device test page,Frontend Dev
+P2,Performance,No CDN configuration,Static assets served from origin,Configure CloudFront,DevOps
+P2,Operations,No blue/green deployment,Manual deployment process,Implement safe deployment strategy,DevOps
+P2,Database,No query performance monitoring,Slow queries not tracked,Enable query logging and analysis,Backend Dev
+P2,Testing,Limited E2E test coverage,Only basic Playwright tests,Expand test scenarios,QA Team

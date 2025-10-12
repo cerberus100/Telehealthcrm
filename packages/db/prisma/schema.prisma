@@ -624,6 +624,7 @@ model VideoVisit {
   
   // Visit metadata (encrypted at rest via KMS)
   visitType         String?          @map("visit_type") // initial|follow-up|urgent
+  modality          String?          @map("modality") @default("video") // video|audio|phone
   chiefComplaint    String?          @map("chief_complaint") @db.Text // Encrypted
   clinicalNotes     String?          @map("clinical_notes") @db.Text // Encrypted
   

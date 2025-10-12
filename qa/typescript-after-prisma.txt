@@ -1,0 +1,82 @@
+src/controllers/video-visits.controller.ts(91,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(119,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(188,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(250,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(315,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(386,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(399,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(425,11): error TS2322: Type '"VideoVisit"' is not assignable to type '"Consult" | "Rx" | "LabOrder" | "LabResult" | "Shipment" | "Patient" | "User" | "Auth" | "Health" | "Notification" | "Organization"'.
+src/controllers/video-visits.controller.ts(451,47): error TS2345: Argument of type '{ visitId: string; role: "patient" | "clinician"; }' is not assignable to parameter of type 'undefined'.
+src/middleware/tenant.middleware.ts(148,35): error TS2345: Argument of type 'import("/Users/alexsiegel/teleplatform/apps/api/src/prisma.service").TenantContext' is not assignable to parameter of type 'TenantContext'.
+  Property 'compliance' is missing in type 'import("/Users/alexsiegel/teleplatform/apps/api/src/prisma.service").TenantContext' but required in type 'TenantContext'.
+src/middleware/tenant.middleware.ts(155,7): error TS2741: Property 'compliance' is missing in type 'import("/Users/alexsiegel/teleplatform/apps/api/src/prisma.service").TenantContext' but required in type 'TenantContext'.
+src/modules/admin/orgs/admin-organizations.service.ts(385,17): error TS2322: Type '"ORG_ADMIN" | "ORG_MANAGER"' is not assignable to type 'UserRole | EnumUserRoleFieldUpdateOperationsInput | undefined'.
+  Type '"ORG_MANAGER"' is not assignable to type 'UserRole | EnumUserRoleFieldUpdateOperationsInput | undefined'.
+src/services/auth.service.ts(167,11): error TS2322: Type 'UserRole' is not assignable to type '"ADMIN" | "ORG_ADMIN" | "DOCTOR" | "LAB_TECH" | "PHARMACIST" | "MARKETER" | "SUPPORT" | "ORG_MANAGER"'.
+  Type '"SUPER_ADMIN"' is not assignable to type '"ADMIN" | "ORG_ADMIN" | "DOCTOR" | "LAB_TECH" | "PHARMACIST" | "MARKETER" | "SUPPORT" | "ORG_MANAGER"'.
+src/services/outbound-call.service.ts(69,5): error TS2322: Type '{ contactId: string; callId: string; status: string; message: string; }' is not assignable to type 'OutboundCallResponse'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type '"failed" | "initiated" | "connecting"'.
+src/services/rx-pad.service.ts(425,44): error TS2345: Argument of type 'S3Client' is not assignable to parameter of type 'Client<any, ServiceInputTypes, MetadataBearer, any>'.
+  Types have separate declarations of a private property 'handlers'.
+src/services/rx-pad.service.ts(533,36): error TS2538: Type 'undefined' cannot be used as an index type.
+src/services/rx-pad.service.ts(533,67): error TS2538: Type 'undefined' cannot be used as an index type.
+src/services/rx-pad.service.ts(534,41): error TS2538: Type 'undefined' cannot be used as an index type.
+src/services/rx-pad.service.ts(534,82): error TS2538: Type 'undefined' cannot be used as an index type.
+src/services/video-notification.service.ts(93,15): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/services/video-notification.service.ts(104,15): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/services/video-notification.service.ts(419,20): error TS18048: 'local' is possibly 'undefined'.
+src/services/video-notification.service.ts(419,39): error TS18048: 'local' is possibly 'undefined'.
+src/services/video-token.service.ts(162,5): error TS2322: Type '{ valid: boolean; error: string; action?: undefined; payload?: undefined; } | { valid: boolean; error: string; action: string; payload?: undefined; } | { valid: boolean; payload: TokenPayload; error?: undefined; action?: undefined; }' is not assignable to type 'TokenValidationResult'.
+  Type '{ valid: boolean; error: string; action: string; payload?: undefined; }' is not assignable to type 'TokenValidationResult'.
+    Types of property 'action' are incompatible.
+      Type 'string' is not assignable to type '"REQUEST_NEW_LINK" | "CONTACT_SUPPORT" | undefined'.
+src/services/video-token.service.ts(171,41): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(arrayBuffer: WithImplicitCoercion<ArrayBufferLike>, byteOffset?: number | undefined, length?: number | undefined): Buffer<ArrayBufferLike>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'WithImplicitCoercion<ArrayBufferLike>'.
+      Type 'undefined' is not assignable to type 'WithImplicitCoercion<ArrayBufferLike>'.
+  Overload 2 of 4, '(string: WithImplicitCoercion<string>, encoding?: BufferEncoding | undefined): Buffer<ArrayBuffer>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'WithImplicitCoercion<string>'.
+      Type 'undefined' is not assignable to type 'WithImplicitCoercion<string>'.
+src/services/video-token.service.ts(432,37): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(arrayBuffer: WithImplicitCoercion<ArrayBufferLike>, byteOffset?: number | undefined, length?: number | undefined): Buffer<ArrayBufferLike>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'WithImplicitCoercion<ArrayBufferLike>'.
+      Type 'undefined' is not assignable to type 'WithImplicitCoercion<ArrayBufferLike>'.
+  Overload 2 of 4, '(string: WithImplicitCoercion<string>, encoding?: BufferEncoding | undefined): Buffer<ArrayBuffer>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'WithImplicitCoercion<string>'.
+      Type 'undefined' is not assignable to type 'WithImplicitCoercion<string>'.
+src/services/video-visit.service.ts(199,21): error TS2304: Cannot find name 'UnauthorizedException'.
+src/services/video-visit.service.ts(241,43): error TS2339: Property 'ContactResponse' does not exist on type 'StartWebRTCContactCommandOutput'.
+src/services/video-visit.service.ts(242,63): error TS2339: Property 'Participant' does not exist on type 'ConnectionData'.
+src/services/video-visit.service.ts(243,66): error TS2339: Property 'Participant' does not exist on type 'ConnectionData'.
+src/services/video-visit.service.ts(273,11): error TS2322: Type 'string' is not assignable to type '"patient" | "clinician"'.
+src/services/video-visit.service.ts(481,34): error TS2532: Object is possibly 'undefined'.
+src/utils/telemetry.ts(73,47): error TS2345: Argument of type 'OTLPTraceExporter' is not assignable to parameter of type 'SpanExporter'.
+  Types of property 'export' are incompatible.
+    Type '(items: ReadableSpan[], resultCallback: (result: ExportResult) => void) => void' is not assignable to type '(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void) => void'.
+      Types of parameters 'items' and 'spans' are incompatible.
+        Type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-trace-base@1.22.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-trace-base/build/src/export/ReadableSpan").ReadableSpan[]' is not assignable to type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-trace-base@2.1.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-trace-base/build/src/export/ReadableSpan").ReadableSpan[]'.
+          Property 'instrumentationScope' is missing in type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-trace-base@1.22.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-trace-base/build/src/export/ReadableSpan").ReadableSpan' but required in type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-trace-base@2.1.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-trace-base/build/src/export/ReadableSpan").ReadableSpan'.
+src/utils/telemetry.ts(74,7): error TS2561: Object literal may only specify known properties, but 'logRecordProcessors' does not exist in type 'Partial<NodeSDKConfiguration>'. Did you mean to write 'logRecordProcessor'?
+src/utils/telemetry.ts(74,57): error TS2345: Argument of type 'OTLPLogExporter' is not assignable to parameter of type 'LogRecordExporter'.
+  Types of property 'export' are incompatible.
+    Type '(items: ReadableLogRecord[], resultCallback: (result: ExportResult) => void) => void' is not assignable to type '(logs: ReadableLogRecord[], resultCallback: (result: ExportResult) => void) => void'.
+      Types of parameters 'items' and 'logs' are incompatible.
+        Type 'import("/Users/alexsiegel/teleplatform/node_modules/@opentelemetry/sdk-logs/build/src/export/ReadableLogRecord").ReadableLogRecord[]' is not assignable to type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-logs@0.205.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-logs/build/src/export/ReadableLogRecord").ReadableLogRecord[]'.
+          Type 'import("/Users/alexsiegel/teleplatform/node_modules/@opentelemetry/sdk-logs/build/src/export/ReadableLogRecord").ReadableLogRecord' is not assignable to type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-logs@0.205.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-logs/build/src/export/ReadableLogRecord").ReadableLogRecord'.
+            Types of property 'resource' are incompatible.
+              Property 'getRawAttributes' is missing in type 'IResource' but required in type 'Resource'.
+src/utils/telemetry.ts(76,9): error TS2322: Type 'OTLPMetricExporter' is not assignable to type 'PushMetricExporter'.
+  Types of property 'export' are incompatible.
+    Type '(items: ResourceMetrics, resultCallback: (result: ExportResult) => void) => void' is not assignable to type '(metrics: ResourceMetrics, resultCallback: (result: ExportResult) => void) => void'.
+      Types of parameters 'items' and 'metrics' are incompatible.
+        Type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-metrics@1.21.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-metrics/build/src/export/MetricData").ResourceMetrics' is not assignable to type 'import("/Users/alexsiegel/teleplatform/node_modules/.pnpm/@opentelemetry+sdk-metrics@2.1.0_@opentelemetry+api@1.8.0/node_modules/@opentelemetry/sdk-metrics/build/src/export/MetricData").ResourceMetrics'.
+          Types of property 'resource' are incompatible.
+            Property 'getRawAttributes' is missing in type 'IResource' but required in type 'Resource'.
+src/utils/telemetry.ts(100,41): error TS2304: Cannot find name 'AWSXRayPropagator'.
+src/utils/telemetry.ts(187,39): error TS2345: Argument of type 'Record<string, any> | undefined' is not assignable to parameter of type 'TimeInput | undefined'.
+  Type 'Record<string, any>' is not assignable to type 'TimeInput | undefined'.
+    Type 'Record<string, any>' is missing the following properties from type 'Date': toDateString, toTimeString, toLocaleDateString, toLocaleTimeString, and 38 more.
+src/websocket/notification.gateway.ts(49,55): error TS2532: Object is possibly 'undefined'.

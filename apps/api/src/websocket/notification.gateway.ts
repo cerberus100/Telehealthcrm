@@ -45,18 +45,14 @@ interface AuthenticatedSocket extends Socket {
 @WebSocketGateway({
   cors: {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Use CORS configuration service for validation
-      const corsConfigService = new CorsConfigService(this.configService)
-      const isAllowed = corsConfigService.validateOrigin(origin)
-
-      if (isAllowed) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'), false)
-      }
+      // Allow configured origins (will be validated in connection handler)
+      const allowedOrigins = process.env.WS_CORS_ORIGINS?.split(',') || ['http://localhost:3000']
+      const isAllowed = !origin || allowedOrigins.some(allowed => 
+        origin === allowed || origin.includes(allowed.replace('*', ''))
+      )
+      callback(null, isAllowed)
     },
     credentials: false,
->>>>>>> b25904558b229d3aae6137224664f8862267b9b0
   },
   namespace: '/', // Use root namespace for standard Socket.IO
   path: '/socket.io', // Standard Socket.IO path

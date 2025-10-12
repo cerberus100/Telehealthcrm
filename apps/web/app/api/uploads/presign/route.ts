@@ -43,7 +43,7 @@ export const POST = withCORS(async (req: NextRequest) => {
     const env = getEnv()
     const key = `clinician-uploads/${claims.sub}/${Date.now()}-${randomUUID()}-${parsed.data.filename}`
 
-    const url = await getSignedUrl(getS3(), new PutObjectCommand({
+    const url = await getSignedUrl(getS3() as any, new PutObjectCommand({
       Bucket: env.S3_UPLOAD_BUCKET_NAME,
       Key: key,
       ContentType: parsed.data.contentType,

@@ -151,6 +151,10 @@ describe('PrismaService', () => {
         orgType: 'PROVIDER',
         orgName: 'Production Organization',
         isActive: true,
+        compliance: {
+          hipaaCompliant: true,
+          baaSigned: true,
+        }
       }
 
       // These would normally connect to real database
