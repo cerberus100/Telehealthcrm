@@ -111,12 +111,6 @@ variable "force_turn_relay" {
   default     = false
 }
 
-variable "alert_email" {
-  description = "Email address for CloudWatch alerts"
-  type        = string
-  default     = "ops@example.com"
-}
-
 # Monitoring and Compliance
 variable "enable_guardduty" {
   description = "Enable GuardDuty"
