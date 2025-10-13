@@ -20,7 +20,7 @@ export class WebRTCConfigController {
    * Returns client-safe configuration (no credentials)
    */
   @Get('config')
-  @Abac({ resource: 'VideoVisit', action: 'read' })
+  // No ABAC - public config endpoint
   async getConfiguration() {
     const config = await this.turnConfigService.getClientConfiguration()
     

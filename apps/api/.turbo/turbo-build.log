@@ -2,3 +2,6 @@
 > api@0.1.0 build /Users/alexsiegel/teleplatform/apps/api
 > tsc -p tsconfig.json
 
+src/controllers/webrtc-config.controller.ts(23,4): error TS2554: Expected 2 arguments, but got 1.
+src/services/turn-config.service.ts(14,48): error TS2307: Cannot find module '@aws-sdk/client-ssm' or its corresponding type declarations.
+ ELIFECYCLE  Command failed with exit code 2.
