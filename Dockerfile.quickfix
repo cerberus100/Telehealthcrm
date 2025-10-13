@@ -1,0 +1,34 @@
+# EMERGENCY FIX: Simple working Dockerfile
+# Build from root: docker build -f Dockerfile.quickfix -t telehealth-api .
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
+# Copy everything (not optimal but will work)
+COPY . .
+
+# Install dependencies
+RUN corepack enable && \
+    corepack prepare pnpm@9.6.0 --activate && \
+    pnpm install
+
+# Generate Prisma
+RUN cd packages/db && pnpm prisma generate
+
+# Build
+RUN cd apps/api && pnpm build
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK CMD curl -f http://localhost:3001/health || exit 1
+
+# Start
+WORKDIR /app/apps/api
+CMD ["node", "dist/main.js"]
+

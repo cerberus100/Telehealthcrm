@@ -8,7 +8,7 @@
 
 # Rule 1: API Routes (/api/*) → API Service (Highest Priority)
 resource "aws_lb_listener_rule" "api_routes" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.http.arn
   priority     = 10  # Higher priority = evaluated first
 
   action {
@@ -29,7 +29,7 @@ resource "aws_lb_listener_rule" "api_routes" {
 
 # Rule 2: Health Check (/health) → API Service
 resource "aws_lb_listener_rule" "health_check" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.http.arn
   priority     = 20
 
   action {
@@ -50,7 +50,7 @@ resource "aws_lb_listener_rule" "health_check" {
 
 # Rule 3: WebSocket (/socket.io/*) → API Service
 resource "aws_lb_listener_rule" "websocket" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.http.arn
   priority     = 30
 
   action {
@@ -71,7 +71,7 @@ resource "aws_lb_listener_rule" "websocket" {
 
 # Rule 4: Static Assets (/_next/static/*) → Web Service with caching headers
 resource "aws_lb_listener_rule" "next_static" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.http.arn
   priority     = 40
 
   action {
@@ -92,7 +92,7 @@ resource "aws_lb_listener_rule" "next_static" {
 
 # Rule 5: Next.js Image Optimization (/_next/image*) → Web Service
 resource "aws_lb_listener_rule" "next_images" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.http.arn
   priority     = 50
 
   action {
@@ -114,7 +114,7 @@ resource "aws_lb_listener_rule" "next_images" {
 # Rule 6: CloudFront Origin Verification
 # Only allow traffic from CloudFront (optional but recommended)
 resource "aws_lb_listener_rule" "origin_verify" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.http.arn
   priority     = 5  # Highest priority
 
   action {
@@ -140,7 +140,7 @@ resource "aws_lb_listener_rule" "origin_verify" {
 
 # Rule 7: Default → Web Service (Catch-all for all other routes)
 resource "aws_lb_listener_rule" "web_default" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.http.arn
   priority     = 100  # Lowest priority (catch-all)
 
   action {

@@ -1,0 +1,67 @@
+# Production Dockerfile for NestJS API
+# Build from PROJECT ROOT: docker build -f apps/api/Dockerfile.production -t telehealth-api .
+
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
+
+# ===== Dependencies Stage =====
+FROM base AS deps
+WORKDIR /app
+
+# Copy workspace config and all package.json files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/db/package.json ./packages/db/
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# ===== Builder Stage =====
+FROM base AS builder
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps ./apps
+COPY --from=deps /app/packages ./packages
+
+# Copy source code
+COPY packages/db/prisma ./packages/db/prisma
+COPY packages/db/migrations ./packages/db/migrations
+COPY apps/api/src ./apps/api/src
+COPY apps/api/tsconfig.json ./apps/api/
+COPY tsconfig.json ./
+
+# Generate Prisma client
+WORKDIR /app/packages/db
+RUN pnpm prisma generate
+
+# Build application
+WORKDIR /app/apps/api
+RUN pnpm build
+
+# ===== Production Stage =====
+FROM node:20-alpine AS production
+RUN apk add --no-cache dumb-init curl
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+
+# Non-root user for security
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+# Start application
+CMD ["dumb-init", "node", "dist/main.js"]
+

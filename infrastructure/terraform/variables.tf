@@ -164,6 +164,12 @@ variable "alert_email" {
 }
 
 # Domain Configuration
+variable "custom_domain" {
+  description = "Custom domain for the application"
+  type        = string
+  default     = ""
+}
+
 variable "domain_name" {
   description = "Domain name for the application"
   type        = string

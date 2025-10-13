@@ -1,4 +1,5 @@
 # Multi-stage Dockerfile for Next.js 14 (App Router)
+# Build from PROJECT ROOT: docker build -f apps/web/Dockerfile -t telehealth-web .
 # Optimized for production deployment to ECS Fargate
 # HIPAA Compliant: Minimal attack surface, non-root user, security scanning compatible
 
@@ -8,7 +9,7 @@
 FROM node:20-alpine AS base
 
 # Install dependencies only when needed
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat curl
 
 WORKDIR /app
 
@@ -21,10 +22,10 @@ RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
 FROM base AS deps
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY apps/web/package.json apps/web/pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile --prod
+# Install dependencies (if pnpm-lock exists at app level, otherwise use workspace)
+RUN pnpm install --prod || (cd .. && pnpm install --filter web --prod)
 
 # ============================================
 # Stage 3: Builder
