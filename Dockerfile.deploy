@@ -1,0 +1,36 @@
+# WORKING: Final production Dockerfile
+# docker build -f Dockerfile.deploy -t 337909762852.dkr.ecr.us-east-1.amazonaws.com/telehealth-api:latest .
+
+FROM node:20-alpine AS base
+RUN apk add --no-cache curl python3 make g++ libc6-compat dumb-init
+RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
+
+FROM base AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/db/package.json ./packages/db/
+RUN pnpm install --frozen-lockfile --include-workspace-root
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app ./
+COPY packages/db ./packages/db
+COPY apps/api ./apps/api
+COPY tsconfig.json ./
+RUN cd packages/db && pnpm prisma generate
+RUN cd apps/api && pnpm build
+
+FROM node:20-alpine
+RUN apk add --no-cache curl dumb-init
+WORKDIR /app
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+EXPOSE 3001
+HEALTHCHECK CMD curl -f http://localhost:3001/health || exit 1
+CMD ["dumb-init", "node", "dist/main.js"]
+
