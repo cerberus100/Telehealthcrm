@@ -1,0 +1,39 @@
+# FINAL WORKING VERSION: Uses pre-built code + copies node_modules
+# docker build -f Dockerfile.final -t 337909762852.dkr.ecr.us-east-1.amazonaws.com/telehealth-api:latest .
+
+FROM node:20-alpine AS deps
+RUN apk add --no-cache curl python3 make g++ libc6-compat
+RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/db/package.json ./packages/db/
+COPY packages/db/prisma ./packages/db/prisma
+RUN pnpm install --frozen-lockfile
+
+# Generate Prisma client
+RUN cd packages/db && pnpm prisma generate
+
+# Production runtime
+FROM node:20-alpine
+RUN apk add --no-cache curl dumb-init
+
+WORKDIR /app
+
+# Copy ALL node_modules (includes Prisma client)
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy pre-built application
+COPY apps/api/dist ./dist
+COPY apps/api/package.json ./
+
+# Non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+EXPOSE 3001
+HEALTHCHECK CMD curl -f http://localhost:3001/health || exit 1
+CMD ["dumb-init", "node", "dist/main.js"]
+

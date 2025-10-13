@@ -1,0 +1,36 @@
+# SIMPLE: Use pre-built dist folder
+# Build from root: docker build -f Dockerfile.prebuilt -t 337909762852.dkr.ecr.us-east-1.amazonaws.com/telehealth-api:latest .
+
+FROM node:20-alpine
+
+# Install runtime dependencies only
+RUN apk add --no-cache curl dumb-init
+
+WORKDIR /app
+
+# Enable pnpm for production install
+RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
+
+# Copy package files and install PRODUCTION dependencies only
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/db/package.json ./packages/db/
+
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy pre-built application
+COPY apps/api/dist ./dist
+
+# Copy Prisma schema and generate client
+COPY packages/db/prisma ./packages/db/prisma
+RUN cd packages/db && pnpm prisma generate
+
+# Non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+EXPOSE 3001
+HEALTHCHECK CMD curl -f http://localhost:3001/health || exit 1
+CMD ["dumb-init", "node", "dist/main.js"]
+
